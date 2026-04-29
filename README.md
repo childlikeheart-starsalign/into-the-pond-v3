@@ -10,6 +10,35 @@ Expo SDK 54 app using **Expo Router**, React Native, and **native-first** workfl
 | `npm run ios` | iOS Simulator |
 | `npm run android` | Android emulator / device |
 | `npm run verify` | TypeScript check |
+| `npm run git:snapshot` | Initialize repo + first commit + tag `foundations-v1` (uses `isomorphic-git`; see Version control) |
+| `npm run git:commit-tracked` | Stage all non-ignored files and commit (when system `git` is unavailable) |
+
+## Version control
+
+This repo uses Git with milestone tag **`foundations-v1`** on the initial foundations snapshot commit.
+
+**Recover that snapshot**
+
+```bash
+git checkout foundations-v1
+```
+
+**Push to GitHub** (private repo recommended for Firebase plist / keys in config). Install Apple Git / Xcode CLI tools first so `git` works, then either:
+
+```bash
+gh repo create into-the-pond-v3 --private --source=. --remote=origin --push
+git push origin foundations-v1   # ensure the tag is on the remote
+```
+
+Or create an empty repo on GitHub and run:
+
+```bash
+chmod +x scripts/push-to-github.sh
+./scripts/push-to-github.sh git@github.com:YOUR_USER/into-the-pond-v3.git
+```
+
+**Branch protection (optional)**  
+On GitHub: **Settings → Branches → Add branch protection rule** for `main` (require pull request before merging, disallow force-push). Reduces accidental history loss when collaborating.
 
 ## Integrated services
 

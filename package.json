@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "verify": "tsc --noEmit",
-    "git:snapshot": "node scripts/create-git-snapshot.mjs"
+    "git:snapshot": "node scripts/create-git-snapshot.mjs",
+    "git:commit-tracked": "node scripts/git-commit-tracked.mjs"
   },
   "dependencies": {
     "@babel/plugin-proposal-decorators": "^7.29.0",

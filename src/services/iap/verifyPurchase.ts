@@ -14,4 +14,3 @@ export async function verifyPurchase(payload: VerifyPurchasePayload) {
   const result = await callable(payload);
   return result.data as { success: boolean; reason?: string };
 }
-

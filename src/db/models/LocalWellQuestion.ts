@@ -12,4 +12,3 @@ export class LocalWellQuestion extends Model {
   @field("answered_at") answeredAtMs!: number | null;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

@@ -1,8 +1,12 @@
 import { Platform } from "react-native";
-import { CustomerInfo } from "react-native-purchases";
+import Purchases, { CustomerInfo } from "react-native-purchases";
 
-import { trackPurchaseFail, trackPurchaseStart, trackPurchaseSuccess } from "@/src/services/iap/analytics";
-import { LogicalProductId } from "@/src/services/iap/catalog";
+import {
+  trackPurchaseFail,
+  trackPurchaseStart,
+  trackPurchaseSuccess,
+} from "@/src/services/iap/analytics";
+import { LogicalProductId, PRODUCT_IDS } from "@/src/services/iap/catalog";
 import { getPurchaseErrorMessage } from "@/src/services/iap/errors";
 import {
   getActiveEntitlementIds,
@@ -14,6 +18,17 @@ import { verifyPurchase } from "@/src/services/iap/verifyPurchase";
 async function syncCustomerInfo(productId: LogicalProductId, customerInfo: CustomerInfo) {
   const platform = Platform.OS === "ios" ? "ios" : "android";
   return verifyPurchase({ platform, productId, customerInfo });
+}
+
+/**
+ * Pulls latest `CustomerInfo` from RevenueCat and runs the server `verifyPurchase` callable
+ * (RevenueCat secret on the backend is the source of truth).
+ */
+export async function syncSubscriptionWithBackendAfterPurchase(
+  productIdForAudit: LogicalProductId = PRODUCT_IDS.tier1Monthly,
+) {
+  const customerInfo = await Purchases.getCustomerInfo();
+  return syncCustomerInfo(productIdForAudit, customerInfo);
 }
 
 export async function runPurchase(productId: LogicalProductId) {
@@ -60,4 +75,3 @@ export async function runRestore(productId: LogicalProductId) {
     };
   }
 }
-

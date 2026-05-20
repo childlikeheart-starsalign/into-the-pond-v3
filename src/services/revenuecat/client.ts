@@ -1,10 +1,18 @@
 import { Platform } from "react-native";
-import Purchases, { CustomerInfo, LOG_LEVEL, PurchasesOffering, PurchasesPackage } from "react-native-purchases";
+import Purchases, {
+  CustomerInfo,
+  CustomerInfoUpdateListener,
+  LOG_LEVEL,
+  PurchasesOffering,
+  PurchasesPackage,
+} from "react-native-purchases";
 
 import { env } from "@/src/config/env";
 import { LogicalProductId } from "@/src/services/iap/catalog";
 
-export async function configureRevenueCat(appUserID?: string) {
+let revenueCatConfigured = false;
+
+export async function configureRevenueCat(appUserID?: string | null) {
   const apiKey = Platform.select({
     ios: env.revenueCat.appleApiKey,
     android: env.revenueCat.googleApiKey,
@@ -16,8 +24,21 @@ export async function configureRevenueCat(appUserID?: string) {
     return;
   }
 
-  Purchases.setLogLevel(LOG_LEVEL.INFO);
-  await Purchases.configure({ apiKey, appUserID });
+  if (!revenueCatConfigured) {
+    Purchases.setLogLevel(LOG_LEVEL.INFO);
+    Purchases.configure({ apiKey });
+    revenueCatConfigured = true;
+  }
+
+  try {
+    if (appUserID) {
+      await Purchases.logIn(appUserID);
+    } else {
+      await Purchases.logOut();
+    }
+  } catch (error) {
+    console.warn("RevenueCat logIn/logOut failed", error);
+  }
 }
 
 export async function getSubscriptionStatus(): Promise<CustomerInfo | null> {
@@ -79,4 +100,19 @@ export function getActiveEntitlementIds(customerInfo: CustomerInfo | null) {
 
 export function hasAnyActiveEntitlement(customerInfo: CustomerInfo | null) {
   return getActiveEntitlementIds(customerInfo).length > 0;
+}
+
+/** Active when RevenueCat marks the configured Pro entitlement as active (matches paywall `presentPaywallIfNeeded`). */
+export function hasIntoThePondProEntitlement(customerInfo: CustomerInfo | null) {
+  const id = env.revenueCat.entitlementPro;
+  return !!customerInfo?.entitlements.active[id];
+}
+
+export function addCustomerInfoListener(listener: CustomerInfoUpdateListener) {
+  Purchases.addCustomerInfoUpdateListener(listener);
+  return listener;
+}
+
+export function removeCustomerInfoListener(listener: CustomerInfoUpdateListener) {
+  Purchases.removeCustomerInfoUpdateListener(listener);
 }

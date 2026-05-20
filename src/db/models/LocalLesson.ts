@@ -15,4 +15,3 @@ export class LocalLesson extends Model {
   @field("is_placeholder") isPlaceholder!: boolean;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

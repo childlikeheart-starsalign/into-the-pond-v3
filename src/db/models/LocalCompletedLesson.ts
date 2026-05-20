@@ -9,4 +9,3 @@ export class LocalCompletedLesson extends Model {
   @field("is_completed") isCompleted!: boolean;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

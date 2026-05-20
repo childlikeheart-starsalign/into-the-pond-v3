@@ -4,21 +4,38 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
+    "prebuild": "expo prebuild",
+    "prebuild:clean": "expo prebuild --clean",
+    "android:sync-gradle": "cd android && ./gradlew --no-daemon projects",
     "verify": "tsc --noEmit",
+    "auth:transparent-black": "node scripts/auth-black-to-transparent.mjs",
+    "auth:remove-black-bg": "node scripts/remove-black-bg.js",
     "git:snapshot": "node scripts/create-git-snapshot.mjs",
-    "git:commit-tracked": "node scripts/git-commit-tracked.mjs"
+    "git:commit-tracked": "node scripts/git-commit-tracked.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@babel/plugin-proposal-decorators": "^7.29.0",
+    "@babel/runtime": "^7.29.2",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/playfair-display": "^0.4.2",
+    "@expo/vector-icons": "^15.0.3",
     "@nozbe/watermelondb": "^0.28.0",
+    "@react-native-async-storage/async-storage": "^3.0.2",
+    "@shopify/react-native-skia": "^2.6.2",
     "expo": "^54.0.1",
+    "expo-av": "~16.0.8",
     "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.21",
     "expo-font": "~14.0.11",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.12",
     "expo-router": "~6.0.23",
     "expo-splash-screen": "~31.0.13",
@@ -29,16 +46,44 @@
     "react-native": "0.81.4",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-purchases": "^10.0.1",
+    "react-native-purchases-ui": "^10.0.1",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
     "react-native-web": "^0.21.0"
   },
   "private": true,
+  "overrides": {
+    "@nozbe/watermelondb": {
+      "@babel/runtime": "^7.26.10"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,json,md}": [
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/react": "^19.2.14",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-native": "^5.0.0",
+    "husky": "^9.1.7",
     "ignore": "^7.0.5",
     "isomorphic-git": "^1.37.6",
-    "typescript": "^5.9.3"
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "sharp": "^0.34.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.2"
   }
 }

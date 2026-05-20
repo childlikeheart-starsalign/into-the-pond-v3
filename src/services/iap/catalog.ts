@@ -1,8 +1,9 @@
+/** Store product identifiers — must match App Store Connect / Play Console and RevenueCat products. */
 export const PRODUCT_IDS = {
-  tier1Monthly: "com.intothepond.membership.tier1.monthly",
-  tier2Monthly: "com.intothepond.membership.tier2.monthly",
-  tier1Lifetime: "com.intothepond.lifetime.tier1",
-  tier2Lifetime: "com.intothepond.lifetime.tier2",
+  tier1Monthly: "Wooden_Rod_Monthly",
+  tier2Monthly: "Fiberglass_Rod_Monthly",
+  tier1Lifetime: "Wooden_Rod_Lifetime",
+  tier2Lifetime: "Fiberglass_rod_lifetime",
 } as const;
 
 export type LogicalProductId = (typeof PRODUCT_IDS)[keyof typeof PRODUCT_IDS];
@@ -54,5 +55,3 @@ export const PRODUCT_TO_TIER = {
   [PRODUCT_IDS.tier1Lifetime]: "wooden",
   [PRODUCT_IDS.tier2Lifetime]: "fiberglass",
 } as const;
-
-

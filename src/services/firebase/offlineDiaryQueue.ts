@@ -47,7 +47,10 @@ export async function queueDiaryEntryOffline(uid: string, payload: OfflineDiaryP
   return entryId;
 }
 
-export async function submitDiaryEntryWithOfflineFallback(uid: string, payload: OfflineDiaryPayload) {
+export async function submitDiaryEntryWithOfflineFallback(
+  uid: string,
+  payload: OfflineDiaryPayload,
+) {
   try {
     const result = await submitDiaryEntry(uid, payload);
     return { mode: "online" as const, result };
@@ -62,7 +65,9 @@ export async function submitDiaryEntryWithOfflineFallback(uid: string, payload: 
 
 export async function retryPendingDiaryEntries(uid: string) {
   const table = database.get<LocalDiaryEntry>("local_diary_entries");
-  const pendingEntries = await table.query(Q.where("uid", uid), Q.where("sync_status", "pending")).fetch();
+  const pendingEntries = await table
+    .query(Q.where("uid", uid), Q.where("sync_status", "pending"))
+    .fetch();
   const summary = { synced: 0, failed: 0 };
 
   for (const entry of pendingEntries) {
@@ -96,4 +101,3 @@ export async function retryPendingDiaryEntries(uid: string) {
   }
   return summary;
 }
-

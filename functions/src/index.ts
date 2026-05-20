@@ -109,7 +109,10 @@ export const syncSubscriptionStatus = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "Authentication required");
   const currentUser = (await db.collection("users").doc(uid).get()).data() as
-    | { subscription?: { subscriptionStatus?: "free" | "wooden" | "fiberglass" }; activeRod?: ActiveRod }
+    | {
+        subscription?: { subscriptionStatus?: "free" | "wooden" | "fiberglass" };
+        activeRod?: ActiveRod;
+      }
     | undefined;
   const mismatch = (() => {
     const status = currentUser?.subscription?.subscriptionStatus ?? "free";
@@ -253,7 +256,11 @@ export const createCast = onCall(async (request) => {
   if (!uid) throw new HttpsError("unauthenticated", "Authentication required");
   await assertActiveRodOrThrow(uid, { minRod: "basic" });
 
-  const payload = (request.data ?? {}) as { rodType?: string; baitUsed?: string; expectedRarity?: string };
+  const payload = (request.data ?? {}) as {
+    rodType?: string;
+    baitUsed?: string;
+    expectedRarity?: string;
+  };
   const castId = `cast_${Date.now()}`;
   await db
     .collection("users")
@@ -345,4 +352,3 @@ export const resetDailyCountersHourly = onSchedule("every 1 hours", async () => 
     });
   }
 });
-

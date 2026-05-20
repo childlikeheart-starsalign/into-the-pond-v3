@@ -48,4 +48,3 @@ export async function assertActiveRodOrThrow(uid: string, options: GuardOptions 
     throw new HttpsError("permission-denied", "Subscription inactive or insufficient tier");
   }
 }
-

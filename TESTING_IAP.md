@@ -3,10 +3,11 @@
 ## Prerequisites
 
 - RevenueCat products/offering configured with:
-  - `com.intothepond.membership.tier1.monthly`
-  - `com.intothepond.membership.tier2.monthly`
-  - `com.intothepond.lifetime.tier1`
-  - `com.intothepond.lifetime.tier2`
+  - `Wooden_Rod_Monthly`
+  - `Fiberglass_Rod_Monthly`
+  - `Wooden_Rod_Lifetime`
+  - `Fiberglass_rod_lifetime`
+- Entitlement identifier for Into the Pond Pro (e.g. `into_the_pond_pro`) attached to products as needed for paywalls
 - Firebase Functions deployed (`verifyPurchase`, `syncSubscriptionStatus`, `castClaim`, `submitDiaryEntry`, `createWellQuestion`, `createCast`, `claimCast`)
 - App built in native runtime (not Expo Go)
 - Test account signed in with Firebase Auth
@@ -14,13 +15,13 @@
 ## iOS Sandbox
 
 1. Sign in with an App Store sandbox tester account on the device.
-2. Open Store screen and purchase `com.intothepond.membership.tier1.monthly`.
+2. Open Store screen and purchase `Wooden_Rod_Monthly`.
 3. Confirm:
    - purchase sheet succeeds
    - Firestore `users/{uid}.subscription.subscriptionStatus` becomes `wooden`
    - Firestore `users/{uid}.activeRod` becomes `wooden`
    - `users/{uid}/purchases/{transactionId}` doc created
-4. Purchase `com.intothepond.lifetime.tier2` and confirm:
+4. Purchase `Fiberglass_rod_lifetime` and confirm:
    - `isLifetime` becomes `true`
    - `subscriptionStatus` becomes `fiberglass`
    - `expiryDate` is `null`
@@ -70,4 +71,3 @@
 - Payment/network issue -> UI message: `Payment failed. Please check your payment method.`
 - Verification failure -> UI message: `We could not verify your purchase. Please contact support.`
 - Already active restore case -> UI message: `Your subscription is active. Restoring...`
-

@@ -35,4 +35,3 @@ export const MARKETING_TIER_NAME: Record<SubscriptionStatus, string> = {
   wooden: "Wooden Rod",
   fiberglass: "Fiberglass Rod",
 };
-

@@ -2,7 +2,12 @@ import { doc, onSnapshot, Timestamp } from "firebase/firestore";
 
 import { firestore } from "@/src/services/firebase/client";
 import { requestSubscriptionSync } from "@/src/services/firebase/serverActions";
-import { RodTier, SubscriptionStatus, UserDoc, UserSubscription } from "@/src/services/firebase/types";
+import {
+  RodTier,
+  SubscriptionStatus,
+  UserDoc,
+  UserSubscription,
+} from "@/src/services/firebase/types";
 
 export type SubscriptionState = UserSubscription & {
   activeRod: RodTier;
@@ -64,4 +69,3 @@ export function subscribeToUserSubscription(
     );
   });
 }
-

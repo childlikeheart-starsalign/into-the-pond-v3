@@ -121,7 +121,7 @@ async function main() {
   console.log(`Annotated tag: ${TAG_NAME}`);
   console.log("");
   console.log("Next — push to GitHub (private repo recommended):");
-  console.log('  gh repo create into-the-pond-v3 --private --source=. --remote=origin --push');
+  console.log("  gh repo create into-the-pond-v3 --private --source=. --remote=origin --push");
   console.log("Or create an empty repo on GitHub, then:");
   console.log("  git remote add origin git@github.com:YOUR_USER/into-the-pond-v3.git");
   console.log("  git push -u origin main");

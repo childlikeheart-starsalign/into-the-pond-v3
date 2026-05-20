@@ -1,0 +1,184 @@
+import { router, type Href, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { AuthFrame, CloudButton } from "@/src/components/auth/AuthArtwork";
+import { colors, spacing } from "@/src/constants/theme";
+import { media } from "@/src/constants/media";
+import {
+  emailVerifiedHitRects,
+  normRectToStyle,
+  resolveEmailVerifiedArtboardIntrinsic,
+} from "@/src/constants/emailVerifiedArtboard";
+import { routes } from "@/src/navigation/routes";
+import { applyEmailActionCode, reloadCurrentUser } from "@/src/services/firebase/auth";
+import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
+
+function paramFirst(value: string | string[] | undefined): string | undefined {
+  if (value == null) return undefined;
+  return Array.isArray(value) ? value[0] : value;
+}
+
+type Status = "idle" | "working" | "done" | "error";
+
+/** Single Firebase apply per (mode, oobCode) per JS session — avoids duplicate applyEmailActionCode when React Strict Mode runs effects twice in development. */
+const verificationApplyPromises = new Map<string, Promise<void>>();
+
+function memoizedVerificationApply(oobCode: string, mode: string | undefined): Promise<void> {
+  const key = `${mode ?? ""}|${oobCode}`;
+  const existing = verificationApplyPromises.get(key);
+  if (existing) return existing;
+  const p = (async () => {
+    await applyEmailActionCode(oobCode);
+    await reloadCurrentUser();
+  })();
+  verificationApplyPromises.set(key, p);
+  return p;
+}
+
+export default function FinishEmailScreen() {
+  const params = useLocalSearchParams<{ oobCode?: string | string[]; mode?: string | string[] }>();
+  const oobCode = useMemo(() => paramFirst(params.oobCode), [params.oobCode]);
+  const mode = useMemo(() => paramFirst(params.mode), [params.mode]);
+  const { width: windowWidth } = useWindowDimensions();
+
+  const [status, setStatus] = useState<Status>("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const intrinsic = useMemo(() => resolveEmailVerifiedArtboardIntrinsic(), []);
+  const aspectRatio = intrinsic.height / intrinsic.width || 1024 / 576;
+
+  const horizontalPad = spacing.inner * 2;
+  const artboardWidth = Math.max(0, windowWidth - horizontalPad);
+  const artboardHeight = artboardWidth * aspectRatio;
+  const enterButtonStyle = normRectToStyle(
+    emailVerifiedHitRects.enterButton,
+    artboardWidth,
+    artboardHeight,
+  );
+  const layerSize = { width: artboardWidth, height: artboardHeight };
+
+  useEffect(() => {
+    if (!oobCode) {
+      setStatus("error");
+      setError("Invalid link.");
+      return;
+    }
+
+    if (mode === "resetPassword") {
+      router.replace(
+        `/reset-password?oobCode=${encodeURIComponent(oobCode)}&mode=${encodeURIComponent(mode)}` as Href,
+      );
+      return;
+    }
+
+    setStatus("working");
+
+    void memoizedVerificationApply(oobCode, mode).then(
+      () => setStatus("done"),
+      (e: unknown) => {
+        setStatus("error");
+        setError(formatFirebaseAuthError(e));
+      },
+    );
+  }, [oobCode, mode]);
+
+  if (status === "done") {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
+            <Image
+              source={media.auth.emailVerified.background}
+              style={[styles.layerImage, layerSize]}
+              resizeMode="stretch"
+              accessibilityIgnoresInvertColors
+            />
+
+            <Pressable
+              style={[styles.hitTarget, enterButtonStyle]}
+              onPress={() => router.replace(routes.sanctuary)}
+              accessibilityRole="button"
+              accessibilityLabel="Enter"
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <AuthFrame helperText="Save your pond, sync across devices, and keep your Wonders">
+      {(status === "working" || status === "idle") && (
+        <View style={{ alignItems: "center", gap: 16 }}>
+          <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading" />
+          <Text
+            style={{
+              fontFamily: "Inter_600SemiBold",
+              fontSize: 18,
+              color: "#2E2520",
+              textAlign: "center",
+            }}
+          >
+            Confirming your email...
+          </Text>
+        </View>
+      )}
+
+      {status === "error" && (
+        <>
+          <Text
+            style={{
+              fontFamily: "Inter_600SemiBold",
+              fontSize: 17,
+              lineHeight: 26,
+              color: "#B86A6A",
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </Text>
+          <CloudButton label="Back to sign in" onPress={() => router.replace(routes.login)} />
+        </>
+      )}
+    </AuthFrame>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingHorizontal: spacing.inner,
+    paddingVertical: spacing.section,
+  },
+  artboard: {
+    alignSelf: "center",
+    position: "relative",
+  },
+  layerImage: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+  },
+  hitTarget: {
+    backgroundColor: "transparent",
+  },
+});

@@ -31,4 +31,3 @@ export async function trackPurchaseSuccess(productId: string) {
 export async function trackPurchaseFail(productId: string, reason: string) {
   await track("iap_purchase_fail", { product_id: productId, reason });
 }
-

@@ -38,4 +38,3 @@ export function useOfflineSync(uid: string | null) {
     };
   }, [uid]);
 }
-

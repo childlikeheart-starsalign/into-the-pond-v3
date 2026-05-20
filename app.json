@@ -56,6 +56,7 @@
       "firebaseMeasurementId": "YOUR_FIREBASE_MEASUREMENT_ID",
       "revenueCatApiKeyApple": "YOUR_REVENUECAT_APPLE_API_KEY",
       "revenueCatApiKeyGoogle": "YOUR_REVENUECAT_GOOGLE_API_KEY",
+      "revenueCatEntitlementPro": "into_the_pond_pro",
       "revenueCatEntitlementWooden": "wooden_rod",
       "revenueCatEntitlementFiberglass": "fiberglass_rod",
       "revenueCatEntitlementLifetime": "lifetime_keeper",

@@ -12,4 +12,3 @@ export class LocalLessonAccess extends Model {
   @field("requires_paywall") requiresPaywall!: boolean;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

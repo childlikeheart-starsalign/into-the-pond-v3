@@ -7,4 +7,3 @@ export async function requestCastClaim() {
   const result = await callable();
   return result.data as { success: boolean; message?: string };
 }
-

@@ -15,4 +15,3 @@ export class LocalInventory extends Model {
   @field("glimmerdust") glimmerdust!: number;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

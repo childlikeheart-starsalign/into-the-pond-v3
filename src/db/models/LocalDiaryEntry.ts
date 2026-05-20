@@ -19,4 +19,3 @@ export class LocalDiaryEntry extends Model {
   @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

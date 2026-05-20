@@ -1,17 +1,34 @@
 # Into the Pond — v3 (mobile)
 
-Expo SDK 54 app using **Expo Router**, React Native, and **native-first** workflows (`npm run ios` / `npm run android`). Web is optional (`npm run web`).
+Expo SDK 54 app using **Expo Router**, React Native, and **native-first** workflows (`npm run ios` / `npm run android`). Web is optional (`npm run web`). Technical debt and known issues are tracked in **[`TECH_DEBT.md`](TECH_DEBT.md)**.
 
 ## Commands
 
-| Script | Purpose |
-|--------|---------|
-| `npm start` | Dev server (QR / simulator) |
-| `npm run ios` | iOS Simulator |
-| `npm run android` | Android emulator / device |
-| `npm run verify` | TypeScript check |
-| `npm run git:snapshot` | Initialize repo + first commit + tag `foundations-v1` (uses `isomorphic-git`; see Version control) |
-| `npm run git:commit-tracked` | Stage all non-ignored files and commit (when system `git` is unavailable) |
+| Script                       | Purpose                                                                                            |
+| ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| `npm start`                  | Dev server (QR / simulator)                                                                        |
+| `npm run ios`                | iOS Simulator                                                                                      |
+| `npm run android`            | Android emulator / device                                                                          |
+| `npm run prebuild`           | Generate `ios/` and `android/` from Expo config                                                    |
+| `npm run prebuild:clean`     | Same as above, deleting existing native folders first                                              |
+| `npm run verify`             | TypeScript check                                                                                   |
+| `npm run git:snapshot`       | Initialize repo + first commit + tag `foundations-v1` (uses `isomorphic-git`; see Version control) |
+| `npm run git:commit-tracked` | Stage all non-ignored files and commit (when system `git` is unavailable)                          |
+
+If **`npm`** prints **`Unknown env config "devdir"`**, run **`npm config delete devdir`** once (your global/project npm config—not this repo). See **Config and secrets** checklist in [`TECH_DEBT.md`](TECH_DEBT.md).
+
+## Native projects, prebuild, and EAS
+
+- **`ios/` and `android/`** are listed in `.gitignore`. Commit app sources only; **EAS Build** generates native projects on Expo servers for CI and store builds.
+- **Local native debugging:** run `npm run prebuild` (or `npm run prebuild:clean`), then `npx expo run:ios` / `npx expo run:android`.
+- **Link EAS:** run **`eas build:configure`** once so Expo can write **`extra.eas.projectId`** into your config (typically **`app.json`**). [`app.config.js`](app.config.js) loads **`app.json`** and overlays **`expo.extra`** from environment variables when present (see **Environment variables** below).
+- **`eas.json`** defines **development** (internal distribution, development client via **`expo-dev-client`**) and **production** (auto-increment build numbers, **`production`** update channel). Internal dev-client binaries from **`eas build --profile development`** pair with **`npx expo start --dev-client`** for Metro-connected debugging (not Expo Go).
+
+### Firebase: JS config vs native files
+
+- **Runtime (Firebase JS SDK)** uses **`app.json` → `expo.extra`** values consumed by [`src/config/env.ts`](src/config/env.ts). Missing keys surface as app/API errors; **`GoogleService-Info.plist`** / **`google-services.json`** are **not** read by `initializeApp` in [`src/services/firebase/client.ts`](src/services/firebase/client.ts).
+- **Native configs:** keep **`assets/GoogleService-Info.plist`** for iOS; optional **`assets/google-services.json`** for Android (download from Firebase Console for package **`com.intothepond.app.v3`**). Config plugin [**`plugins/withFirebaseNativeFiles.js`**](plugins/withFirebaseNativeFiles.js) copies those files into the generated native trees during **`expo prebuild`**. Android copy runs only if **`google-services.json`** exists. Full native Firebase Gradle/Xcode integration (for example **`com.google.gms.google-services`**) requires additional setup if you adopt React Native Firebase or native-only features later.
+- **Android native stacks (FCM, Analytics, RN Firebase):** use the **Checklist** under _Firebase native vs JS_ in [`TECH_DEBT.md`](TECH_DEBT.md) before expecting Gradle/Xcode native Firebase wiring.
 
 ## Version control
 
@@ -46,6 +63,10 @@ On GitHub: **Settings → Branches → Add branch protection rule** for `main` (
 - **RevenueCat** (`react-native-purchases`) for subscriptions
 - **WatermelonDB** (`@nozbe/watermelondb`) for local/offline data
 
+### Local IAP / RevenueCat
+
+RevenueCat and **`react-native-purchases-ui`** require native code: run **`npm run prebuild`** (or **`npm run prebuild:clean`**), then **`npx expo run:ios`** / **`npx expo run:android`**, or install an **EAS development client**. **Expo Go** does not load these native modules. Sandbox testing steps are in **[`TESTING_IAP.md`](TESTING_IAP.md)**.
+
 ## Profile Data Model
 
 - Firestore `users/{uid}` stores Wonder totals, completed lessons map, rod state, inventory, active cast, and subscription object.
@@ -65,7 +86,28 @@ On GitHub: **Settings → Branches → Add branch protection rule** for `main` (
 
 ## Configuration
 
-Set these values in `app.json` > `expo.extra`:
+Expo resolves **[`app.config.js`](app.config.js)** (reads **`app.json`** and merges **`expo.extra`**). Base defaults live in **`app.json`** → **`expo.extra`**. At build or dev startup, **`app.config.js`** overlays secrets from **`process.env`** when set:
+
+| `app.json` key               | Environment variable (optional override)                            |
+| ---------------------------- | ------------------------------------------------------------------- |
+| Firebase `firebaseApiKey`, … | `EXPO_PUBLIC_FIREBASE_*` (see [.env.example](.env.example))         |
+| `revenueCatApiKeyApple`      | `REVENUECAT_APPLE_API_KEY`                                          |
+| `revenueCatApiKeyGoogle`     | `REVENUECAT_GOOGLE_API_KEY`                                         |
+| Entitlement identifiers      | `REVENUECAT_ENTITLEMENT_PRO`, `_WOODEN`, `_FIBERGLASS`, `_LIFETIME` |
+| `cloudFunctionsRegion`       | `EXPO_PUBLIC_CLOUD_FUNCTIONS_REGION`                                |
+
+**Local:** copy [.env.example](.env.example) to **`.env`** and fill values (`.env` is gitignored).
+
+**EAS Build:** create secrets so cloud builds receive the same names (example):
+
+```bash
+eas secret:create --scope project --name REVENUECAT_APPLE_API_KEY --value your_apple_sdk_key --type string
+eas secret:create --scope project --name REVENUECAT_GOOGLE_API_KEY --value your_google_sdk_key --type string
+```
+
+See [EAS secrets](https://docs.expo.dev/build-reference/variables/). Do not commit production SDK keys in **`app.json`**.
+
+Set these keys in **`app.json`** when not using env overrides:
 
 - `firebaseApiKey`
 - `firebaseAuthDomain`
@@ -76,16 +118,30 @@ Set these values in `app.json` > `expo.extra`:
 - `firebaseMeasurementId`
 - `revenueCatApiKeyApple`
 - `revenueCatApiKeyGoogle`
+- `revenueCatEntitlementPro` (Into the pond Pro entitlement identifier; default `into_the_pond_pro`)
 - `revenueCatEntitlementWooden`
 - `revenueCatEntitlementFiberglass`
 - `revenueCatEntitlementLifetime`
 - `cloudFunctionsRegion`
+
+Placeholders (**`YOUR_*`**) must be replaced for real builds; optional **EAS secrets** for keys kept out of git. When linking Expo, run **`eas build:configure`** and commit **`extra.eas.projectId`** where the CLI writes it—see **Config and secrets** checklist in [`TECH_DEBT.md`](TECH_DEBT.md).
+
+### Firebase Auth email actions (password reset and verification)
+
+Password reset and verification emails use **`ActionCodeSettings`** in [`src/services/firebase/authLinks.ts`](src/services/firebase/authLinks.ts) (`handleCodeInApp`, `url`, iOS bundle ID, Android package). For emails to open the app reliably:
+
+1. Firebase Console → **Authentication** → **Settings** → **Authorized domains**: include your **`firebaseAuthDomain`** host (for example `{projectId}.firebaseapp.com`) and any HTTPS **`continueUrl`** domain you configure.
+2. Keep **bundle ID** / **package name** aligned with **`app.json`** (`com.intothepond.app.v3`) for the native blocks in action emails.
+3. Deep links use scheme **`intothepond`** and routes **`/reset-password`**, **`/finish-email`** (see [`src/hooks/useAuthDeepLink.ts`](src/hooks/useAuthDeepLink.ts)); adjust Firebase email templates if links stay in the browser.
+
+Tuning **`handleCodeInApp`** / domains / templates on physical devices is tracked in **`TECH_DEBT.md`** (_Auth email links and deep links_ → **Checklist**).
 
 Set Firebase Functions runtime config before deploy:
 
 ```bash
 firebase functions:config:set \
   revenuecat.secret_key="YOUR_REVENUECAT_SECRET_KEY" \
+  revenuecat.entitlement_pro="into_the_pond_pro" \
   revenuecat.entitlement_wooden="wooden_rod" \
   revenuecat.entitlement_fiberglass="fiberglass_rod" \
   revenuecat.entitlement_lifetime="lifetime_keeper"
@@ -144,7 +200,12 @@ into-the-pond-v3/
 │  │  └─ types.ts
 │  ├─ package.json
 │  └─ tsconfig.json
+├─ app.config.js
 ├─ app.json
+├─ eas.json
+├─ TECH_DEBT.md
+├─ plugins/
+│  └─ withFirebaseNativeFiles.js
 ├─ package.json
 └─ tsconfig.json
 ```
@@ -155,6 +216,7 @@ into-the-pond-v3/
 
 ## Notes
 
+- Deferred items and caveats: **[`TECH_DEBT.md`](TECH_DEBT.md)**.
 - RevenueCat requires a native runtime (development build / production build), not Expo Go.
 - WatermelonDB local schema is initialized in `src/db/schema.ts` and `src/db/index.ts`.
 - `functions/src/index.ts` includes:

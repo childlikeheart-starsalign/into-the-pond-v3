@@ -11,4 +11,3 @@ export class LocalCreature extends Model {
   @date("caught_at") caughtAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

@@ -18,4 +18,3 @@ export class LocalUserProfile extends Model {
   @field("subscription_status") subscriptionStatus!: string;
   @readonly @date("updated_at") updatedAt!: Date;
 }
-

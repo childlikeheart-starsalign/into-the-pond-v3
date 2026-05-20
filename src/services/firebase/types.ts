@@ -37,6 +37,7 @@ export type UserInventory = {
 
 export type UserDoc = {
   email: string;
+  hasSeenTutorial: boolean;
   totalWonder: number;
   completedLessons: Record<string, boolean>;
   dailyQuestionCount: number;
@@ -93,6 +94,7 @@ export type LessonDoc = {
 
 export const DEFAULT_USER_DOC: UserDoc = {
   email: "",
+  hasSeenTutorial: false,
   totalWonder: 0,
   completedLessons: {},
   dailyQuestionCount: 0,
@@ -126,4 +128,3 @@ export const DEFAULT_USER_DOC: UserDoc = {
     },
   },
 };
-

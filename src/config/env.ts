@@ -10,6 +10,8 @@ type ExtraConfig = {
   firebaseMeasurementId?: string;
   revenueCatApiKeyApple?: string;
   revenueCatApiKeyGoogle?: string;
+  /** Identifier for “Into the pond Pro” in RevenueCat (not the dashboard display title). */
+  revenueCatEntitlementPro?: string;
   revenueCatEntitlementWooden?: string;
   revenueCatEntitlementFiberglass?: string;
   revenueCatEntitlementLifetime?: string;
@@ -31,6 +33,7 @@ export const env = {
   revenueCat: {
     appleApiKey: extra.revenueCatApiKeyApple ?? "",
     googleApiKey: extra.revenueCatApiKeyGoogle ?? "",
+    entitlementPro: extra.revenueCatEntitlementPro ?? "into_the_pond_pro",
     entitlementWooden: extra.revenueCatEntitlementWooden ?? "wooden_rod",
     entitlementFiberglass: extra.revenueCatEntitlementFiberglass ?? "fiberglass_rod",
     entitlementLifetime: extra.revenueCatEntitlementLifetime ?? "lifetime_keeper",

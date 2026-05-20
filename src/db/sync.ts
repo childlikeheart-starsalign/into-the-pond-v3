@@ -1,5 +1,13 @@
 import { Q } from "@nozbe/watermelondb";
-import { doc, onSnapshot, QuerySnapshot, collection, orderBy, query, DocumentData } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  QuerySnapshot,
+  collection,
+  orderBy,
+  query,
+  DocumentData,
+} from "firebase/firestore";
 
 import { database } from "@/src/db";
 import { LocalCompletedLesson } from "@/src/db/models/LocalCompletedLesson";
@@ -12,7 +20,13 @@ import { LocalUserProfile } from "@/src/db/models/LocalUserProfile";
 import { LocalWellQuestion } from "@/src/db/models/LocalWellQuestion";
 import { buildLessonAccessRows } from "@/src/services/classroom/lessonAccess";
 import { firestore } from "@/src/services/firebase/client";
-import { CreatureDoc, DiaryEntryDoc, LessonDoc, SubscriptionStatus, UserDoc } from "@/src/services/firebase/types";
+import {
+  CreatureDoc,
+  DiaryEntryDoc,
+  LessonDoc,
+  SubscriptionStatus,
+  UserDoc,
+} from "@/src/services/firebase/types";
 
 async function getCompletedLessonsMap(uid: string) {
   const table = database.get<LocalCompletedLesson>("local_completed_lessons");
@@ -40,7 +54,9 @@ export async function rebuildLessonAccessCache(uid: string) {
 
   await database.write(async () => {
     for (const row of rows) {
-      const existing = await accessTable.query(Q.where("uid", uid), Q.where("lesson_id", row.lessonId)).fetch();
+      const existing = await accessTable
+        .query(Q.where("uid", uid), Q.where("lesson_id", row.lessonId))
+        .fetch();
       const current = existing[0];
       if (current) {
         await current.update((entry) => {
@@ -138,7 +154,9 @@ async function upsertCompletedLessons(uid: string, completed: Record<string, boo
   await database.write(async () => {
     const table = database.get<LocalCompletedLesson>("local_completed_lessons");
     for (const [lessonId, isCompleted] of Object.entries(completed)) {
-      const existing = await table.query(Q.where("uid", uid), Q.where("lesson_id", lessonId)).fetch();
+      const existing = await table
+        .query(Q.where("uid", uid), Q.where("lesson_id", lessonId))
+        .fetch();
       const row = existing[0];
       if (row) {
         await row.update((entry) => {
@@ -170,8 +188,15 @@ async function upsertWellQuestions(uid: string, snapshot: QuerySnapshot<Document
   await database.write(async () => {
     const table = database.get<LocalWellQuestion>("local_well_questions");
     for (const docSnap of snapshot.docs) {
-      const data = docSnap.data() as { questionText: string; answerText?: string; createdAt?: { toMillis(): number }; answeredAt?: { toMillis(): number } };
-      const existing = await table.query(Q.where("uid", uid), Q.where("question_id", docSnap.id)).fetch();
+      const data = docSnap.data() as {
+        questionText: string;
+        answerText?: string;
+        createdAt?: { toMillis(): number };
+        answeredAt?: { toMillis(): number };
+      };
+      const existing = await table
+        .query(Q.where("uid", uid), Q.where("question_id", docSnap.id))
+        .fetch();
       const row = existing[0];
       const createdAtMs = data.createdAt?.toMillis?.() ?? Date.now();
       if (row) {
@@ -195,7 +220,10 @@ async function upsertWellQuestions(uid: string, snapshot: QuerySnapshot<Document
 }
 
 export function subscribeAndCacheWellQuestions(uid: string) {
-  const ref = query(collection(firestore, "users", uid, "wellQuestions"), orderBy("createdAt", "desc"));
+  const ref = query(
+    collection(firestore, "users", uid, "wellQuestions"),
+    orderBy("createdAt", "desc"),
+  );
   return onSnapshot(ref, async (snapshot) => {
     await upsertWellQuestions(uid, snapshot);
   });
@@ -247,7 +275,9 @@ async function upsertDiaryEntries(uid: string, snapshot: QuerySnapshot<DocumentD
     const table = database.get<LocalDiaryEntry>("local_diary_entries");
     for (const change of snapshot.docChanges()) {
       const docSnap = change.doc;
-      const existing = await table.query(Q.where("uid", uid), Q.where("entry_id", docSnap.id)).fetch();
+      const existing = await table
+        .query(Q.where("uid", uid), Q.where("entry_id", docSnap.id))
+        .fetch();
       const row = existing[0];
 
       if (change.type === "removed") {
@@ -292,7 +322,10 @@ async function upsertDiaryEntries(uid: string, snapshot: QuerySnapshot<DocumentD
 }
 
 export function subscribeAndCacheDiaryEntries(uid: string) {
-  const ref = query(collection(firestore, "users", uid, "diaryEntries"), orderBy("createdAt", "desc"));
+  const ref = query(
+    collection(firestore, "users", uid, "diaryEntries"),
+    orderBy("createdAt", "desc"),
+  );
   return onSnapshot(ref, async (snapshot) => {
     await upsertDiaryEntries(uid, snapshot);
     await rebuildLessonAccessCache(uid);
@@ -304,7 +337,9 @@ async function upsertCreatures(uid: string, snapshot: QuerySnapshot<DocumentData
     const table = database.get<LocalCreature>("local_creatures");
     for (const change of snapshot.docChanges()) {
       const docSnap = change.doc;
-      const existing = await table.query(Q.where("uid", uid), Q.where("creature_id", docSnap.id)).fetch();
+      const existing = await table
+        .query(Q.where("uid", uid), Q.where("creature_id", docSnap.id))
+        .fetch();
       const row = existing[0];
 
       if (change.type === "removed") {
@@ -339,4 +374,3 @@ export function subscribeAndCacheCreatures(uid: string) {
     await upsertCreatures(uid, snapshot);
   });
 }
-

@@ -45,4 +45,3 @@ export async function requestSubscriptionSync(uid: string) {
     subscriptionStatus: "free" | "wooden" | "fiberglass";
   };
 }
-

@@ -44,7 +44,7 @@ export default function SignUpScreen() {
 
   // Fill the screen; preserve input/hit positioning against the full viewport.
   const artboardWidth = windowWidth;
-  const artboardHeight = Math.max(0, windowHeight - insets.top - insets.bottom);
+  const artboardHeight = windowHeight;
 
   const isEmailFormatValid = useMemo(() => /^\S+@\S+\.\S+$/.test(email.trim()), [email]);
   const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;

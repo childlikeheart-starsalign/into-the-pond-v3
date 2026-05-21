@@ -93,9 +93,9 @@ export default function FinishEmailScreen() {
 
   if (status === "done") {
     return (
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
+      <SafeAreaView style={styles.safe} edges={[]}>
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
           showsVerticalScrollIndicator={false}
         >
           <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>

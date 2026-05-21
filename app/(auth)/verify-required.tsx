@@ -35,7 +35,7 @@ export default function VerifyRequiredScreen() {
   const intrinsic = useMemo(() => resolveVerifyEmailArtboardIntrinsic(), []);
 
   const artboardWidth = windowWidth;
-  const artboardHeight = Math.max(0, windowHeight - insets.top - insets.bottom);
+  const artboardHeight = windowHeight;
 
   const resendButtonStyle = normRectToStyle(
     verifyEmailHitRects.resendButton,

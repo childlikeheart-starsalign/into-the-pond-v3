@@ -50,17 +50,15 @@ export default function FinishEmailScreen() {
   const params = useLocalSearchParams<{ oobCode?: string | string[]; mode?: string | string[] }>();
   const oobCode = useMemo(() => paramFirst(params.oobCode), [params.oobCode]);
   const mode = useMemo(() => paramFirst(params.mode), [params.mode]);
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
   const intrinsic = useMemo(() => resolveEmailVerifiedArtboardIntrinsic(), []);
-  const aspectRatio = intrinsic.height / intrinsic.width || 1024 / 576;
 
-  const horizontalPad = spacing.inner * 2;
-  const artboardWidth = Math.max(0, windowWidth - horizontalPad);
-  const artboardHeight = artboardWidth * aspectRatio;
+  const artboardWidth = windowWidth;
+  const artboardHeight = windowHeight;
   const enterButtonStyle = normRectToStyle(
     emailVerifiedHitRects.enterButton,
     artboardWidth,
@@ -95,7 +93,7 @@ export default function FinishEmailScreen() {
 
   if (status === "done") {
     return (
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -104,7 +102,7 @@ export default function FinishEmailScreen() {
             <Image
               source={media.auth.emailVerified.background}
               style={[styles.layerImage, layerSize]}
-              resizeMode="stretch"
+              resizeMode="cover"
               accessibilityIgnoresInvertColors
             />
 
@@ -165,12 +163,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.inner,
-    paddingVertical: spacing.section,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   artboard: {
-    alignSelf: "center",
+    alignSelf: "stretch",
     position: "relative",
   },
   layerImage: {

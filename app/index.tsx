@@ -120,11 +120,7 @@ export default function GateScreen() {
       onLongPress={handleCalibrationTap}
       onLayout={(event: LayoutChangeEvent) => setScreenSize(event.nativeEvent.layout)}
     >
-      <ImageBackground
-        source={media.gate.splash}
-        style={styles.background}
-        resizeMode="cover"
-      >
+      <ImageBackground source={media.gate.splash} style={styles.background} resizeMode="cover">
         <Animated.Image
           source={require("@/assets/images/gate-key.png")}
           resizeMode="contain"

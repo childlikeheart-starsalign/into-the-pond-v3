@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors, spacing } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
@@ -11,6 +11,7 @@ import {
   verifyEmailHitRects,
 } from "@/src/constants/verifyEmailArtboard";
 import { routes } from "@/src/navigation/routes";
+import { useAuthAccess } from "@/src/hooks/useAuthAccess";
 import {
   reloadCurrentUser,
   sendEmailVerificationForCurrentUser,
@@ -20,18 +21,21 @@ import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
 import { firebaseAuth } from "@/src/services/firebase/client";
 
 export default function VerifyRequiredScreen() {
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const uid = firebaseAuth.currentUser?.uid ?? null;
+  const email = firebaseAuth.currentUser?.email ?? null;
+  const emailVerified = firebaseAuth.currentUser?.emailVerified ?? false;
+  const authAccess = useAuthAccess({ uid, email, emailVerified });
   const [resendBusy, setResendBusy] = useState(false);
   const [refreshBusy, setRefreshBusy] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(60);
   const [hint, setHint] = useState<string | null>(null);
 
   const intrinsic = useMemo(() => resolveVerifyEmailArtboardIntrinsic(), []);
-  const aspectRatio = intrinsic.height / intrinsic.width || 1024 / 576;
 
-  const horizontalPad = spacing.inner * 2;
-  const artboardWidth = Math.max(0, windowWidth - horizontalPad);
-  const artboardHeight = artboardWidth * aspectRatio;
+  const artboardWidth = windowWidth;
+  const artboardHeight = Math.max(0, windowHeight - insets.top - insets.bottom);
 
   const resendButtonStyle = normRectToStyle(
     verifyEmailHitRects.resendButton,
@@ -39,6 +43,13 @@ export default function VerifyRequiredScreen() {
     artboardHeight,
   );
   const layerSize = { width: artboardWidth, height: artboardHeight };
+
+  useEffect(() => {
+    if (!authAccess.ready) return;
+    if (authAccess.canAccessMainApp) {
+      router.replace(routes.sanctuary);
+    }
+  }, [authAccess.canAccessMainApp, authAccess.ready]);
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -91,13 +102,13 @@ export default function VerifyRequiredScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={[]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
           <Image
             source={media.auth.verifyEmail.linkSent}
             style={[styles.layerImage, layerSize]}
-            resizeMode="stretch"
+            resizeMode="cover"
             accessibilityIgnoresInvertColors
           />
 
@@ -122,16 +133,15 @@ export default function VerifyRequiredScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: "transparent",
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.inner,
-    paddingVertical: spacing.section,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   artboard: {
-    alignSelf: "center",
+    alignSelf: "stretch",
     position: "relative",
   },
   layerImage: {

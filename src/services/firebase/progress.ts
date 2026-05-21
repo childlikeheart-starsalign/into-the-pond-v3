@@ -29,10 +29,7 @@ export async function getUserProgress(uid: string): Promise<UserProgress | null>
   return getDocument<UserProgress>(USERS_COLLECTION, uid);
 }
 
-export async function setUserProgress(
-  uid: string,
-  patch: Partial<UserProgress>,
-): Promise<void> {
+export async function setUserProgress(uid: string, patch: Partial<UserProgress>): Promise<void> {
   await setDocument(USERS_COLLECTION, uid, patch as Record<string, unknown>);
 }
 

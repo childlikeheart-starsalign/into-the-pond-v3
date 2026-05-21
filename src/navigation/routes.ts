@@ -12,6 +12,7 @@ export const routes = {
   resetPassword: href("/reset-password"),
   finishEmail: href("/finish-email"),
   verifyRequired: href("/verify-required"),
+  narrativeOnboarding: href("/narrative-onboarding"),
   /** Default tab after sign-in */
   sanctuary: href("/sanctuary"),
   classroom: href("/classroom"),

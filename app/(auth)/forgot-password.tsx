@@ -11,7 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
@@ -33,7 +33,8 @@ const COOLDOWN_SECONDS = 60;
  *      → after countdown expires → returns to step 1
  */
 export default function ForgotPasswordScreen() {
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,11 +42,9 @@ export default function ForgotPasswordScreen() {
   const [cooldown, setCooldown] = useState(0);
 
   const intrinsic = useMemo(() => resolveForgotPasswordArtboardIntrinsic(), []);
-  const aspectRatio = intrinsic.height / intrinsic.width || 1024 / 576;
 
-  const horizontalPad = spacing.inner * 2;
-  const artboardWidth = Math.max(0, windowWidth - horizontalPad);
-  const artboardHeight = artboardWidth * aspectRatio;
+  const artboardWidth = windowWidth;
+  const artboardHeight = windowHeight;
 
   const isEmailFormatValid = useMemo(() => /^\S+@\S+\.\S+$/.test(email.trim()), [email]);
   const canSubmit = email.trim().length > 0 && !submitting;
@@ -130,16 +129,16 @@ export default function ForgotPasswordScreen() {
   // ── LINK SENT CONFIRMATION ────────────────────────────────────────────────
   if (sent) {
     return (
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <SafeAreaView style={styles.safe} edges={[]}>
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
           showsVerticalScrollIndicator={false}
         >
           <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
             <Image
               source={forgotPasswordMedia.linkSent}
               style={[styles.layerImage, layerSize]}
-              resizeMode="stretch"
+              resizeMode="cover"
               accessibilityIgnoresInvertColors
             />
 
@@ -162,14 +161,14 @@ export default function ForgotPasswordScreen() {
 
   // ── FORGOT PASSWORD FORM ─────────────────────────────────────────────────
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={[]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboard}
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -177,7 +176,7 @@ export default function ForgotPasswordScreen() {
             <Image
               source={forgotPasswordMedia.background}
               style={[styles.layerImage, layerSize]}
-              resizeMode="stretch"
+              resizeMode="cover"
               accessibilityIgnoresInvertColors
             />
 
@@ -217,19 +216,18 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: "transparent",
   },
   keyboard: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.inner,
-    paddingVertical: spacing.section,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   artboard: {
-    alignSelf: "center",
+    alignSelf: "stretch",
     position: "relative",
   },
   layerImage: {

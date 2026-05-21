@@ -1,5 +1,7 @@
 import { Timestamp } from "firebase/firestore";
 
+import { ChildArchetype } from "@/src/constants/narrative/types";
+
 export type RodTier = "basic" | "wooden" | "fiberglass";
 export type SubscriptionStatus = "free" | "wooden" | "fiberglass";
 
@@ -50,6 +52,15 @@ export type UserDoc = {
   subscription: UserSubscription;
   activeCast: ActiveCast | null;
   inventory: UserInventory;
+  /** Day 1 narrative onboarding */
+  childArchetype?: ChildArchetype | null;
+  hasCompletedDay1Narrative?: boolean;
+  narrativeProgress?: {
+    currentScene: number;
+    archetype?: ChildArchetype;
+    completedAt?: string;
+    lastUpdated?: string;
+  };
 };
 
 export type DiaryEntryDoc = {
@@ -127,4 +138,7 @@ export const DEFAULT_USER_DOC: UserDoc = {
       glimmerdust: 0,
     },
   },
+  childArchetype: null,
+  hasCompletedDay1Narrative: false,
+  narrativeProgress: undefined,
 };

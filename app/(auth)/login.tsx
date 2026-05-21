@@ -14,7 +14,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
@@ -25,6 +25,7 @@ import {
 } from "@/src/constants/signInArtboard";
 import { routes } from "@/src/navigation/routes";
 import { signInWithEmail } from "@/src/services/firebase/auth";
+import { userProfileExistsForAuthUser } from "@/src/services/firebase/userAccess";
 
 const signInMedia = media.auth.signIn;
 
@@ -67,7 +68,8 @@ function logSignInTapWindow(name: string, ref: RefObject<View | null>) {
  * Invalid email → 22.png; invalid password → 23.png; submitting → 24.png overlay.
  */
 export function SignInScreen() {
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const toggleHitRef = useRef<View>(null);
   const signInHitRef = useRef<View>(null);
   const signUpHitRef = useRef<View>(null);
@@ -89,11 +91,10 @@ export function SignInScreen() {
   }, []);
 
   const intrinsic = useMemo(() => resolveSignInArtboardIntrinsic(), []);
-  const aspectRatio = intrinsic.height / intrinsic.width || 1024 / 576;
 
-  const horizontalPad = spacing.inner * 2;
-  const artboardWidth = Math.max(0, windowWidth - horizontalPad);
-  const artboardHeight = artboardWidth * aspectRatio;
+  // Fill the screen; preserve input/hit positioning against the full viewport.
+  const artboardWidth = windowWidth;
+  const artboardHeight = Math.max(0, windowHeight - insets.top - insets.bottom);
 
   const isEmailFormatValid = useMemo(() => /^\S+@\S+\.\S+$/.test(email.trim()), [email]);
   const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
@@ -116,7 +117,11 @@ export function SignInScreen() {
     setSubmitting(true);
     try {
       const result = await signInWithEmail(email.trim(), password);
-      router.replace(result.user.emailVerified ? routes.sanctuary : routes.verifyRequired);
+      const hasProfile = result.user.emailVerified
+        ? false
+        : await userProfileExistsForAuthUser(result.user);
+      const canEnterMainApp = result.user.emailVerified || hasProfile;
+      router.replace(canEnterMainApp ? routes.sanctuary : routes.verifyRequired);
     } catch (e) {
       const code =
         e && typeof e === "object" && "code" in e ? String((e as { code?: string }).code) : "";
@@ -163,14 +168,14 @@ export function SignInScreen() {
   const layerSize = { width: artboardWidth, height: artboardHeight };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={[]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboard}
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -185,8 +190,8 @@ export function SignInScreen() {
           >
             <Image
               source={backgroundSource}
-              style={[styles.layerImage, layerSize]}
-              resizeMode="stretch"
+                style={[styles.layerImage, layerSize]}
+                resizeMode="cover"
               accessibilityIgnoresInvertColors
             />
 
@@ -323,19 +328,18 @@ export default SignInScreen;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: "transparent",
   },
   keyboard: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.inner,
-    paddingVertical: spacing.section,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   artboard: {
-    alignSelf: "center",
+    alignSelf: "stretch",
     position: "relative",
   },
   layerImage: {

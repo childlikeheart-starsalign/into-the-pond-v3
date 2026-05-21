@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,6 +15,7 @@ import {
   toDerivedSubscriptionState,
 } from "@/src/services/firebase/entitlements";
 import { signOutCurrentUser } from "@/src/services/firebase/auth";
+import { resetNarrativeOnboarding } from "@/src/services/onboarding/narrativeOnboardingStorage";
 
 import { useRevenueCatCustomerInfo } from "@/src/hooks/useRevenueCatCustomerInfo";
 import { LogicalProductId, LOGICAL_PRODUCTS, PRODUCT_IDS } from "@/src/services/iap/catalog";
@@ -38,6 +39,7 @@ export default function GateScreen() {
   const [busyProductId, setBusyProductId] = useState<LogicalProductId | null>(null);
   const [statusMessage, setStatusMessage] = useState("Ready.");
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isResettingNarrative, setIsResettingNarrative] = useState(false);
   const [isCheckingGate, setIsCheckingGate] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [storeAvailability, setStoreAvailability] = useState<Record<string, boolean>>({});
@@ -124,6 +126,20 @@ export default function GateScreen() {
       setIsCheckingGate(false);
     }
   };
+
+  const handleResetNarrative = useCallback(async () => {
+    setIsResettingNarrative(true);
+    try {
+      const uid = firebaseAuth.currentUser?.uid ?? null;
+      await resetNarrativeOnboarding(uid);
+      setStatusMessage("Day 1 narrative reset. Starting from the beginning.");
+      router.replace(routes.narrativeOnboarding);
+    } catch (e) {
+      setStatusMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      setIsResettingNarrative(false);
+    }
+  }, []);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -309,6 +325,23 @@ export default function GateScreen() {
           >
             <Text style={layout.btnSecondaryText}>
               {isCheckingGate ? "Checking..." : "Test Server Gate"}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={layout.card}>
+          <Text
+            style={[layout.muted, { fontFamily: "Inter_600SemiBold", color: colors.textPrimary }]}
+          >
+            Developer tools
+          </Text>
+          <Pressable
+            style={[layout.btnSecondary, isResettingNarrative && { opacity: 0.6 }]}
+            onPress={() => void handleResetNarrative()}
+            disabled={isResettingNarrative}
+          >
+            <Text style={layout.btnSecondaryText}>
+              {isResettingNarrative ? "Resetting..." : "Reset Day 1 Narrative"}
             </Text>
           </Pressable>
         </View>

@@ -28,13 +28,48 @@ const DEFAULT_STATE: TutorialState = {
 };
 
 const DAY_TIPS: TutorialTipContent[] = [
-  { day: 1, title: "Welcome to the pond", body: "Start gently. Explore one small action today.", ctaLabel: "Let's begin" },
-  { day: 2, title: "Keep it light", body: "Try one independent step and notice what worked.", ctaLabel: "Got it" },
-  { day: 3, title: "Pause and reset", body: "A short pause can help before transitions.", ctaLabel: "Continue" },
-  { day: 4, title: "Celebrate effort", body: "Progress is built from tiny consistent steps.", ctaLabel: "Continue" },
-  { day: 5, title: "Ask for guidance", body: "Use support early instead of waiting for overwhelm.", ctaLabel: "Continue" },
-  { day: 6, title: "Build routine", body: "Repeat one habit at the same time today.", ctaLabel: "Continue" },
-  { day: 7, title: "You're ready", body: "You have completed the 7-day onboarding journey.", ctaLabel: "Finish" },
+  {
+    day: 1,
+    title: "Welcome to the pond",
+    body: "Start gently. Explore one small action today.",
+    ctaLabel: "Let's begin",
+  },
+  {
+    day: 2,
+    title: "Keep it light",
+    body: "Try one independent step and notice what worked.",
+    ctaLabel: "Got it",
+  },
+  {
+    day: 3,
+    title: "Pause and reset",
+    body: "A short pause can help before transitions.",
+    ctaLabel: "Continue",
+  },
+  {
+    day: 4,
+    title: "Celebrate effort",
+    body: "Progress is built from tiny consistent steps.",
+    ctaLabel: "Continue",
+  },
+  {
+    day: 5,
+    title: "Ask for guidance",
+    body: "Use support early instead of waiting for overwhelm.",
+    ctaLabel: "Continue",
+  },
+  {
+    day: 6,
+    title: "Build routine",
+    body: "Repeat one habit at the same time today.",
+    ctaLabel: "Continue",
+  },
+  {
+    day: 7,
+    title: "You're ready",
+    body: "You have completed the 7-day onboarding journey.",
+    ctaLabel: "Finish",
+  },
 ];
 
 function getCurrentDay(startedAtIso: string): number {
@@ -115,7 +150,8 @@ export function useTutorial() {
     [currentDay],
   );
 
-  const shouldShowOpeningSequence = ready && enabled && currentDay === 1 && !state.openingSequenceCompleted;
+  const shouldShowOpeningSequence =
+    ready && enabled && currentDay === 1 && !state.openingSequenceCompleted;
   const shouldShowDailyTip = ready && enabled && !state.dismissedDays.includes(currentDay);
 
   const completeOpeningSequence = useCallback(async () => {
@@ -129,10 +165,7 @@ export function useTutorial() {
 
     // Day 7 is the final tip — mark complete in Firestore and cache the skip flag locally
     if (currentDay === 7) {
-      await Promise.all([
-        AsyncStorage.setItem(SKIP_CACHE_KEY, "1"),
-        markTutorialSeenInFirestore(),
-      ]);
+      await Promise.all([AsyncStorage.setItem(SKIP_CACHE_KEY, "1"), markTutorialSeenInFirestore()]);
       setState((prev) => prev); // keep local state consistent; tutorial will hide via enabled flag on next mount
     }
   }, [currentDay, persist, state]);

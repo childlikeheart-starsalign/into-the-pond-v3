@@ -1,7 +1,7 @@
 /** Ordered sanctuary mood / pose frames (576×1024 artboards). */
 export const SANCTUARY_FRAME_IDS = [
-  41, 42, 43, 44, 45, 46, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73,
-  74, 75, 76,
+  41, 42, 43, 44, 45, 46, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75,
+  76,
 ] as const;
 
 export type SanctuaryFrameId = (typeof SANCTUARY_FRAME_IDS)[number];

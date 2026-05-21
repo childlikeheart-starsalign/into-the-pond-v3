@@ -93,10 +93,10 @@ async function upsertUserProfile(uid: string, data: UserDoc) {
         entry.activeRod = data.activeRod;
         entry.rodDullnessCount = data.rodDullnessCount;
         entry.isRodDull = data.isRodDull;
-        entry.subscriptionProductId = data.subscription.productId;
-        entry.subscriptionExpiryTs = data.subscription.expiryDate?.toMillis() ?? null;
-        entry.subscriptionIsLifetime = data.subscription.isLifetime;
-        entry.subscriptionStatus = data.subscription.subscriptionStatus;
+        entry.subscriptionProductId = data.subscription?.productId ?? null;
+        entry.subscriptionExpiryTs = data.subscription?.expiryDate?.toMillis?.() ?? null;
+        entry.subscriptionIsLifetime = data.subscription?.isLifetime ?? false;
+        entry.subscriptionStatus = data.subscription?.subscriptionStatus ?? "free";
       });
     } else {
       await table.create((entry) => {
@@ -108,10 +108,10 @@ async function upsertUserProfile(uid: string, data: UserDoc) {
         entry.activeRod = data.activeRod;
         entry.rodDullnessCount = data.rodDullnessCount;
         entry.isRodDull = data.isRodDull;
-        entry.subscriptionProductId = data.subscription.productId;
-        entry.subscriptionExpiryTs = data.subscription.expiryDate?.toMillis() ?? null;
-        entry.subscriptionIsLifetime = data.subscription.isLifetime;
-        entry.subscriptionStatus = data.subscription.subscriptionStatus;
+        entry.subscriptionProductId = data.subscription?.productId ?? null;
+        entry.subscriptionExpiryTs = data.subscription?.expiryDate?.toMillis?.() ?? null;
+        entry.subscriptionIsLifetime = data.subscription?.isLifetime ?? false;
+        entry.subscriptionStatus = data.subscription?.subscriptionStatus ?? "free";
       });
     }
   });

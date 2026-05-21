@@ -6,14 +6,18 @@ import { colors, fontFamilies, spacing } from "@/src/constants/theme";
 import { sendEmailVerificationForCurrentUser } from "@/src/services/firebase/auth";
 import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
 
-type Props = { user: User };
+type Props = {
+  user: User;
+  /** When true, user bypasses verify-required via existing Firestore profile — hide banner. */
+  hasExistingProfile?: boolean;
+};
 
-export function EmailVerificationBanner({ user }: Props) {
+export function EmailVerificationBanner({ user, hasExistingProfile = false }: Props) {
   const [dismissed, setDismissed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
 
-  if (dismissed || user.emailVerified) return null;
+  if (dismissed || user.emailVerified || hasExistingProfile) return null;
 
   const resend = async () => {
     setBusy(true);

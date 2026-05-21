@@ -40,17 +40,15 @@ export default function ResetPasswordScreen() {
   const params = useLocalSearchParams<{ oobCode?: string | string[]; mode?: string | string[] }>();
   const oobCode = useMemo(() => paramFirst(params.oobCode), [params.oobCode]);
 
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const intrinsic = useMemo(() => resolveResetPasswordArtboardIntrinsic(), []);
-  const aspectRatio = intrinsic.height / intrinsic.width || 1024 / 576;
 
-  const horizontalPad = spacing.inner * 2;
-  const artboardWidth = Math.max(0, windowWidth - horizontalPad);
-  const artboardHeight = artboardWidth * aspectRatio;
+  const artboardWidth = windowWidth;
+  const artboardHeight = windowHeight;
 
   const canSubmit = password.length >= 6 && !!oobCode && !submitting;
 
@@ -95,7 +93,7 @@ export default function ResetPasswordScreen() {
   const layerSize = { width: artboardWidth, height: artboardHeight };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboard}
@@ -110,7 +108,7 @@ export default function ResetPasswordScreen() {
             <Image
               source={resetPasswordMedia.background}
               style={[styles.layerImage, layerSize]}
-              resizeMode="stretch"
+              resizeMode="cover"
               accessibilityIgnoresInvertColors
             />
 
@@ -157,12 +155,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.inner,
-    paddingVertical: spacing.section,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   artboard: {
-    alignSelf: "center",
+    alignSelf: "stretch",
     position: "relative",
   },
   layerImage: {

@@ -16,7 +16,9 @@ export default function StoreScreen() {
           Browse bait, materials, and pond passes. Purchases sync when you are online.
         </Text>
         <View style={layout.card}>
-          <Text style={layout.muted}>Store inventory UI will connect to RevenueCat and Firestore.</Text>
+          <Text style={layout.muted}>
+            Store inventory UI will connect to RevenueCat and Firestore.
+          </Text>
           <Pressable
             accessibilityRole="button"
             style={[layout.btnPrimary, styles.cta]}

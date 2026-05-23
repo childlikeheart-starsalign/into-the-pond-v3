@@ -12,15 +12,12 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors, fontFamilies, spacing } from "@/src/constants/theme";
+import { colors, fontFamilies } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
-import {
-  normRectToStyle,
-  resolveSignUpArtboardIntrinsic,
-  signUpHitRects,
-} from "@/src/constants/signUpArtboard";
+import { normRectToStyle, signUpHitRects } from "@/src/constants/signUpArtboard";
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { sendEmailVerificationForCurrentUser, signUpWithEmail } from "@/src/services/firebase/auth";
 
@@ -31,8 +28,8 @@ const signUpMedia = media.auth.signUp;
  * Creates Firebase user, sends verification email, then routes to verify-required.
  */
 export default function SignUpScreen() {
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const frame = usePortrait916Layout();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,11 +37,8 @@ export default function SignUpScreen() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  const intrinsic = useMemo(() => resolveSignUpArtboardIntrinsic(), []);
-
-  // Fill the screen; preserve input/hit positioning against the full viewport.
-  const artboardWidth = windowWidth;
-  const artboardHeight = windowHeight;
+  const artboardWidth = frame.width;
+  const artboardHeight = frame.height;
 
   const isEmailFormatValid = useMemo(() => /^\S+@\S+\.\S+$/.test(email.trim()), [email]);
   const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
@@ -120,11 +114,24 @@ export default function SignUpScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: windowHeight, backgroundColor: colors.bg },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
+          <View
+            style={[
+              styles.artboard,
+              {
+                marginLeft: frame.left,
+                marginTop: frame.top,
+                width: artboardWidth,
+                height: artboardHeight,
+              },
+            ]}
+          >
             <Image
               source={signUpMedia.background}
               style={[styles.layerImage, layerSize]}
@@ -192,7 +199,7 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: colors.bg,
   },
   keyboard: {
     flex: 1,

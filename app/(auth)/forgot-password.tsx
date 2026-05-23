@@ -11,16 +11,16 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors, fontFamilies, spacing } from "@/src/constants/theme";
+import { colors, fontFamilies } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
 import {
   forgotPasswordHitRects,
   forgotPasswordSentHitRects,
   normRectToStyle,
-  resolveForgotPasswordArtboardIntrinsic,
 } from "@/src/constants/forgotPasswordArtboard";
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { sendPasswordReset } from "@/src/services/firebase/auth";
 
 const forgotPasswordMedia = media.auth.forgotPassword;
@@ -33,18 +33,16 @@ const COOLDOWN_SECONDS = 60;
  *      → after countdown expires → returns to step 1
  */
 export default function ForgotPasswordScreen() {
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const frame = usePortrait916Layout();
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
-  const intrinsic = useMemo(() => resolveForgotPasswordArtboardIntrinsic(), []);
-
-  const artboardWidth = windowWidth;
-  const artboardHeight = windowHeight;
+  const artboardWidth = frame.width;
+  const artboardHeight = frame.height;
 
   const isEmailFormatValid = useMemo(() => /^\S+@\S+\.\S+$/.test(email.trim()), [email]);
   const canSubmit = email.trim().length > 0 && !submitting;
@@ -131,10 +129,23 @@ export default function ForgotPasswordScreen() {
     return (
       <SafeAreaView style={styles.safe} edges={[]}>
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: windowHeight, backgroundColor: colors.bg },
+          ]}
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
+          <View
+            style={[
+              styles.artboard,
+              {
+                marginLeft: frame.left,
+                marginTop: frame.top,
+                width: artboardWidth,
+                height: artboardHeight,
+              },
+            ]}
+          >
             <Image
               source={forgotPasswordMedia.linkSent}
               style={[styles.layerImage, layerSize]}
@@ -168,11 +179,24 @@ export default function ForgotPasswordScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: windowHeight, backgroundColor: colors.bg },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
+          <View
+            style={[
+              styles.artboard,
+              {
+                marginLeft: frame.left,
+                marginTop: frame.top,
+                width: artboardWidth,
+                height: artboardHeight,
+              },
+            ]}
+          >
             <Image
               source={forgotPasswordMedia.background}
               style={[styles.layerImage, layerSize]}
@@ -216,7 +240,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: colors.bg,
   },
   keyboard: {
     flex: 1,

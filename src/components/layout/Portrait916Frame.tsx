@@ -1,9 +1,8 @@
 import React, { PropsWithChildren } from "react";
-import { StyleSheet, View, useWindowDimensions } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { colors } from "@/src/constants/theme";
-
-const PORTRAIT_916_ASPECT = 9 / 16; // width / height
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 
 type Portrait916FrameProps = PropsWithChildren<{
   backgroundColor?: string;
@@ -18,34 +17,7 @@ type Portrait916FrameProps = PropsWithChildren<{
  * (i.e. are flex: 1 or stretch).
  */
 export function Portrait916Frame({ children, backgroundColor = colors.bg }: Portrait916FrameProps) {
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-
-  let frameWidth: number;
-  let frameHeight: number;
-
-  if (windowWidth > 0 && windowHeight > 0) {
-    const windowAspect = windowWidth / windowHeight;
-    if (windowAspect > PORTRAIT_916_ASPECT) {
-      // Wider than 9:16 → pillarbox: constrain by height
-      frameHeight = windowHeight;
-      frameWidth = frameHeight * PORTRAIT_916_ASPECT;
-    } else {
-      // Taller / exact 9:16 → constrain by width
-      frameWidth = windowWidth;
-      frameHeight = frameWidth / PORTRAIT_916_ASPECT;
-      // Never taller than the window (safety clamp for exact 9:16 screens)
-      if (frameHeight > windowHeight) {
-        frameHeight = windowHeight;
-        frameWidth = frameHeight * PORTRAIT_916_ASPECT;
-      }
-    }
-  } else {
-    frameWidth = windowWidth || 0;
-    frameHeight = windowHeight || 0;
-  }
-
-  const left = (windowWidth - frameWidth) / 2;
-  const top = (windowHeight - frameHeight) / 2;
+  const { width, height, left, top } = usePortrait916Layout();
 
   return (
     // Full-screen backdrop with the warm background colour
@@ -56,8 +28,8 @@ export function Portrait916Frame({ children, backgroundColor = colors.bg }: Port
           position: "absolute",
           left,
           top,
-          width: frameWidth,
-          height: frameHeight,
+          width,
+          height,
           overflow: "hidden",
         }}
       >

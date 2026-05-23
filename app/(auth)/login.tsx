@@ -14,15 +14,12 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors, fontFamilies, spacing } from "@/src/constants/theme";
+import { colors, fontFamilies } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
-import {
-  normRectToStyle,
-  resolveSignInArtboardIntrinsic,
-  signInHitRects,
-} from "@/src/constants/signInArtboard";
+import { normRectToStyle, signInHitRects } from "@/src/constants/signInArtboard";
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { signInWithEmail } from "@/src/services/firebase/auth";
 import { userProfileExistsForAuthUser } from "@/src/services/firebase/userAccess";
@@ -68,8 +65,8 @@ function logSignInTapWindow(name: string, ref: RefObject<View | null>) {
  * Invalid email → 22.png; invalid password → 23.png; submitting → 24.png overlay.
  */
 export function SignInScreen() {
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const frame = usePortrait916Layout();
   const toggleHitRef = useRef<View>(null);
   const signInHitRef = useRef<View>(null);
   const signUpHitRef = useRef<View>(null);
@@ -90,11 +87,9 @@ export function SignInScreen() {
     ]);
   }, []);
 
-  const intrinsic = useMemo(() => resolveSignInArtboardIntrinsic(), []);
-
-  // Fill the screen; preserve input/hit positioning against the full viewport.
-  const artboardWidth = windowWidth;
-  const artboardHeight = windowHeight;
+  // Fit the 576×1024 artboard inside the screen without cropping UI at the edges.
+  const artboardWidth = frame.width;
+  const artboardHeight = frame.height;
 
   const isEmailFormatValid = useMemo(() => /^\S+@\S+\.\S+$/.test(email.trim()), [email]);
   const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
@@ -175,12 +170,23 @@ export function SignInScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: windowHeight, backgroundColor: colors.bg },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View
-            style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}
+            style={[
+              styles.artboard,
+              {
+                marginLeft: frame.left,
+                marginTop: frame.top,
+                width: artboardWidth,
+                height: artboardHeight,
+              },
+            ]}
             onLayout={
               SIGN_IN_HIT_DEBUG
                 ? logSignInHitLayout("ARTBOARD", artboardWidth, artboardHeight)
@@ -328,7 +334,7 @@ export default SignInScreen;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: colors.bg,
   },
   keyboard: {
     flex: 1,

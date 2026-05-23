@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ImageBackground, Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
 import { layout, spacing } from "@/src/constants/theme";
 import { useSanctuaryFrame } from "@/src/hooks/useSanctuaryFrame";
 import { routes } from "@/src/navigation/routes";
@@ -40,37 +40,39 @@ export default function SanctuaryScreen() {
 
   return (
     <>
-      <ImageBackground
-        source={sanctuarySource}
-        style={styles.background}
-        resizeMode="cover"
-        accessibilityLabel="Garden sanctuary"
-      >
-        {__DEV__ ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Cycle sanctuary mood frame"
-            style={styles.devFrameCycle}
-            onPress={nextFrame}
-          />
-        ) : null}
-        <SafeAreaView style={styles.overlay} edges={["top"]}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open Well of Questions"
-            style={styles.wellTarget}
-            onPress={openWell}
-            disabled={!uid}
-          />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open Craft Bench"
-            style={styles.craftTarget}
-            onPress={openCraft}
-            disabled={!uid}
-          />
-        </SafeAreaView>
-      </ImageBackground>
+      <Portrait916Frame>
+        <ImageBackground
+          source={sanctuarySource}
+          style={styles.background}
+          resizeMode="cover"
+          accessibilityLabel="Garden sanctuary"
+        >
+          {__DEV__ ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Cycle sanctuary mood frame"
+              style={styles.devFrameCycle}
+              onPress={nextFrame}
+            />
+          ) : null}
+          <View style={styles.overlay}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open Well of Questions"
+              style={styles.wellTarget}
+              onPress={openWell}
+              disabled={!uid}
+            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open Craft Bench"
+              style={styles.craftTarget}
+              onPress={openCraft}
+              disabled={!uid}
+            />
+          </View>
+        </ImageBackground>
+      </Portrait916Frame>
 
       <Modal
         visible={showOnboarding}

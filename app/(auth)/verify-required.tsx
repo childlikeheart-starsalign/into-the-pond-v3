@@ -1,15 +1,12 @@
 import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors, spacing } from "@/src/constants/theme";
+import { colors } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
-import {
-  normRectToStyle,
-  resolveVerifyEmailArtboardIntrinsic,
-  verifyEmailHitRects,
-} from "@/src/constants/verifyEmailArtboard";
+import { normRectToStyle, verifyEmailHitRects } from "@/src/constants/verifyEmailArtboard";
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { useAuthAccess } from "@/src/hooks/useAuthAccess";
 import {
@@ -21,8 +18,8 @@ import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
 import { firebaseAuth } from "@/src/services/firebase/client";
 
 export default function VerifyRequiredScreen() {
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const frame = usePortrait916Layout();
   const uid = firebaseAuth.currentUser?.uid ?? null;
   const email = firebaseAuth.currentUser?.email ?? null;
   const emailVerified = firebaseAuth.currentUser?.emailVerified ?? false;
@@ -32,10 +29,8 @@ export default function VerifyRequiredScreen() {
   const [cooldownSeconds, setCooldownSeconds] = useState(60);
   const [hint, setHint] = useState<string | null>(null);
 
-  const intrinsic = useMemo(() => resolveVerifyEmailArtboardIntrinsic(), []);
-
-  const artboardWidth = windowWidth;
-  const artboardHeight = windowHeight;
+  const artboardWidth = frame.width;
+  const artboardHeight = frame.height;
 
   const resendButtonStyle = normRectToStyle(
     verifyEmailHitRects.resendButton,
@@ -103,8 +98,24 @@ export default function VerifyRequiredScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { minHeight: windowHeight, backgroundColor: colors.bg },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={[
+            styles.artboard,
+            {
+              marginLeft: frame.left,
+              marginTop: frame.top,
+              width: artboardWidth,
+              height: artboardHeight,
+            },
+          ]}
+        >
           <Image
             source={media.auth.verifyEmail.linkSent}
             style={[styles.layerImage, layerSize]}
@@ -133,7 +144,7 @@ export default function VerifyRequiredScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: colors.bg,
   },
   scrollContent: {
     flexGrow: 1,

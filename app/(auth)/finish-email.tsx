@@ -13,13 +13,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthFrame, CloudButton } from "@/src/components/auth/AuthArtwork";
-import { colors, spacing } from "@/src/constants/theme";
+import { colors } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
-import {
-  emailVerifiedHitRects,
-  normRectToStyle,
-  resolveEmailVerifiedArtboardIntrinsic,
-} from "@/src/constants/emailVerifiedArtboard";
+import { emailVerifiedHitRects, normRectToStyle } from "@/src/constants/emailVerifiedArtboard";
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { applyEmailActionCode, reloadCurrentUser } from "@/src/services/firebase/auth";
 import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
@@ -50,15 +47,14 @@ export default function FinishEmailScreen() {
   const params = useLocalSearchParams<{ oobCode?: string | string[]; mode?: string | string[] }>();
   const oobCode = useMemo(() => paramFirst(params.oobCode), [params.oobCode]);
   const mode = useMemo(() => paramFirst(params.mode), [params.mode]);
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const { height: windowHeight } = useWindowDimensions();
+  const frame = usePortrait916Layout();
 
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const intrinsic = useMemo(() => resolveEmailVerifiedArtboardIntrinsic(), []);
-
-  const artboardWidth = windowWidth;
-  const artboardHeight = windowHeight;
+  const artboardWidth = frame.width;
+  const artboardHeight = frame.height;
   const enterButtonStyle = normRectToStyle(
     emailVerifiedHitRects.enterButton,
     artboardWidth,
@@ -95,10 +91,23 @@ export default function FinishEmailScreen() {
     return (
       <SafeAreaView style={styles.safe} edges={[]}>
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: windowHeight, backgroundColor: colors.bg },
+          ]}
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
+          <View
+            style={[
+              styles.artboard,
+              {
+                marginLeft: frame.left,
+                marginTop: frame.top,
+                width: artboardWidth,
+                height: artboardHeight,
+              },
+            ]}
+          >
             <Image
               source={media.auth.emailVerified.background}
               style={[styles.layerImage, layerSize]}

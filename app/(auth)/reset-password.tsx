@@ -14,13 +14,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors, fontFamilies, spacing } from "@/src/constants/theme";
+import { colors, fontFamilies } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
-import {
-  normRectToStyle,
-  resetPasswordHitRects,
-  resolveResetPasswordArtboardIntrinsic,
-} from "@/src/constants/resetPasswordArtboard";
+import { normRectToStyle, resetPasswordHitRects } from "@/src/constants/resetPasswordArtboard";
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { confirmNewPassword } from "@/src/services/firebase/auth";
 import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
@@ -40,15 +37,14 @@ export default function ResetPasswordScreen() {
   const params = useLocalSearchParams<{ oobCode?: string | string[]; mode?: string | string[] }>();
   const oobCode = useMemo(() => paramFirst(params.oobCode), [params.oobCode]);
 
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const { height: windowHeight } = useWindowDimensions();
+  const frame = usePortrait916Layout();
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const intrinsic = useMemo(() => resolveResetPasswordArtboardIntrinsic(), []);
-
-  const artboardWidth = windowWidth;
-  const artboardHeight = windowHeight;
+  const artboardWidth = frame.width;
+  const artboardHeight = frame.height;
 
   const canSubmit = password.length >= 6 && !!oobCode && !submitting;
 
@@ -93,18 +89,31 @@ export default function ResetPasswordScreen() {
   const layerSize = { width: artboardWidth, height: artboardHeight };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={[]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboard}
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: windowHeight, backgroundColor: colors.bg },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.artboard, { width: artboardWidth, height: artboardHeight }]}>
+          <View
+            style={[
+              styles.artboard,
+              {
+                marginLeft: frame.left,
+                marginTop: frame.top,
+                width: artboardWidth,
+                height: artboardHeight,
+              },
+            ]}
+          >
             <Image
               source={resetPasswordMedia.background}
               style={[styles.layerImage, layerSize]}

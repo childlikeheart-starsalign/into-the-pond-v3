@@ -1,19 +1,32 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { ImageBackground, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
+import { SanctuaryScreen } from "@/src/components/sanctuary";
+import {
+  SANCTUARY_TIME_OF_DAY_ORDER,
+  type SanctuaryTimeOfDay,
+} from "@/src/constants/sanctuaryAssets";
 import { layout, spacing } from "@/src/constants/theme";
-import { useSanctuaryFrame } from "@/src/hooks/useSanctuaryFrame";
+import { getUnseenBloom, markBloomArrivalSeen } from "@/src/features/sanctuary/cultivationStorage";
+import { useSanctuaryCultivation } from "@/src/hooks/useSanctuaryCultivation";
 import { routes } from "@/src/navigation/routes";
 import { signInAnonymouslyUser, subscribeToAuthState } from "@/src/services/firebase/auth";
 import { firebaseAuth } from "@/src/services/firebase/client";
+import {
+  getPendingArrivalBloomId,
+  setPendingArrivalBloomId,
+  setSanctuaryCultivationState,
+} from "@/src/state/sanctuaryCultivation";
+import { setSanctuaryTimeOfDay } from "@/src/state/sanctuaryTimeOfDay";
 
-/** Garden — full-bleed sanctuary illustration with invisible landmark tap targets. */
-export default function SanctuaryScreen() {
-  const { source: sanctuarySource, nextFrame } = useSanctuaryFrame();
+/** Garden — asset-driven sanctuary with time-of-day backgrounds and pose-cycling avatar. */
+export default function SanctuaryTabScreen() {
+  const [timeOfDay, setTimeOfDay] = useState<SanctuaryTimeOfDay>("afternoon");
   const [uid, setUid] = useState<string | null>(firebaseAuth.currentUser?.uid ?? null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [arrivalBloomId, setArrivalBloomId] = useState<string | null>(null);
+  const { cultivation, reload } = useSanctuaryCultivation();
 
   useEffect(() => {
     const unsub = subscribeToAuthState((user) => {
@@ -28,6 +41,44 @@ export default function SanctuaryScreen() {
     }
   }, [uid]);
 
+  useEffect(() => {
+    setSanctuaryTimeOfDay(timeOfDay);
+  }, [timeOfDay]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload()
+        .then((loaded) => {
+          const pending = getPendingArrivalBloomId();
+          if (pending) {
+            setArrivalBloomId(pending);
+            return;
+          }
+          const unseen = getUnseenBloom(loaded);
+          setArrivalBloomId(unseen?.id ?? null);
+        })
+        .catch((error) => {
+          console.warn("[Sanctuary] failed to reload cultivation", error);
+          setArrivalBloomId(null);
+        });
+    }, [reload]),
+  );
+
+  const handleBloomArrivalComplete = useCallback(async (bloomId: string) => {
+    const next = await markBloomArrivalSeen(bloomId);
+    setSanctuaryCultivationState(next);
+    setPendingArrivalBloomId(null);
+    setArrivalBloomId(null);
+  }, []);
+
+  const cycleTimeOfDay = useCallback(() => {
+    setTimeOfDay((prev) => {
+      const idx = SANCTUARY_TIME_OF_DAY_ORDER.indexOf(prev);
+      const next = SANCTUARY_TIME_OF_DAY_ORDER[(idx + 1) % SANCTUARY_TIME_OF_DAY_ORDER.length];
+      return next;
+    });
+  }, []);
+
   const openWell = () => {
     if (!uid) return;
     router.push(routes.well);
@@ -40,39 +91,17 @@ export default function SanctuaryScreen() {
 
   return (
     <>
-      <Portrait916Frame>
-        <ImageBackground
-          source={sanctuarySource}
-          style={styles.background}
-          resizeMode="cover"
-          accessibilityLabel="Garden sanctuary"
-        >
-          {__DEV__ ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Cycle sanctuary mood frame"
-              style={styles.devFrameCycle}
-              onPress={nextFrame}
-            />
-          ) : null}
-          <View style={styles.overlay}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open Well of Questions"
-              style={styles.wellTarget}
-              onPress={openWell}
-              disabled={!uid}
-            />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open Craft Bench"
-              style={styles.craftTarget}
-              onPress={openCraft}
-              disabled={!uid}
-            />
-          </View>
-        </ImageBackground>
-      </Portrait916Frame>
+      <SanctuaryScreen
+        timeOfDay={timeOfDay}
+        cultivation={cultivation}
+        arrivalBloomId={arrivalBloomId}
+        onBloomArrivalComplete={handleBloomArrivalComplete}
+        onWellPress={openWell}
+        onCraftPress={openCraft}
+        wellDisabled={!uid}
+        craftDisabled={!uid}
+        onDevCycleTimeOfDay={cycleTimeOfDay}
+      />
 
       <Modal
         visible={showOnboarding}
@@ -120,34 +149,6 @@ export default function SanctuaryScreen() {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  overlay: {
-    flex: 1,
-  },
-  devFrameCycle: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    width: 48,
-    minHeight: 48,
-    zIndex: 10,
-  },
-  wellTarget: {
-    position: "absolute",
-    left: "8%",
-    bottom: "22%",
-    width: "28%",
-    minHeight: 52,
-  },
-  craftTarget: {
-    position: "absolute",
-    right: "8%",
-    bottom: "22%",
-    width: "28%",
-    minHeight: 52,
-  },
   modalBackdrop: {
     flex: 1,
     justifyContent: "flex-end",

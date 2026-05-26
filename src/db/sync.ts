@@ -22,6 +22,7 @@ import { buildLessonAccessRows } from "@/src/services/classroom/lessonAccess";
 import { firestore } from "@/src/services/firebase/client";
 import {
   CreatureDoc,
+  DEFAULT_USER_DOC,
   DiaryEntryDoc,
   LessonDoc,
   SubscriptionStatus,
@@ -122,7 +123,7 @@ async function upsertInventory(uid: string, data: UserDoc) {
     const table = database.get<LocalInventory>("local_inventory");
     const existing = await table.query(Q.where("uid", uid)).fetch();
     const row = existing[0];
-    const inventory = data.inventory;
+    const inventory = data.inventory ?? DEFAULT_USER_DOC.inventory;
     if (row) {
       await row.update((entry) => {
         entry.parts = inventory.parts;

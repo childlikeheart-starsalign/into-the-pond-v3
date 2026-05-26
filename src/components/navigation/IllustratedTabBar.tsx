@@ -1,4 +1,5 @@
 import { usePathname, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,6 +10,7 @@ import {
 } from "@/src/constants/illustratedTabBar";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
+import { getClassroomView, subscribeClassroomView } from "@/src/state/classroomView";
 
 const TAB_ROUTES: Record<IllustratedTabId, (typeof routes)[keyof typeof routes]> = {
   net: routes.net,
@@ -39,6 +41,16 @@ export function IllustratedTabBar() {
   const frame = usePortrait916Layout();
   const activeTab = activeTabFromPath(pathname);
   const onSanctuary = activeTab === "sanctuary";
+  const onClassroom = activeTab === "classroom";
+  const [classroomView, setClassroomViewState] = useState(getClassroomView);
+
+  useEffect(() => subscribeClassroomView(setClassroomViewState), []);
+
+  // Sanctuary embeds nav in art; classroom menu is full-screen without tab chrome.
+  if (onSanctuary || (onClassroom && classroomView === "menu")) {
+    return null;
+  }
+
   const frameBottomInset = Math.max(0, windowHeight - frame.top - frame.height);
 
   return (
@@ -56,7 +68,7 @@ export function IllustratedTabBar() {
               bottom: frameBottomInset,
             }
           : null,
-        !onSanctuary && styles.barOffSanctuary,
+        !onSanctuary && !onClassroom && styles.barOffSanctuary,
       ]}
       pointerEvents="box-none"
     >

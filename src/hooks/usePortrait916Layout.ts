@@ -8,9 +8,11 @@ export type Portrait916Layout = {
   top: number;
 };
 
+export type Portrait916LayoutMode = "contain" | "cover";
+
 const PORTRAIT_916_ASPECT = 9 / 16;
 
-export function usePortrait916Layout(): Portrait916Layout {
+export function usePortrait916Layout(mode: Portrait916LayoutMode = "contain"): Portrait916Layout {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   return useMemo(() => {
@@ -22,7 +24,15 @@ export function usePortrait916Layout(): Portrait916Layout {
     let frameWidth: number;
     let frameHeight: number;
 
-    if (windowAspect > PORTRAIT_916_ASPECT) {
+    if (mode === "cover") {
+      if (windowAspect > PORTRAIT_916_ASPECT) {
+        frameWidth = windowWidth;
+        frameHeight = frameWidth / PORTRAIT_916_ASPECT;
+      } else {
+        frameHeight = windowHeight;
+        frameWidth = frameHeight * PORTRAIT_916_ASPECT;
+      }
+    } else if (windowAspect > PORTRAIT_916_ASPECT) {
       // Wider than 9:16 — fit to height, pillarbox left/right.
       frameHeight = windowHeight;
       frameWidth = frameHeight * PORTRAIT_916_ASPECT;
@@ -42,5 +52,5 @@ export function usePortrait916Layout(): Portrait916Layout {
       left: (windowWidth - frameWidth) / 2,
       top: (windowHeight - frameHeight) / 2,
     };
-  }, [windowWidth, windowHeight]);
+  }, [mode, windowWidth, windowHeight]);
 }

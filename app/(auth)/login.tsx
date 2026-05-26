@@ -66,7 +66,7 @@ function logSignInTapWindow(name: string, ref: RefObject<View | null>) {
  */
 export function SignInScreen() {
   const { height: windowHeight } = useWindowDimensions();
-  const frame = usePortrait916Layout();
+  const frame = usePortrait916Layout("cover");
   const toggleHitRef = useRef<View>(null);
   const signInHitRef = useRef<View>(null);
   const signUpHitRef = useRef<View>(null);
@@ -87,7 +87,6 @@ export function SignInScreen() {
     ]);
   }, []);
 
-  // Fit the 576×1024 artboard inside the screen without cropping UI at the edges.
   const artboardWidth = frame.width;
   const artboardHeight = frame.height;
 
@@ -170,10 +169,7 @@ export function SignInScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { minHeight: windowHeight, backgroundColor: colors.bg },
-          ]}
+          contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -196,8 +192,8 @@ export function SignInScreen() {
           >
             <Image
               source={backgroundSource}
-                style={[styles.layerImage, layerSize]}
-                resizeMode="cover"
+              style={[styles.layerImage, layerSize]}
+              resizeMode="cover"
               accessibilityIgnoresInvertColors
             />
 
@@ -334,7 +330,7 @@ export default SignInScreen;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: "transparent",
   },
   keyboard: {
     flex: 1,

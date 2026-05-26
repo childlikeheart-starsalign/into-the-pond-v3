@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
 import { normRectToStyle, verifyEmailHitRects } from "@/src/constants/verifyEmailArtboard";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
@@ -19,7 +18,7 @@ import { firebaseAuth } from "@/src/services/firebase/client";
 
 export default function VerifyRequiredScreen() {
   const { height: windowHeight } = useWindowDimensions();
-  const frame = usePortrait916Layout();
+  const frame = usePortrait916Layout("cover");
   const uid = firebaseAuth.currentUser?.uid ?? null;
   const email = firebaseAuth.currentUser?.email ?? null;
   const emailVerified = firebaseAuth.currentUser?.emailVerified ?? false;
@@ -99,10 +98,7 @@ export default function VerifyRequiredScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { minHeight: windowHeight, backgroundColor: colors.bg },
-        ]}
+        contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
         showsVerticalScrollIndicator={false}
       >
         <View
@@ -144,7 +140,7 @@ export default function VerifyRequiredScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: "transparent",
   },
   scrollContent: {
     flexGrow: 1,

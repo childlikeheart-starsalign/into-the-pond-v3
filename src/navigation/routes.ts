@@ -19,6 +19,8 @@ export const routes = {
   net: href("/net"),
   store: href("/store"),
   gate: href("/gate"),
+  diaryEntry: href("/diary-entry"),
+  lessonComplete: href("/lesson-complete"),
   well: href("/well"),
   craft: href("/craft"),
   customerCenter: href("/customer-center"),

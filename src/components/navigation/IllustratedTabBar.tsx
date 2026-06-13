@@ -41,13 +41,18 @@ export function IllustratedTabBar() {
   const frame = usePortrait916Layout();
   const activeTab = activeTabFromPath(pathname);
   const onSanctuary = activeTab === "sanctuary";
+  const onNet = activeTab === "net";
   const onClassroom = activeTab === "classroom";
   const [classroomView, setClassroomViewState] = useState(getClassroomView);
 
   useEffect(() => subscribeClassroomView(setClassroomViewState), []);
 
-  // Sanctuary embeds nav in art; classroom menu is full-screen without tab chrome.
-  if (onSanctuary || (onClassroom && classroomView === "menu")) {
+  // Sanctuary embeds nav in art; net journal and classroom open/menu are full-screen without tab chrome.
+  if (
+    onSanctuary ||
+    onNet ||
+    (onClassroom && (classroomView === "open" || classroomView === "menu"))
+  ) {
     return null;
   }
 

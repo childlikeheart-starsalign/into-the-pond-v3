@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ArrivalPondRipple } from "@/src/components/diary/ArrivalPondRipple";
 import { DiaryPromptMultiselect } from "@/src/components/diary/DiaryPromptMultiselect";
+import { DiaryPromptSlider } from "@/src/components/diary/DiaryPromptSlider";
 import { DiaryShortText } from "@/src/components/diary/DiaryShortText";
 import { DiarySingleSelect } from "@/src/components/diary/DiarySingleSelect";
 import { PondBloomAnimation } from "@/src/components/diary/PondBloomAnimation";
@@ -36,7 +37,7 @@ import type {
 } from "@/src/features/diary/types";
 import { useRitualAmbientSound } from "@/src/hooks/useRitualAmbientSound";
 
-const STEP_ORDER: SelfCheckRitualStep[] = [
+const DEFAULT_STEP_ORDER: SelfCheckRitualStep[] = [
   "arrival",
   "reframe",
   "moment-what",
@@ -53,6 +54,34 @@ const REFRAME_DISSOLVE_MS = 750;
 function emptyResponses(): SelfCheckResponses {
   return {
     reframeAssumption: null,
+    ruleAssumption: null,
+    bodyFirst: "",
+    regulationLevel: null,
+    regulationContext: "",
+    gapMoves: [],
+    gapOther: "",
+    noticingResponse: "",
+    compassionStory: "",
+    compassionTruth: null,
+    smallestNextStep: "",
+    tinyWin: null,
+    loopBreakStep: null,
+    loopBreakWhy: "",
+    loopBreakAlreadyDone: "",
+    scriptFeelsReal: null,
+    scriptInMyVoice: "",
+    scriptBodyResponse: "",
+    toneVersusWords: "",
+    biggestObstacle: "",
+    obstacleWorkaround: "",
+    trySituation: "",
+    tryNotice: "",
+    tryRegulate: "",
+    tryConnectSupport: "",
+    tryMinimumStep: "",
+    trySelfCompassion: "",
+    whatShiftedMarks: [],
+    whatShiftedTakeaway: "",
     momentWhat: null,
     momentFeeling: null,
     momentPause: null,
@@ -62,6 +91,102 @@ function emptyResponses(): SelfCheckResponses {
     intentionTrigger: "",
     intentionAction: "",
   };
+}
+
+function getMomentTryValue(responses: SelfCheckResponses, fieldId: string): string {
+  switch (fieldId) {
+    case "trySituation":
+      return responses.trySituation;
+    case "tryNotice":
+      return responses.tryNotice;
+    case "tryRegulate":
+      return responses.tryRegulate;
+    case "tryConnectSupport":
+      return responses.tryConnectSupport;
+    case "tryMinimumStep":
+      return responses.tryMinimumStep;
+    case "trySelfCompassion":
+      return responses.trySelfCompassion;
+    default:
+      return "";
+  }
+}
+
+function patchMomentTryField(
+  patch: (partial: Partial<SelfCheckResponses>) => void,
+  fieldId: string,
+  value: string,
+) {
+  switch (fieldId) {
+    case "trySituation":
+      patch({ trySituation: value });
+      break;
+    case "tryNotice":
+      patch({ tryNotice: value });
+      break;
+    case "tryRegulate":
+      patch({ tryRegulate: value });
+      break;
+    case "tryConnectSupport":
+      patch({ tryConnectSupport: value });
+      break;
+    case "tryMinimumStep":
+      patch({ tryMinimumStep: value });
+      break;
+    case "trySelfCompassion":
+      patch({ trySelfCompassion: value });
+      break;
+    default:
+      break;
+  }
+}
+
+function applyExclusiveMultiselect(
+  value: string[],
+  previous: string[],
+  exclusive?: string,
+): string[] {
+  if (!exclusive) return value;
+
+  const hadExclusive = previous.includes(exclusive);
+  const hasExclusive = value.includes(exclusive);
+
+  if (hasExclusive && !hadExclusive) return [exclusive];
+  if (hadExclusive && hasExclusive && value.length > 1) {
+    return value.filter((item) => item !== exclusive);
+  }
+  if (hasExclusive) return [exclusive];
+  return value;
+}
+
+function renderSectionHeader(sectionLabel: string, helper?: string) {
+  return (
+    <>
+      <Text style={styles.sectionLabel}>{sectionLabel}</Text>
+      {helper?.trim() ? <Text style={styles.helperText}>{helper}</Text> : null}
+    </>
+  );
+}
+
+function renderQuotedRecallStep(
+  block: { cardTitle: string; reframe: string; prompt: string },
+  options: string[],
+  selected: string | null,
+  onChange: (value: string) => void,
+  opacity: Animated.Value,
+) {
+  return (
+    <View style={styles.section}>
+      <View style={styles.reframeCard}>
+        <Text style={styles.reframeLabel}>{block.cardTitle}</Text>
+        <Text style={styles.reframeQuote}>{block.reframe}</Text>
+      </View>
+      {block.prompt.trim() ? <Text style={styles.prompt}>{block.prompt}</Text> : null}
+      <Animated.View style={{ opacity }}>
+        <DiarySingleSelect options={options} selected={selected} onChange={onChange} />
+      </Animated.View>
+    </View>
+  );
 }
 
 type DiaryRitualFlowProps = {
@@ -79,6 +204,7 @@ export function DiaryRitualFlow({
 }: DiaryRitualFlowProps) {
   const insets = useSafeAreaInsets();
   const reframeOpacity = useRef(new Animated.Value(1)).current;
+  const ruleOpacity = useRef(new Animated.Value(1)).current;
   const [stepIndex, setStepIndex] = useState(0);
   const [responses, setResponses] = useState<SelfCheckResponses>(emptyResponses);
   const [arrivalLine, setArrivalLine] = useState(0);
@@ -86,11 +212,14 @@ export function DiaryRitualFlow({
   const [closureBeat, setClosureBeat] = useState(0);
   const [progressEcho, setProgressEcho] = useState<string | null>(null);
   const [reframeDissolving, setReframeDissolving] = useState(false);
+  const [ruleDissolving, setRuleDissolving] = useState(false);
   const [triggerTouched, setTriggerTouched] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
 
-  const step = STEP_ORDER[stepIndex] ?? "closure";
+  const stepOrder = ritual.steps.length > 0 ? ritual.steps : DEFAULT_STEP_ORDER;
+  const maxStepIndex = stepOrder.length - 1;
+  const step = stepOrder[stepIndex] ?? "closure";
 
   useRitualAmbientSound({
     enabled: step === "arrival" || step === "closure",
@@ -110,11 +239,11 @@ export function DiaryRitualFlow({
     void loadRitualDraft(ritual.lessonId).then((draft) => {
       if (draft) {
         setResponses(draft.responses);
-        setStepIndex(Math.min(Math.max(0, draft.stepIndex), STEP_ORDER.length - 1));
+        setStepIndex(Math.min(Math.max(0, draft.stepIndex), maxStepIndex));
       }
       setDraftReady(true);
     });
-  }, [ritual.lessonId]);
+  }, [maxStepIndex, ritual.lessonId]);
 
   useEffect(() => {
     if (step !== "arrival") return;
@@ -143,25 +272,91 @@ export function DiaryRitualFlow({
     setResponses((prev) => ({ ...prev, ...partial }));
   }, []);
 
-  const handleReframeSelect = useCallback(
-    (value: string) => {
-      if (reframeDissolving) return;
-      patch({ reframeAssumption: value });
-      setReframeDissolving(true);
+  const advanceAfterQuotedSelect = useCallback(
+    (
+      value: string,
+      field: "reframeAssumption" | "ruleAssumption",
+      dissolving: boolean,
+      setDissolving: (next: boolean) => void,
+      opacity: Animated.Value,
+    ) => {
+      if (dissolving) return;
+      patch({ [field]: value });
+      setDissolving(true);
 
-      Animated.timing(reframeOpacity, {
+      Animated.timing(opacity, {
         toValue: 0,
         duration: REFRAME_DISSOLVE_MS,
         useNativeDriver: true,
       }).start(({ finished }) => {
         if (!finished) return;
-        setReframeDissolving(false);
-        reframeOpacity.setValue(1);
-        setStepIndex((index) => Math.min(index + 1, STEP_ORDER.length - 1));
+        setDissolving(false);
+        opacity.setValue(1);
+        setStepIndex((index) => Math.min(index + 1, maxStepIndex));
       });
     },
-    [patch, reframeDissolving, reframeOpacity],
+    [maxStepIndex, patch],
   );
+
+  const handleReframeSelect = useCallback(
+    (value: string) => {
+      advanceAfterQuotedSelect(
+        value,
+        "reframeAssumption",
+        reframeDissolving,
+        setReframeDissolving,
+        reframeOpacity,
+      );
+    },
+    [advanceAfterQuotedSelect, reframeDissolving, reframeOpacity],
+  );
+
+  const handleRuleSelect = useCallback(
+    (value: string) => {
+      advanceAfterQuotedSelect(
+        value,
+        "ruleAssumption",
+        ruleDissolving,
+        setRuleDissolving,
+        ruleOpacity,
+      );
+    },
+    [advanceAfterQuotedSelect, ruleDissolving, ruleOpacity],
+  );
+
+  const handleSupportChange = useCallback(
+    (value: string[]) => {
+      patch({
+        supportNeeds: applyExclusiveMultiselect(
+          value,
+          responses.supportNeeds,
+          ritual.supportNeeded?.exclusiveOption,
+        ),
+      });
+    },
+    [patch, responses.supportNeeds, ritual.supportNeeded?.exclusiveOption],
+  );
+
+  const handleWhatShiftedChange = useCallback(
+    (value: string[]) => {
+      patch({
+        whatShiftedMarks: applyExclusiveMultiselect(
+          value,
+          responses.whatShiftedMarks,
+          ritual.whatShifted?.exclusiveOption,
+        ),
+      });
+    },
+    [patch, responses.whatShiftedMarks, ritual.whatShifted?.exclusiveOption],
+  );
+
+  const scriptVoiceYesOption = ritual.scriptVoice?.options[0] ?? "";
+  const showScriptFollowUp =
+    responses.scriptFeelsReal !== null && responses.scriptFeelsReal !== scriptVoiceYesOption;
+
+  const showOtherDetail =
+    ritual.supportNeeded?.otherOption != null &&
+    responses.supportNeeds.includes(ritual.supportNeeded.otherOption);
 
   const canContinue = useMemo(() => {
     switch (step) {
@@ -169,6 +364,56 @@ export function DiaryRitualFlow({
         return arrivalLineDone && arrivalLine >= ritual.arrival.lines.length - 1;
       case "reframe":
         return false;
+      case "rule":
+        return false;
+      case "body-first":
+        return responses.bodyFirst.trim().length > 0;
+      case "honest-inventory":
+        if (responses.regulationLevel === null) return false;
+        if (ritual.honestInventory?.followUpOptional) return true;
+        return responses.regulationContext.trim().length > 0;
+      case "the-gap":
+        return responses.gapMoves.length >= 1;
+      case "noticing":
+        return responses.noticingResponse.trim().length > 0;
+      case "compassion":
+        return responses.compassionStory.trim().length > 0 && responses.compassionTruth !== null;
+      case "next-step":
+        return responses.smallestNextStep.trim().length > 0;
+      case "tiny-win":
+        return responses.tinyWin !== null;
+      case "loop-break":
+        return (
+          responses.loopBreakStep !== null &&
+          responses.loopBreakWhy.trim().length > 0 &&
+          (ritual.loopBreak?.secondFollowUpPrompt
+            ? responses.loopBreakAlreadyDone.trim().length > 0
+            : true)
+        );
+      case "script-voice":
+        if (responses.scriptFeelsReal === null) return false;
+        if (showScriptFollowUp && responses.scriptInMyVoice.trim().length === 0) return false;
+        if (ritual.scriptVoice?.embodimentPrompt) {
+          return responses.scriptBodyResponse.trim().length > 0;
+        }
+        return true;
+      case "tone-reflect":
+        return responses.toneVersusWords.trim().length > 0;
+      case "obstacle-pair":
+        return (
+          responses.biggestObstacle.trim().length > 0 &&
+          responses.obstacleWorkaround.trim().length > 0
+        );
+      case "moment-try": {
+        if (!ritual.momentTry) return false;
+        for (const field of ritual.momentTry.fields) {
+          if (field.optional) continue;
+          if (!getMomentTryValue(responses, field.id).trim()) return false;
+        }
+        return true;
+      }
+      case "what-shifted":
+        return responses.whatShiftedMarks.length >= 1;
       case "moment-what":
         return responses.momentWhat !== null;
       case "moment-feeling":
@@ -177,8 +422,14 @@ export function DiaryRitualFlow({
         return responses.momentPause !== null;
       case "moment-different":
         return true;
-      case "support":
-        return responses.supportNeeds.length >= 1;
+      case "support": {
+        if (responses.supportNeeds.length < 1) return false;
+        const other = ritual.supportNeeded?.otherOption;
+        if (other && responses.supportNeeds.includes(other)) {
+          return responses.supportDetail.trim().length > 0;
+        }
+        return true;
+      }
       case "intention":
         return (
           responses.intentionTrigger.trim().length > 0 &&
@@ -189,7 +440,7 @@ export function DiaryRitualFlow({
       default:
         return false;
     }
-  }, [step, responses, arrivalLineDone, arrivalLine, ritual, closureBeat]);
+  }, [step, responses, arrivalLineDone, arrivalLine, ritual, closureBeat, showScriptFollowUp]);
 
   const continueLabel = useMemo(() => {
     if (step === "closure") return ritual.closure.ctaLabel;
@@ -197,7 +448,7 @@ export function DiaryRitualFlow({
     return "Continue";
   }, [step, ritual]);
 
-  const showFooter = step !== "reframe";
+  const showFooter = step !== "reframe" && step !== "rule";
   const isPlanting = completing && step === "closure";
 
   const handleContinue = useCallback(async () => {
@@ -220,8 +471,8 @@ export function DiaryRitualFlow({
       return;
     }
 
-    setStepIndex((index) => Math.min(index + 1, STEP_ORDER.length - 1));
-  }, [step, arrivalLineDone, isPlanting, onComplete, responses]);
+    setStepIndex((index) => Math.min(index + 1, maxStepIndex));
+  }, [step, arrivalLineDone, isPlanting, maxStepIndex, onComplete, responses]);
 
   const handleExitPress = useCallback(() => {
     if (!hasRitualProgress(responses)) {
@@ -262,7 +513,7 @@ export function DiaryRitualFlow({
   }, [step, closureBeat, reduceMotion]);
 
   useEffect(() => {
-    if (step !== "intention" || triggerTouched) return;
+    if (step !== "intention" || triggerTouched || !ritual.intention) return;
     const suggested = suggestIntentionTrigger(responses.momentWhat, responses.momentFeeling);
     if (suggested && !responses.intentionTrigger.trim()) {
       patch({ intentionTrigger: suggested });
@@ -292,6 +543,7 @@ export function DiaryRitualFlow({
         );
 
       case "reframe":
+        if (!ritual.reframeRecall) return null;
         return (
           <View style={styles.section}>
             {progressEcho ? (
@@ -299,25 +551,352 @@ export function DiaryRitualFlow({
                 <Text style={styles.echoText}>{progressEcho}</Text>
               </View>
             ) : null}
-            <View style={styles.reframeCard}>
-              <Text style={styles.reframeLabel}>{ritual.reframeRecall.cardTitle}</Text>
-              <Text style={styles.reframeQuote}>{ritual.reframeRecall.reframe}</Text>
-            </View>
-            <Text style={styles.prompt}>{ritual.reframeRecall.prompt}</Text>
-            <Animated.View style={{ opacity: reframeOpacity }}>
-              <DiarySingleSelect
-                options={ritual.reframeRecall.options}
-                selected={responses.reframeAssumption}
-                onChange={handleReframeSelect}
-              />
-            </Animated.View>
+            {renderQuotedRecallStep(
+              ritual.reframeRecall,
+              ritual.reframeRecall.options,
+              responses.reframeAssumption,
+              handleReframeSelect,
+              reframeOpacity,
+            )}
           </View>
+        );
+
+      case "body-first": {
+        if (!ritual.bodyFirst) return null;
+        const block = ritual.bodyFirst;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiaryShortText
+              value={responses.bodyFirst}
+              maxLength={block.maxLength ?? 400}
+              placeholder={block.placeholder}
+              onChange={(value) => patch({ bodyFirst: value })}
+            />
+          </View>
+        );
+      }
+
+      case "honest-inventory": {
+        if (!ritual.honestInventory) return null;
+        const block = ritual.honestInventory;
+        const sliderValue = responses.regulationLevel ?? block.min;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <DiaryPromptSlider
+              question={block.prompt}
+              min={block.min}
+              max={block.max}
+              minLabel={block.minLabel}
+              maxLabel={block.maxLabel}
+              value={sliderValue}
+              embedded
+              onChange={(value) => patch({ regulationLevel: value })}
+            />
+            <Text style={styles.prompt}>{block.followUpPrompt}</Text>
+            <DiaryShortText
+              value={responses.regulationContext}
+              maxLength={400}
+              placeholder={block.followUpPlaceholder}
+              onChange={(value) => patch({ regulationContext: value })}
+            />
+          </View>
+        );
+      }
+
+      case "the-gap": {
+        if (!ritual.theGap) return null;
+        const block = ritual.theGap;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiaryPromptMultiselect
+              question=""
+              options={block.options}
+              selected={responses.gapMoves}
+              onChange={(value) => patch({ gapMoves: value })}
+              embedded
+            />
+            {block.detailPrompt ? (
+              <>
+                <Text style={styles.detailPrompt}>{block.detailPrompt}</Text>
+                <TextInput
+                  accessibilityLabel={block.detailPrompt}
+                  style={styles.detailInput}
+                  value={responses.gapOther}
+                  onChangeText={(text) => patch({ gapOther: text })}
+                  multiline
+                  textAlignVertical="top"
+                  placeholder={block.detailPlaceholder}
+                  placeholderTextColor={colors.textSecondary}
+                />
+              </>
+            ) : null}
+          </View>
+        );
+      }
+
+      case "noticing": {
+        if (!ritual.noticing) return null;
+        const block = ritual.noticing;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiaryShortText
+              value={responses.noticingResponse}
+              maxLength={block.maxLength ?? 500}
+              placeholder={block.placeholder}
+              onChange={(value) => patch({ noticingResponse: value })}
+            />
+          </View>
+        );
+      }
+
+      case "compassion": {
+        if (!ritual.compassion) return null;
+        const block = ritual.compassion;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.storyHelper)}
+            <Text style={styles.prompt}>{block.storyPrompt}</Text>
+            <DiaryShortText
+              value={responses.compassionStory}
+              maxLength={500}
+              placeholder={block.storyPlaceholder}
+              onChange={(value) => patch({ compassionStory: value })}
+            />
+            <Text style={[styles.prompt, styles.promptGap]}>{block.truthPrompt}</Text>
+            <DiarySingleSelect
+              options={block.options}
+              selected={responses.compassionTruth}
+              onChange={(value) => patch({ compassionTruth: value })}
+            />
+          </View>
+        );
+      }
+
+      case "next-step": {
+        if (!ritual.nextStep) return null;
+        const block = ritual.nextStep;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiaryShortText
+              value={responses.smallestNextStep}
+              maxLength={block.maxLength ?? 300}
+              placeholder={block.placeholder}
+              onChange={(value) => patch({ smallestNextStep: value })}
+            />
+          </View>
+        );
+      }
+
+      case "tiny-win": {
+        if (!ritual.tinyWin) return null;
+        const block = ritual.tinyWin;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiarySingleSelect
+              options={block.options}
+              selected={responses.tinyWin}
+              onChange={(value) => patch({ tinyWin: value })}
+            />
+          </View>
+        );
+      }
+
+      case "loop-break": {
+        if (!ritual.loopBreak) return null;
+        const block = ritual.loopBreak;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiarySingleSelect
+              options={block.options}
+              selected={responses.loopBreakStep}
+              onChange={(value) => patch({ loopBreakStep: value })}
+            />
+            <Text style={[styles.prompt, styles.promptGap]}>{block.followUpPrompt}</Text>
+            <DiaryShortText
+              value={responses.loopBreakWhy}
+              maxLength={400}
+              placeholder={block.followUpPlaceholder}
+              onChange={(value) => patch({ loopBreakWhy: value })}
+            />
+            {block.secondFollowUpPrompt ? (
+              <>
+                <Text style={[styles.prompt, styles.promptGap]}>{block.secondFollowUpPrompt}</Text>
+                <DiaryShortText
+                  value={responses.loopBreakAlreadyDone}
+                  maxLength={400}
+                  placeholder={block.secondFollowUpPlaceholder}
+                  onChange={(value) => patch({ loopBreakAlreadyDone: value })}
+                />
+              </>
+            ) : null}
+          </View>
+        );
+      }
+
+      case "script-voice": {
+        if (!ritual.scriptVoice) return null;
+        const block = ritual.scriptVoice;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiarySingleSelect
+              options={block.options}
+              selected={responses.scriptFeelsReal}
+              onChange={(value) => patch({ scriptFeelsReal: value })}
+            />
+            {showScriptFollowUp ? (
+              <>
+                <Text style={[styles.prompt, styles.promptGap]}>{block.followUpPrompt}</Text>
+                <DiaryShortText
+                  value={responses.scriptInMyVoice}
+                  maxLength={400}
+                  placeholder={block.followUpPlaceholder}
+                  onChange={(value) => patch({ scriptInMyVoice: value })}
+                />
+              </>
+            ) : null}
+            {block.embodimentPrompt && responses.scriptFeelsReal !== null ? (
+              <>
+                <Text style={[styles.prompt, styles.promptGap]}>{block.embodimentPrompt}</Text>
+                <DiaryShortText
+                  value={responses.scriptBodyResponse}
+                  maxLength={400}
+                  placeholder={block.embodimentPlaceholder}
+                  onChange={(value) => patch({ scriptBodyResponse: value })}
+                />
+              </>
+            ) : null}
+          </View>
+        );
+      }
+
+      case "tone-reflect": {
+        if (!ritual.toneReflect) return null;
+        const block = ritual.toneReflect;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiaryShortText
+              value={responses.toneVersusWords}
+              maxLength={block.maxLength ?? 500}
+              placeholder={block.placeholder}
+              onChange={(value) => patch({ toneVersusWords: value })}
+            />
+          </View>
+        );
+      }
+
+      case "obstacle-pair": {
+        if (!ritual.obstaclePair) return null;
+        const block = ritual.obstaclePair;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <Text style={styles.fieldLabel}>{block.firstLabel}</Text>
+            <DiaryShortText
+              value={responses.biggestObstacle}
+              maxLength={block.maxLength ?? 400}
+              placeholder={block.firstPlaceholder}
+              onChange={(value) => patch({ biggestObstacle: value })}
+            />
+            <Text style={[styles.prompt, styles.promptGap]}>{block.secondPrompt}</Text>
+            <DiaryShortText
+              value={responses.obstacleWorkaround}
+              maxLength={block.maxLength ?? 400}
+              placeholder={block.secondPlaceholder}
+              onChange={(value) => patch({ obstacleWorkaround: value })}
+            />
+          </View>
+        );
+      }
+
+      case "moment-try": {
+        if (!ritual.momentTry) return null;
+        const block = ritual.momentTry;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel, block.helper)}
+            <Text style={styles.prompt}>{block.intro}</Text>
+            {block.fields.map((field) => (
+              <View key={field.id} style={styles.labeledField}>
+                <Text style={styles.fieldLabel}>{field.label}</Text>
+                <DiaryShortText
+                  value={getMomentTryValue(responses, field.id)}
+                  maxLength={block.maxLength ?? 300}
+                  placeholder={field.placeholder}
+                  onChange={(value) => patchMomentTryField(patch, field.id, value)}
+                />
+              </View>
+            ))}
+          </View>
+        );
+      }
+
+      case "what-shifted": {
+        if (!ritual.whatShifted) return null;
+        const block = ritual.whatShifted;
+        return (
+          <View style={styles.section}>
+            {renderSectionHeader(block.sectionLabel)}
+            <Text style={styles.prompt}>{block.prompt}</Text>
+            <DiaryPromptMultiselect
+              question=""
+              options={block.options}
+              selected={responses.whatShiftedMarks}
+              onChange={handleWhatShiftedChange}
+              embedded
+            />
+            {block.detailPrompt ? (
+              <>
+                <Text style={styles.detailPrompt}>{block.detailPrompt}</Text>
+                <TextInput
+                  accessibilityLabel={block.detailPrompt}
+                  style={styles.detailInput}
+                  value={responses.whatShiftedTakeaway}
+                  onChangeText={(text) => patch({ whatShiftedTakeaway: text })}
+                  multiline
+                  textAlignVertical="top"
+                  placeholder={block.detailPlaceholder}
+                  placeholderTextColor={colors.textSecondary}
+                />
+              </>
+            ) : null}
+          </View>
+        );
+      }
+
+      case "rule":
+        if (!ritual.ruleRecall) return null;
+        return renderQuotedRecallStep(
+          ritual.ruleRecall,
+          ritual.ruleRecall.options,
+          responses.ruleAssumption,
+          handleRuleSelect,
+          ruleOpacity,
         );
 
       case "moment-what":
       case "moment-feeling":
       case "moment-pause":
       case "moment-different": {
+        if (!ritual.momentReplay) return null;
+
         const subStep =
           step === "moment-what"
             ? ritual.momentReplay.whatHappened
@@ -371,6 +950,7 @@ export function DiaryRitualFlow({
       }
 
       case "support":
+        if (!ritual.supportNeeded) return null;
         return (
           <View style={styles.section}>
             <Text style={styles.prompt}>{ritual.supportNeeded.prompt}</Text>
@@ -378,24 +958,43 @@ export function DiaryRitualFlow({
               question=""
               options={ritual.supportNeeded.options}
               selected={responses.supportNeeds}
-              onChange={(value) => patch({ supportNeeds: value })}
+              onChange={handleSupportChange}
               embedded
             />
-            <Text style={styles.detailPrompt}>{ritual.supportNeeded.detailPrompt}</Text>
-            <TextInput
-              accessibilityLabel={ritual.supportNeeded.detailPrompt}
-              style={styles.detailInput}
-              value={responses.supportDetail}
-              onChangeText={(text) => patch({ supportDetail: text })}
-              multiline
-              textAlignVertical="top"
-              placeholder={ritual.supportNeeded.detailPlaceholder}
-              placeholderTextColor={colors.textSecondary}
-            />
+            {showOtherDetail ? (
+              <>
+                <Text style={styles.detailPrompt}>{ritual.supportNeeded.detailPrompt}</Text>
+                <TextInput
+                  accessibilityLabel={ritual.supportNeeded.detailPrompt}
+                  style={styles.detailInput}
+                  value={responses.supportDetail}
+                  onChangeText={(text) => patch({ supportDetail: text })}
+                  multiline
+                  textAlignVertical="top"
+                  placeholder={ritual.supportNeeded.detailPlaceholder}
+                  placeholderTextColor={colors.textSecondary}
+                />
+              </>
+            ) : ritual.supportNeeded.otherOption == null ? (
+              <>
+                <Text style={styles.detailPrompt}>{ritual.supportNeeded.detailPrompt}</Text>
+                <TextInput
+                  accessibilityLabel={ritual.supportNeeded.detailPrompt}
+                  style={styles.detailInput}
+                  value={responses.supportDetail}
+                  onChangeText={(text) => patch({ supportDetail: text })}
+                  multiline
+                  textAlignVertical="top"
+                  placeholder={ritual.supportNeeded.detailPlaceholder}
+                  placeholderTextColor={colors.textSecondary}
+                />
+              </>
+            ) : null}
           </View>
         );
 
       case "intention":
+        if (!ritual.intention) return null;
         return (
           <View style={styles.section}>
             <Text style={styles.prompt}>{ritual.intention.prompt}</Text>
@@ -584,6 +1183,30 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 30,
     color: colors.textPrimary,
+  },
+  sectionLabel: {
+    fontFamily: fontFamilies.bodySemi,
+    fontSize: 13,
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+    color: colors.textSecondary,
+  },
+  helperText: {
+    fontFamily: fontFamilies.body,
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.textSecondary,
+  },
+  promptGap: {
+    marginTop: spacing.inner,
+  },
+  fieldLabel: {
+    fontFamily: fontFamilies.bodySemi,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  labeledField: {
+    gap: spacing.tapGap,
   },
   echoCard: {
     backgroundColor: "#DEEAF2",

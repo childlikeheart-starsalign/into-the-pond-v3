@@ -24,4 +24,5 @@ export const routes = {
   well: href("/well"),
   craft: href("/craft"),
   customerCenter: href("/customer-center"),
+  casting: href("/casting"),
 };

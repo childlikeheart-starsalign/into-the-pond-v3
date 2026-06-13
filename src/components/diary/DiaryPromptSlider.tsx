@@ -8,13 +8,25 @@ type DiaryPromptSliderProps = {
   max: number;
   value: number;
   onChange: (value: number) => void;
+  minLabel?: string;
+  maxLabel?: string;
+  embedded?: boolean;
 };
 
-export function DiaryPromptSlider({ question, min, max, value, onChange }: DiaryPromptSliderProps) {
+export function DiaryPromptSlider({
+  question,
+  min,
+  max,
+  value,
+  onChange,
+  minLabel,
+  maxLabel,
+  embedded = false,
+}: DiaryPromptSliderProps) {
   const values = Array.from({ length: max - min + 1 }, (_, index) => min + index);
 
   return (
-    <View style={styles.card}>
+    <View style={embedded ? styles.embedded : styles.card}>
       <View style={styles.header}>
         <Text style={styles.question}>{question}</Text>
         <Text style={styles.value}>{value}</Text>
@@ -37,8 +49,8 @@ export function DiaryPromptSlider({ question, min, max, value, onChange }: Diary
         })}
       </View>
       <View style={styles.labels}>
-        <Text style={styles.label}>{min}</Text>
-        <Text style={styles.label}>{max}</Text>
+        <Text style={styles.label}>{minLabel ?? min}</Text>
+        <Text style={styles.label}>{maxLabel ?? max}</Text>
       </View>
     </View>
   );
@@ -51,6 +63,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.cardPadding,
+    gap: spacing.inner,
+  },
+  embedded: {
     gap: spacing.inner,
   },
   header: {

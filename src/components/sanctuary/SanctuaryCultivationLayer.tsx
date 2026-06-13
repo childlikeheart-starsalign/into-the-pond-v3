@@ -275,7 +275,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 999,
-    backgroundColor: "rgba(222, 234, 242, 0.35)",
   },
   pondRipple: {
     position: "absolute",
@@ -284,6 +283,5 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1.5,
     borderColor: "rgba(122, 92, 69, 0.25)",
-    backgroundColor: "rgba(222, 234, 242, 0.12)",
   },
 });

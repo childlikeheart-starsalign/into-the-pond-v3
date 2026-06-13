@@ -181,39 +181,245 @@ function ritualResponsesToExport(
   ritual: SelfCheckRitual,
   responses: SelfCheckResponses,
 ): ExportEntryData["prompts"] {
-  return [
-    {
-      question: ritual.reframeRecall.prompt,
-      response: responses.reframeAssumption ?? "",
-    },
-    {
-      question: ritual.momentReplay.whatHappened.prompt,
-      response: responses.momentWhat ?? "",
-    },
-    {
-      question: ritual.momentReplay.bodyFeeling.prompt,
-      response: responses.momentFeeling ?? "",
-    },
-    {
-      question: ritual.momentReplay.pause.prompt,
-      response: responses.momentPause ?? "",
-    },
-    {
-      question: ritual.momentReplay.different.prompt,
-      response: responses.momentDifferent,
-    },
-    {
-      question: ritual.supportNeeded.prompt,
-      response: [
-        ...responses.supportNeeds,
-        ...(responses.supportDetail.trim() ? [responses.supportDetail.trim()] : []),
-      ],
-    },
-    {
-      question: ritual.intention.prompt,
-      response: `Next time I notice ${responses.intentionTrigger}, I want to try ${responses.intentionAction}.`,
-    },
-  ];
+  const prompts: ExportEntryData["prompts"] = [];
+
+  for (const step of ritual.steps) {
+    switch (step) {
+      case "reframe":
+        if (ritual.reframeRecall) {
+          prompts.push({
+            question: `${ritual.reframeRecall.cardTitle} — ${ritual.reframeRecall.reframe.replace(/\n/g, " ")}`,
+            response: responses.reframeAssumption ?? "",
+          });
+        }
+        break;
+      case "rule":
+        if (ritual.ruleRecall) {
+          prompts.push({
+            question: `${ritual.ruleRecall.cardTitle} — ${ritual.ruleRecall.reframe.replace(/\n/g, " ")}`,
+            response: responses.ruleAssumption ?? "",
+          });
+        }
+        break;
+      case "moment-what":
+        if (ritual.momentReplay) {
+          prompts.push({
+            question: ritual.momentReplay.whatHappened.prompt,
+            response: responses.momentWhat ?? "",
+          });
+        }
+        break;
+      case "moment-feeling":
+        if (ritual.momentReplay) {
+          prompts.push({
+            question: ritual.momentReplay.bodyFeeling.prompt,
+            response: responses.momentFeeling ?? "",
+          });
+        }
+        break;
+      case "moment-pause":
+        if (ritual.momentReplay) {
+          prompts.push({
+            question: ritual.momentReplay.pause.prompt,
+            response: responses.momentPause ?? "",
+          });
+        }
+        break;
+      case "moment-different":
+        if (ritual.momentReplay) {
+          prompts.push({
+            question: ritual.momentReplay.different.prompt,
+            response: responses.momentDifferent,
+          });
+        }
+        break;
+      case "body-first":
+        if (ritual.bodyFirst) {
+          prompts.push({
+            question: `${ritual.bodyFirst.sectionLabel} — ${ritual.bodyFirst.prompt}`,
+            response: responses.bodyFirst,
+          });
+        }
+        break;
+      case "honest-inventory":
+        if (ritual.honestInventory) {
+          prompts.push({
+            question: `${ritual.honestInventory.sectionLabel} — ${ritual.honestInventory.prompt}`,
+            response: responses.regulationLevel ?? "",
+          });
+          prompts.push({
+            question: ritual.honestInventory.followUpPrompt,
+            response: responses.regulationContext,
+          });
+        }
+        break;
+      case "the-gap":
+        if (ritual.theGap) {
+          prompts.push({
+            question: `${ritual.theGap.sectionLabel} — ${ritual.theGap.prompt}`,
+            response: [
+              ...responses.gapMoves,
+              ...(responses.gapOther.trim() ? [responses.gapOther.trim()] : []),
+            ],
+          });
+        }
+        break;
+      case "noticing":
+        if (ritual.noticing) {
+          prompts.push({
+            question: `${ritual.noticing.sectionLabel} — ${ritual.noticing.prompt}`,
+            response: responses.noticingResponse,
+          });
+        }
+        break;
+      case "compassion":
+        if (ritual.compassion) {
+          prompts.push({
+            question: `${ritual.compassion.sectionLabel} — ${ritual.compassion.storyPrompt}`,
+            response: responses.compassionStory,
+          });
+          prompts.push({
+            question: ritual.compassion.truthPrompt,
+            response: responses.compassionTruth ?? "",
+          });
+        }
+        break;
+      case "next-step":
+        if (ritual.nextStep) {
+          prompts.push({
+            question: `${ritual.nextStep.sectionLabel} — ${ritual.nextStep.prompt}`,
+            response: responses.smallestNextStep,
+          });
+        }
+        break;
+      case "tiny-win":
+        if (ritual.tinyWin) {
+          prompts.push({
+            question: `${ritual.tinyWin.sectionLabel} — ${ritual.tinyWin.prompt}`,
+            response: responses.tinyWin ?? "",
+          });
+        }
+        break;
+      case "loop-break":
+        if (ritual.loopBreak) {
+          prompts.push({
+            question: `${ritual.loopBreak.sectionLabel} — ${ritual.loopBreak.prompt}`,
+            response: responses.loopBreakStep ?? "",
+          });
+          prompts.push({
+            question: ritual.loopBreak.followUpPrompt,
+            response: responses.loopBreakWhy,
+          });
+          if (ritual.loopBreak.secondFollowUpPrompt) {
+            prompts.push({
+              question: ritual.loopBreak.secondFollowUpPrompt,
+              response: responses.loopBreakAlreadyDone,
+            });
+          }
+        }
+        break;
+      case "script-voice":
+        if (ritual.scriptVoice) {
+          prompts.push({
+            question: `${ritual.scriptVoice.sectionLabel} — ${ritual.scriptVoice.prompt}`,
+            response: responses.scriptFeelsReal ?? "",
+          });
+          if (responses.scriptInMyVoice.trim()) {
+            prompts.push({
+              question: ritual.scriptVoice.followUpPrompt,
+              response: responses.scriptInMyVoice,
+            });
+          }
+          if (responses.scriptBodyResponse.trim() && ritual.scriptVoice.embodimentPrompt) {
+            prompts.push({
+              question: ritual.scriptVoice.embodimentPrompt,
+              response: responses.scriptBodyResponse,
+            });
+          }
+        }
+        break;
+      case "tone-reflect":
+        if (ritual.toneReflect) {
+          prompts.push({
+            question: `${ritual.toneReflect.sectionLabel} — ${ritual.toneReflect.prompt}`,
+            response: responses.toneVersusWords,
+          });
+        }
+        break;
+      case "obstacle-pair":
+        if (ritual.obstaclePair) {
+          prompts.push({
+            question: `${ritual.obstaclePair.sectionLabel} — ${ritual.obstaclePair.prompt}`,
+            response: responses.biggestObstacle,
+          });
+          prompts.push({
+            question: ritual.obstaclePair.secondPrompt,
+            response: responses.obstacleWorkaround,
+          });
+        }
+        break;
+      case "moment-try":
+        if (ritual.momentTry) {
+          for (const field of ritual.momentTry.fields) {
+            const value =
+              field.id === "trySituation"
+                ? responses.trySituation
+                : field.id === "tryNotice"
+                  ? responses.tryNotice
+                  : field.id === "tryRegulate"
+                    ? responses.tryRegulate
+                    : field.id === "tryConnectSupport"
+                      ? responses.tryConnectSupport
+                      : field.id === "tryMinimumStep"
+                        ? responses.tryMinimumStep
+                        : responses.trySelfCompassion;
+            if (!value.trim()) continue;
+            prompts.push({
+              question: `${ritual.momentTry.sectionLabel} — ${field.label}`,
+              response: value,
+            });
+          }
+        }
+        break;
+      case "what-shifted":
+        if (ritual.whatShifted) {
+          prompts.push({
+            question: `${ritual.whatShifted.sectionLabel} — ${ritual.whatShifted.prompt}`,
+            response: responses.whatShiftedMarks,
+          });
+          if (responses.whatShiftedTakeaway.trim() && ritual.whatShifted.detailPrompt) {
+            prompts.push({
+              question: ritual.whatShifted.detailPrompt,
+              response: responses.whatShiftedTakeaway,
+            });
+          }
+        }
+        break;
+      case "support":
+        if (ritual.supportNeeded) {
+          prompts.push({
+            question: ritual.supportNeeded.prompt,
+            response: [
+              ...responses.supportNeeds,
+              ...(responses.supportDetail.trim() ? [responses.supportDetail.trim()] : []),
+            ],
+          });
+        }
+        break;
+      case "intention":
+        if (ritual.intention) {
+          prompts.push({
+            question: ritual.intention.prompt,
+            response: `Next time I notice ${responses.intentionTrigger}, I want to try ${responses.intentionAction}.`,
+          });
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  return prompts;
 }
 
 async function saveRitualEntryLocal(

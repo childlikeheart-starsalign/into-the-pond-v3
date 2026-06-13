@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { SanctuaryScreen } from "@/src/components/sanctuary";
@@ -7,7 +7,19 @@ import {
   SANCTUARY_TIME_OF_DAY_ORDER,
   type SanctuaryTimeOfDay,
 } from "@/src/constants/sanctuaryAssets";
+import { FishingModal } from "@/src/features/fishing/FishingModal";
 import { layout, spacing } from "@/src/constants/theme";
+import {
+  clearActiveFishingCast,
+  getFishingCastStatus,
+  loadActiveFishingCast,
+  startFishingCast,
+  type FishingCastStatus,
+} from "@/src/features/fishing/fishingCastStorage";
+import {
+  resolveFishingCatchReward,
+  type FishingCatchReward,
+} from "@/src/features/fishing/fishingRewards";
 import { getUnseenBloom, markBloomArrivalSeen } from "@/src/features/sanctuary/cultivationStorage";
 import { useSanctuaryCultivation } from "@/src/hooks/useSanctuaryCultivation";
 import { routes } from "@/src/navigation/routes";
@@ -20,12 +32,18 @@ import {
 } from "@/src/state/sanctuaryCultivation";
 import { setSanctuaryTimeOfDay } from "@/src/state/sanctuaryTimeOfDay";
 
+const EMPTY_CAST_STATUS = getFishingCastStatus(null);
+
 /** Garden — asset-driven sanctuary with time-of-day backgrounds and pose-cycling avatar. */
 export default function SanctuaryTabScreen() {
   const [timeOfDay, setTimeOfDay] = useState<SanctuaryTimeOfDay>("afternoon");
   const [uid, setUid] = useState<string | null>(firebaseAuth.currentUser?.uid ?? null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [fishingOpen, setFishingOpen] = useState(false);
+  const [castStatus, setCastStatus] = useState<FishingCastStatus>(EMPTY_CAST_STATUS);
+  const [completedCatch, setCompletedCatch] = useState<FishingCatchReward | null>(null);
   const [arrivalBloomId, setArrivalBloomId] = useState<string | null>(null);
+  const checkingCastRef = useRef(false);
   const { cultivation, reload } = useSanctuaryCultivation();
 
   useEffect(() => {
@@ -44,6 +62,49 @@ export default function SanctuaryTabScreen() {
   useEffect(() => {
     setSanctuaryTimeOfDay(timeOfDay);
   }, [timeOfDay]);
+
+  useEffect(() => {
+    if (!completedCatch) return;
+    console.log("[Fishing] caught", completedCatch.creature.creatureTypeId);
+  }, [completedCatch]);
+
+  const checkCastStatus = useCallback(async () => {
+    if (checkingCastRef.current) return;
+    checkingCastRef.current = true;
+
+    try {
+      const activeCast = await loadActiveFishingCast();
+      const nextStatus = getFishingCastStatus(activeCast);
+
+      if (!nextStatus.active) {
+        setCastStatus(EMPTY_CAST_STATUS);
+        return;
+      }
+
+      if (!nextStatus.ready) {
+        setCastStatus(nextStatus);
+        return;
+      }
+
+      const reward = resolveFishingCatchReward(nextStatus.cast.rodIdAtCast);
+      await clearActiveFishingCast();
+      setCompletedCatch(reward);
+      setCastStatus(EMPTY_CAST_STATUS);
+    } catch (error) {
+      console.warn("[Fishing] failed to check cast status", error);
+    } finally {
+      checkingCastRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    void checkCastStatus();
+    const interval = setInterval(() => {
+      void checkCastStatus();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [checkCastStatus]);
 
   useFocusEffect(
     useCallback(() => {
@@ -89,6 +150,21 @@ export default function SanctuaryTabScreen() {
     router.push(routes.craft);
   };
 
+  const handleCast = useCallback(
+    async ({ rodId, baitId }: { rodId: string; baitId: string }) => {
+      const cast = await startFishingCast({ rodIdAtCast: rodId, baitIdAtCast: baitId });
+      if (!cast) {
+        await checkCastStatus();
+        return false;
+      }
+
+      setCompletedCatch(null);
+      setCastStatus(getFishingCastStatus(cast));
+      return true;
+    },
+    [checkCastStatus],
+  );
+
   return (
     <>
       <SanctuaryScreen
@@ -96,11 +172,19 @@ export default function SanctuaryTabScreen() {
         cultivation={cultivation}
         arrivalBloomId={arrivalBloomId}
         onBloomArrivalComplete={handleBloomArrivalComplete}
+        isCasting={castStatus.active}
+        onPondPress={() => setFishingOpen(true)}
         onWellPress={openWell}
         onCraftPress={openCraft}
         wellDisabled={!uid}
         craftDisabled={!uid}
         onDevCycleTimeOfDay={cycleTimeOfDay}
+      />
+
+      <FishingModal
+        visible={fishingOpen}
+        onClose={() => setFishingOpen(false)}
+        onCast={handleCast}
       />
 
       <Modal

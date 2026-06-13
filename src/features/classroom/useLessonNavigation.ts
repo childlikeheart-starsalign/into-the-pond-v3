@@ -1,30 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import type { LessonItem, VideoPlayerPayload } from "@/src/features/classroom/types";
-import { firebaseAuth } from "@/src/services/firebase/client";
-import { subscribeToUserSubscription } from "@/src/services/firebase/entitlements";
-
-/* REPLACE WITH ACTUAL STORE IMPORT — e.g. const isPremium = useUserStore((s) => s.isPremium) */
-function usePreloadedUserIsPremium(): boolean {
-  const [isPremium, setIsPremium] = useState(false);
-  const uid = firebaseAuth.currentUser?.uid ?? null;
-
-  useEffect(() => {
-    if (!uid) {
-      setIsPremium(false);
-      return;
-    }
-
-    return subscribeToUserSubscription(uid, (state) => {
-      setIsPremium(state.hasPaidRod);
-    });
-  }, [uid]);
-
-  return isPremium;
-}
+import { useUserIsPremium } from "@/src/hooks/useUserIsPremium";
 
 export function useLessonNavigation() {
-  const userIsPremium = usePreloadedUserIsPremium();
+  const userIsPremium = useUserIsPremium();
   const [paywallVisible, setPaywallVisible] = useState(false);
   const [video, setVideo] = useState<VideoPlayerPayload>({ visible: false, lesson: null });
 

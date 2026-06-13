@@ -16,9 +16,20 @@ export const colors = {
 export const fontFamilies = {
   heading: "PlayfairDisplay_700Bold",
   headingRegular: "PlayfairDisplay_400Regular",
+  /** Gate screen + pricing card titles */
+  gateTitle: "CormorantGaramond_700Bold",
+  gateTitleRegular: "CormorantGaramond_400Regular",
+  handwritten: "CrustaceansSignatureDemo",
   body: "Inter_400Regular",
   bodySemi: "Inter_600SemiBold",
 };
+
+/** Handwritten overlay prompts such as "casting..." and "Tap to open". */
+export const handwrittenPrompt = {
+  fontFamily: fontFamilies.handwritten,
+  fontSize: 28,
+  letterSpacing: 0,
+} as const;
 
 export const spacing = {
   section: 24,

@@ -1,3 +1,8 @@
+import "react-native-reanimated";
+import {
+  CormorantGaramond_400Regular,
+  CormorantGaramond_700Bold,
+} from "@expo-google-fonts/cormorant-garamond";
 import { Inter_400Regular, Inter_600SemiBold } from "@expo-google-fonts/inter";
 import {
   PlayfairDisplay_400Regular,
@@ -10,7 +15,6 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { doc, getDoc } from "firebase/firestore";
 import { assertRequiredEnv } from "@/src/config/env";
@@ -53,10 +57,13 @@ export default function RootLayout() {
   useAuthDeepLink();
 
   const [fontsLoaded] = useFonts({
+    CormorantGaramond_400Regular,
+    CormorantGaramond_700Bold,
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
     Inter_400Regular,
     Inter_600SemiBold,
+    CrustaceansSignatureDemo: require("@/assets/fonts/Crustaceans-SignatureDEMO-Regular.otf"),
   });
 
   useEffect(() => {

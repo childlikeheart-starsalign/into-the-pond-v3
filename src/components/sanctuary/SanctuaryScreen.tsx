@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { ImageBackground, Pressable, StyleSheet, View } from "react-native";
+import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
 import { SanctuaryAvatar } from "@/src/components/sanctuary/SanctuaryAvatar";
@@ -10,6 +10,7 @@ import {
   getSanctuaryBackground,
   type SanctuaryTimeOfDay,
 } from "@/src/constants/sanctuaryAssets";
+import { colors, handwrittenPrompt } from "@/src/constants/theme";
 import type { SanctuaryCultivation } from "@/src/features/sanctuary/cultivationTypes";
 
 type SanctuaryScreenProps = {
@@ -17,9 +18,11 @@ type SanctuaryScreenProps = {
   cultivation?: SanctuaryCultivation;
   arrivalBloomId?: string | null;
   onBloomArrivalComplete?: (bloomId: string) => void;
-  /** Invisible tap targets for Well / Craft landmarks on the artboard. */
+  /** Invisible tap targets for pond, Well, and Craft landmarks on the artboard. */
+  onPondPress?: () => void;
   onWellPress?: () => void;
   onCraftPress?: () => void;
+  isCasting?: boolean;
   wellDisabled?: boolean;
   craftDisabled?: boolean;
   /** Dev-only: cycle time-of-day when tapping top-left corner. */
@@ -35,8 +38,10 @@ export function SanctuaryScreen({
   cultivation,
   arrivalBloomId,
   onBloomArrivalComplete,
+  onPondPress,
   onWellPress,
   onCraftPress,
+  isCasting = false,
   wellDisabled = false,
   craftDisabled = false,
   onDevCycleTimeOfDay,
@@ -71,6 +76,21 @@ export function SanctuaryScreen({
           ) : null}
 
           <SanctuaryAvatar poses={avatarPoses} />
+
+          {onPondPress ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open fishing"
+              style={styles.pondTarget}
+              onPress={onPondPress}
+            />
+          ) : null}
+
+          {isCasting ? (
+            <View pointerEvents="none" style={styles.castingLabelWrap}>
+              <Text style={styles.castingLabel}>casting...</Text>
+            </View>
+          ) : null}
 
           {onWellPress ? (
             <Pressable
@@ -113,6 +133,28 @@ const styles = StyleSheet.create({
     width: 48,
     minHeight: 48,
     zIndex: 10,
+  },
+  pondTarget: {
+    position: "absolute",
+    left: "28%",
+    bottom: "14%",
+    width: "44%",
+    minHeight: 96,
+    zIndex: 1,
+  },
+  castingLabelWrap: {
+    position: "absolute",
+    left: "28%",
+    bottom: "14%",
+    width: "44%",
+    minHeight: 96,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+  castingLabel: {
+    ...handwrittenPrompt,
+    color: colors.surface,
   },
   wellTarget: {
     position: "absolute",

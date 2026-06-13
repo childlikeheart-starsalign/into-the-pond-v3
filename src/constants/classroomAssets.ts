@@ -18,8 +18,8 @@ export type NormRect = {
 
 /** Hit targets on the open screen and module menu artboards. */
 export const classroomHitRects = {
-  /** Tap-to-open book on classroom_open.png (576×1024). */
-  openTap: { left: 0.2, top: 0.54, width: 0.6, height: 0.2 },
+  /** Tap-to-open book on classroom-landing.png (576×1024). */
+  openTap: { left: 0.219, top: 0.61, width: 0.6, height: 0.2 },
   /** Floating book on the forest menu screens. */
   menuBook: { left: 0.22, top: 0.18, width: 0.56, height: 0.42 },
   /** Bottom dial area for slide-to-select gestures. */
@@ -73,7 +73,7 @@ const menuFrames = {
 } as const satisfies Record<SanctuaryTimeOfDay, Record<1 | 2 | 3 | 4 | 5, ImageSourcePropType>>;
 
 export const classroomAssets = {
-  open: require("@/assets/images/classroom_open.png"),
+  open: require("@/assets/images/classroom/classroom-landing.png"),
   menu: menuFrames,
   chapters: {
     1: require("@/assets/Classroom:chapters/253.png"),

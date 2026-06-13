@@ -6,6 +6,7 @@ import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
+import { SanctuaryNavBar } from "@/src/components/sanctuary/SanctuaryNavBar";
 import {
   CLASSROOM_MODULE_COUNT,
   classroomAssets,
@@ -14,13 +15,12 @@ import {
   getClassroomMenuFrame,
   type ClassroomView,
 } from "@/src/constants/classroomAssets";
-import { colors, fontFamilies } from "@/src/constants/theme";
+import { colors, fontFamilies, handwrittenPrompt } from "@/src/constants/theme";
 import { getLessonForChapterRow } from "@/src/features/classroom/lessonCatalog";
 import { PaywallModal } from "@/src/features/classroom/PaywallModal";
 import { useLessonNavigation } from "@/src/features/classroom/useLessonNavigation";
 import { VideoPlayerModal } from "@/src/features/classroom/VideoPlayer";
 import { useSanctuaryTimeOfDay } from "@/src/hooks/useSanctuaryTimeOfDay";
-import { routes } from "@/src/navigation/routes";
 import { setClassroomView } from "@/src/state/classroomView";
 
 const SWIPE_THRESHOLD_PX = 36;
@@ -57,10 +57,6 @@ export function ClassroomScreen() {
   const openMenu = useCallback(() => {
     setView("menu");
     setSelectedModule(1);
-  }, []);
-
-  const closeClassroom = useCallback(() => {
-    router.replace(routes.sanctuary);
   }, []);
 
   const closeMenu = useCallback(() => {
@@ -132,21 +128,18 @@ export function ClassroomScreen() {
           resizeMode="contain"
           accessibilityLabel="Classroom open"
         >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Tap to open classroom menu"
-            style={[styles.hitTarget, percentRectStyle(classroomHitRects.openTap)]}
-            onPress={openMenu}
-          />
+          <View style={styles.overlay} pointerEvents="box-none">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Tap to open classroom menu"
+              style={[styles.openTapTarget, percentRectStyle(classroomHitRects.openTap)]}
+              onPress={openMenu}
+            >
+              <Text style={styles.tapToOpenLabel}>Tap to open</Text>
+            </Pressable>
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Cancel and return to sanctuary"
-            onPress={closeClassroom}
-            style={[styles.cancelButton, { top: Math.max(10, insets.top + 2) }]}
-          >
-            <Text style={styles.cancelText}>×</Text>
-          </Pressable>
+            <SanctuaryNavBar embedded />
+          </View>
         </ImageBackground>
       </Portrait916Frame>
     );
@@ -252,6 +245,19 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     minWidth: 48,
     minHeight: 48,
+  },
+  openTapTarget: {
+    position: "absolute",
+    backgroundColor: "transparent",
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tapToOpenLabel: {
+    ...handwrittenPrompt,
+    color: colors.primary,
+    textAlign: "center",
   },
   bookTarget: {
     zIndex: 2,

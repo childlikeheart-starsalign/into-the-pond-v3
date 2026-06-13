@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "remoteConfigKeys": {
+    "recommendedTierId": "gate_recommended_tier_id"
+  },
+  "defaultRecommendedTierId": "fiberglass",
+  "screenTitleKey": "gate.screen.title",
+  "currentAccess": {
+    "titleKey": "gate.currentAccess.title",
+    "descriptionKey": "gate.currentAccess.description",
+    "activeLabelKey": "gate.currentAccess.activeLabel"
+  },
+  "tiers": [
+    {
+      "id": "wooden",
+      "cardType": "standard",
+      "illustrationAsset": "woodenRod",
+      "entitlementKey": "wooden",
+      "titleKey": "gate.tiers.wooden.title",
+      "descriptionKey": "gate.tiers.wooden.description",
+      "lessonRangeKey": "gate.tiers.wooden.lessonRange",
+      "badgeKey": "gate.badges.mostChosen",
+      "badgeAsset": "ribbonMostChosen",
+      "features": [
+        { "iconAsset": "key", "textKey": "gate.tiers.wooden.features.rareRod" },
+        { "iconAsset": "book", "textKey": "gate.tiers.wooden.features.lessons" }
+      ],
+      "monthlyProductId": "Wooden_Rod_Monthly",
+      "lifetimeProductId": null,
+      "pricing": {
+        "monthly": { "amountHkd": 38, "labelKey": "gate.pricing.monthly" },
+        "lifetime": null
+      }
+    },
+    {
+      "id": "fiberglass",
+      "cardType": "standard",
+      "illustrationAsset": "fiberglassRod",
+      "entitlementKey": "fiberglass",
+      "titleKey": "gate.tiers.fiberglass.title",
+      "descriptionKey": "gate.tiers.fiberglass.description",
+      "lessonRangeKey": "gate.tiers.fiberglass.lessonRange",
+      "badgeKey": null,
+      "badgeAsset": null,
+      "features": [
+        { "iconAsset": "key", "textKey": "gate.tiers.fiberglass.features.epicRod" },
+        { "iconAsset": "book", "textKey": "gate.tiers.fiberglass.features.lessons" },
+        { "iconAsset": "sprout", "textKey": "gate.tiers.fiberglass.features.woodenIncluded" }
+      ],
+      "monthlyProductId": "Fiberglass_Rod_Monthly",
+      "lifetimeProductId": null,
+      "pricing": {
+        "monthly": { "amountHkd": 68, "labelKey": "gate.pricing.monthly" },
+        "lifetime": null
+      }
+    },
+    {
+      "id": "lifetime",
+      "cardType": "premium",
+      "illustrationAsset": "lifetimeArchway",
+      "entitlementKey": "lifetime",
+      "titleKey": "gate.tiers.lifetime.title",
+      "descriptionKey": "gate.tiers.lifetime.description",
+      "lessonRangeKey": "gate.tiers.lifetime.lessonRange",
+      "badgeKey": "gate.badges.bestValue",
+      "badgeAsset": "ribbonBestValue",
+      "features": [
+        { "iconAsset": "key", "textKey": "gate.tiers.lifetime.features.allRods" },
+        { "iconAsset": "book", "textKey": "gate.tiers.lifetime.features.allLessons" },
+        { "iconAsset": "sprout", "textKey": "gate.tiers.lifetime.features.futureUpdates" }
+      ],
+      "monthlyProductId": null,
+      "lifetimeProductId": "Fiberglass_rod_lifetime",
+      "pricing": {
+        "monthly": null,
+        "lifetime": { "amountHkd": 499, "labelKey": "gate.pricing.lifetimeAccess" }
+      }
+    }
+  ]
+}

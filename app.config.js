@@ -52,6 +52,7 @@ module.exports = () => {
   return {
     expo: {
       ...expoBlock,
+      owner: "childlike-heart",
       plugins: [
         ...basePlugins,
         [

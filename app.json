@@ -60,7 +60,10 @@
       "revenueCatEntitlementWooden": "wooden_rod",
       "revenueCatEntitlementFiberglass": "fiberglass_rod",
       "revenueCatEntitlementLifetime": "lifetime_keeper",
-      "cloudFunctionsRegion": "asia-east2"
+      "cloudFunctionsRegion": "asia-east2",
+      "eas": {
+        "projectId": "d758a6d8-d626-40cc-8dae-f7e546f064dd"
+      }
     }
   }
 }

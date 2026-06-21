@@ -9,7 +9,11 @@
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "SENTRY_ORG": "childlike-heart",
+        "SENTRY_PROJECT": "react-native"
+      }
     }
   }
 }

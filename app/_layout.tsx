@@ -1,9 +1,11 @@
 import "react-native-reanimated";
+import "@/src/services/sentry/init";
+import "@/src/services/analytics/posthogClient";
 import {
   CormorantGaramond_400Regular,
   CormorantGaramond_700Bold,
 } from "@expo-google-fonts/cormorant-garamond";
-import { Inter_400Regular, Inter_600SemiBold } from "@expo-google-fonts/inter";
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from "@expo-google-fonts/inter";
 import {
   PlayfairDisplay_400Regular,
   PlayfairDisplay_700Bold,
@@ -26,13 +28,16 @@ import { getSyncNarrativeNeeds } from "@/src/services/onboarding/narrativeOnboar
 import { reloadCurrentUser } from "@/src/services/firebase/auth";
 import { ensureUserProfileDocument } from "@/src/services/firebase/ensureUserProfile";
 import { useOfflineSync } from "@/src/hooks/useOfflineSync";
+import { usePostHogIdentify } from "@/src/hooks/usePostHogIdentify";
+import { useRodProgressionSync } from "@/src/hooks/useRodProgressionSync";
 import { firebaseAuth, firestore } from "@/src/services/firebase/client";
 import { UserDoc } from "@/src/services/firebase/types";
 import { configureRevenueCat } from "@/src/services/revenuecat/client";
+import { Sentry } from "@/src/services/sentry/init";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const [authState, setAuthState] = useState<{
@@ -54,6 +59,8 @@ export default function RootLayout() {
   });
   const narrativeOnboarding = useNarrativeOnboarding();
   useOfflineSync(authState.uid);
+  useRodProgressionSync(authState.uid);
+  usePostHogIdentify(authState.uid);
   useAuthDeepLink();
 
   const [fontsLoaded] = useFonts({
@@ -62,6 +69,7 @@ export default function RootLayout() {
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
     Inter_400Regular,
+    Inter_500Medium,
     Inter_600SemiBold,
     CrustaceansSignatureDemo: require("@/assets/fonts/Crustaceans-SignatureDEMO-Regular.otf"),
   });
@@ -76,6 +84,14 @@ export default function RootLayout() {
       cancelled = true;
     };
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (authState.uid) {
+      Sentry.setUser({ id: authState.uid });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [authState.uid]);
 
   useEffect(() => {
     const missing = assertRequiredEnv();
@@ -99,6 +115,7 @@ export default function RootLayout() {
               const data = snap.data() as UserDoc;
               narrativeOnboarding.hydrateFromRemote({
                 childArchetype: data.childArchetype,
+                childBirthDate: data.childBirthDate,
                 hasCompletedDay1Narrative: data.hasCompletedDay1Narrative,
                 narrativeProgress: data.narrativeProgress,
               });
@@ -182,6 +199,8 @@ export default function RootLayout() {
       const syncNarrativeNeeds = getSyncNarrativeNeeds();
       const needsArchetype =
         syncNarrativeNeeds?.needsArchetype ?? narrativeOnboarding.needsArchetype;
+      const needsBirthDate =
+        syncNarrativeNeeds?.needsBirthDate ?? narrativeOnboarding.needsBirthDate;
       const needsNarrative =
         syncNarrativeNeeds?.needsNarrative ?? narrativeOnboarding.needsNarrative;
 
@@ -189,7 +208,7 @@ export default function RootLayout() {
         router.replace(routes.sanctuary);
         return;
       }
-      if (needsArchetype || needsNarrative) {
+      if (needsArchetype || needsBirthDate || needsNarrative) {
         router.replace(routes.narrativeOnboarding);
         return;
       }
@@ -199,12 +218,13 @@ export default function RootLayout() {
 
     const syncNarrativeNeeds = getSyncNarrativeNeeds();
     const needsArchetype = syncNarrativeNeeds?.needsArchetype ?? narrativeOnboarding.needsArchetype;
+    const needsBirthDate = syncNarrativeNeeds?.needsBirthDate ?? narrativeOnboarding.needsBirthDate;
     const needsNarrative = syncNarrativeNeeds?.needsNarrative ?? narrativeOnboarding.needsNarrative;
 
     // Wait for narrative state before routing elsewhere.
     if (!narrativeOnboarding.ready && !syncNarrativeNeeds) return;
 
-    if (needsArchetype || needsNarrative) {
+    if (needsArchetype || needsBirthDate || needsNarrative) {
       if (!isNarrativeRoute) router.replace(routes.narrativeOnboarding);
       return;
     }
@@ -221,6 +241,7 @@ export default function RootLayout() {
     fontsLoaded,
     guardProcessing,
     narrativeOnboarding.needsArchetype,
+    narrativeOnboarding.needsBirthDate,
     narrativeOnboarding.needsNarrative,
     narrativeOnboarding.ready,
     pathname,
@@ -241,6 +262,13 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="narrative-onboarding" />
           <Stack.Screen
+            name="well"
+            options={{
+              presentation: "fullScreenModal",
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
             name="(modals)"
             options={{
               presentation: "modal",
@@ -252,3 +280,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

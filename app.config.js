@@ -39,12 +39,30 @@ module.exports = () => {
       process.env.REVENUECAT_ENTITLEMENT_LIFETIME ?? baseExtra.revenueCatEntitlementLifetime,
     cloudFunctionsRegion:
       process.env.EXPO_PUBLIC_CLOUD_FUNCTIONS_REGION ?? baseExtra.cloudFunctionsRegion,
+    sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? baseExtra.sentryDsn,
+    posthogApiKey: process.env.EXPO_PUBLIC_POSTHOG_API_KEY ?? baseExtra.posthogApiKey,
+    posthogHost:
+      process.env.EXPO_PUBLIC_POSTHOG_HOST ?? baseExtra.posthogHost ?? "https://app.posthog.com",
   };
+
+  const basePlugins = (expoBlock.plugins ?? []).filter(
+    (plugin) => !(Array.isArray(plugin) && plugin[0] === "@sentry/react-native/expo"),
+  );
 
   return {
     expo: {
       ...expoBlock,
-      plugins: [...(expoBlock.plugins ?? []), "./plugins/withFirebaseNativeFiles"],
+      plugins: [
+        ...basePlugins,
+        [
+          "@sentry/react-native/expo",
+          {
+            organization: "childlike-heart",
+            project: "react-native",
+          },
+        ],
+        "./plugins/withFirebaseNativeFiles",
+      ],
       extra: mergedExtra,
     },
   };

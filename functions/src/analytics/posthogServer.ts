@@ -1,4 +1,5 @@
 import { PostHog } from "posthog-node";
+import admin from "firebase-admin";
 
 const POSTHOG_HOST = process.env.POSTHOG_HOST ?? "https://app.posthog.com";
 
@@ -13,13 +14,23 @@ function getPostHogServer(): PostHog | null {
   return client;
 }
 
-function captureServerEvent(
+async function isUserAnalyticsOptedOut(distinctId: string): Promise<boolean> {
+  try {
+    const snap = await admin.firestore().collection("users").doc(distinctId).get();
+    return snap.data()?.analyticsOptOut === true;
+  } catch {
+    return false;
+  }
+}
+
+async function captureServerEvent(
   distinctId: string,
   event: string,
   properties: Record<string, unknown>,
-): void {
+): Promise<void> {
   const posthog = getPostHogServer();
   if (!posthog) return;
+  if (await isUserAnalyticsOptedOut(distinctId)) return;
   posthog.capture({ distinctId, event, properties });
 }
 
@@ -29,7 +40,7 @@ export async function captureLessonCompleted(params: {
   moduleId: number | null;
   timestamp: number;
 }): Promise<void> {
-  captureServerEvent(params.uid, "lesson_completed", {
+  await captureServerEvent(params.uid, "lesson_completed", {
     user_id: params.uid,
     lesson_id: params.lessonId,
     module_id: params.moduleId,
@@ -48,7 +59,7 @@ export async function captureRodEquipped(params: {
   equippedSameSession: boolean | null;
   timestamp: number;
 }): Promise<void> {
-  captureServerEvent(params.uid, "rod_equipped", {
+  await captureServerEvent(params.uid, "rod_equipped", {
     rodId: params.rodId,
     rodTier: params.rodTier,
     rodElement: params.rodElement,
@@ -66,7 +77,7 @@ export async function captureAccountCreatedBackend(params: {
   provider: string;
   createdAt?: string;
 }): Promise<void> {
-  captureServerEvent(params.uid, "account_created_backend", {
+  await captureServerEvent(params.uid, "account_created_backend", {
     email_verified_status: params.emailVerified,
     provider: params.provider,
     created_at: params.createdAt ?? new Date().toISOString(),
@@ -78,7 +89,7 @@ export async function captureEmailVerifiedBackend(params: {
   provider: string;
   hoursSinceCreation: number;
 }): Promise<void> {
-  captureServerEvent(params.uid, "email_verified_backend", {
+  await captureServerEvent(params.uid, "email_verified_backend", {
     hours_since_creation: params.hoursSinceCreation,
     provider: params.provider,
   });
@@ -90,7 +101,7 @@ export async function captureVerifyWallAbandoned(params: {
   provider: string;
   sweepWindowHours: number;
 }): Promise<void> {
-  captureServerEvent(params.uid, "verify_wall_abandoned", {
+  await captureServerEvent(params.uid, "verify_wall_abandoned", {
     hours_since_creation: params.hoursSinceCreation,
     provider: params.provider,
     sweep_window_hours: params.sweepWindowHours,
@@ -102,7 +113,7 @@ export async function captureAccountDeletionRequested(params: {
   uid: string;
   source: string;
 }): Promise<void> {
-  captureServerEvent(params.uid, "account_deletion_requested", {
+  await captureServerEvent(params.uid, "account_deletion_requested", {
     source: params.source,
   });
 }

@@ -81,6 +81,15 @@ Do **not** submit from simulator-only testing. On a **physical device** with a *
 - [ ] No `127.0.0.1` network calls (Apple sign-in, scene close)
 - [ ] Production bundle: no stray `console.log` in release (Babel strips non-error console when `NODE_ENV=production`)
 
+## PostHog session replay (required)
+
+See [`docs/posthog-verification.md`](docs/posthog-verification.md) → Session replay (P5-E).
+
+- [ ] PostHog replay TTL set to 14–30 days in project settings
+- [ ] Record preview build session → confirm masked auth fields, journal/well text, and images in PostHog replay UI
+- [ ] Toggle **Analytics & privacy** off (Gate or sign-in footer) → no new Live events
+- [ ] Toggle back on → events resume after sanctuary init
+
 ## OTA updates (after first store binary)
 
 Channels are isolated: development builds must never receive production OTA updates.
@@ -93,8 +102,25 @@ npm run eas:update -- --channel preview --message "QA fix description"
 npm run eas:update -- --channel production --message "Hotfix description"
 ```
 
+## CI / EAS builds (GitHub Actions)
+
+Workflow: [`.github/workflows/eas-build.yml`](.github/workflows/eas-build.yml)
+
+| Trigger                                | Profile                                          | Platform                          |
+| -------------------------------------- | ------------------------------------------------ | --------------------------------- |
+| Push to `main`                         | `preview`                                        | `ios`                             |
+| Push tag `v*` (e.g. `v3.0.1`)          | `production`                                     | `all`                             |
+| **Actions → EAS Build → Run workflow** | choose `development`, `preview`, or `production` | choose `ios`, `android`, or `all` |
+
+**Required GitHub secret:** `EXPO_TOKEN` — create at [expo.dev/settings/access-tokens](https://expo.dev/settings/access-tokens), then add under **GitHub → Settings → Secrets and variables → Actions**.
+
+EAS project secrets (Firebase native files, Sentry upload token, env vars) must still be configured on Expo (`npm run setup:eas-firebase-files`, `npm run setup:eas-rtdb-env`). CI only authenticates the build; it does not upload local Firebase files.
+
+Builds use `npm run eas:build` with `--non-interactive --no-wait` (monitor progress on [expo.dev](https://expo.dev)).
+
 ## Credentials
 
 - Firebase native files: EAS secrets `GOOGLE_SERVICE_INFO_PLIST_BASE64`, `GOOGLE_SERVICES_JSON_BASE64`
 - JS config: EAS env vars per [`.env.example`](.env.example) and [README.md](README.md)
+- GitHub Actions: repository secret `EXPO_TOKEN` (see **CI / EAS builds** above)
 - Never commit `assets/GoogleService-Info.plist`, `assets/google-services.json`, or root `GoogleService-Info.plist`

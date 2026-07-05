@@ -9,6 +9,7 @@ const auth_1 = require("firebase-admin/auth");
 const firestore_1 = require("firebase-admin/firestore");
 const https_1 = require("firebase-functions/v2/https");
 const firebase_functions_1 = require("firebase-functions");
+const posthogServer_1 = require("../analytics/posthogServer");
 const init_1 = require("../init");
 const accountDeletionConstants_1 = require("./accountDeletionConstants");
 const deletionCrypto_1 = require("./deletionCrypto");
@@ -142,6 +143,7 @@ async function runPhase1Deletion(params) {
   if (txResult.kind === "fresh") {
     await (0, deletePiiSubcollections_1.deletePiiSubcollections)(uid);
     await (0, auth_1.getAuth)().revokeRefreshTokens(uid);
+    await (0, posthogServer_1.captureAccountDeletionRequested)({ uid, source });
     firebase_functions_1.logger.info("account_deletion_requested", { uid, source, requestId });
   }
   return txResult.response;
@@ -236,6 +238,9 @@ async function confirmAccountDeletionWebCallable(params) {
   }
   const webData = webTokenSnap.data();
   if (webData.tokenHash !== tokenHash || webData.usedAt) {
+    throw new https_1.HttpsError("permission-denied", "Invalid confirmation token.");
+  }
+  if (webData.requestId && webData.requestId !== requestId) {
     throw new https_1.HttpsError("permission-denied", "Invalid confirmation token.");
   }
   const response = await runPhase1Deletion({

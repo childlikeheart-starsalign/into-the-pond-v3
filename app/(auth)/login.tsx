@@ -28,11 +28,12 @@ import { useAppleSignIn } from "@/src/hooks/auth/useAppleSignIn";
 import { useGoogleSignIn } from "@/src/hooks/auth/useGoogleSignIn";
 import { SANCTUARY_STAGE_MODE, usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
+import { AnalyticsPrivacySection } from "@/src/features/gate/components/AnalyticsPrivacySection";
 import {
   identifyReturningUser,
-  trackAuthErrorEncountered,
-  trackAuthFormSubmitted,
-  trackAuthInteractionStarted,
+  trackAuthSigninFailed,
+  trackAuthSigninStarted,
+  trackAuthSigninSubmitted,
 } from "@/src/services/analytics/authFunnel";
 import {
   mapSignInScreenError,
@@ -110,7 +111,7 @@ export function SignInScreen() {
     startArtboard();
 
     try {
-      trackAuthFormSubmitted("email");
+      trackAuthSigninSubmitted("email");
       const [result] = await Promise.all([
         signInWithEmailForLoginScreen(email, password),
         new Promise<void>((resolve) => setTimeout(resolve, SIGN_IN_ARTBOARD_MIN_MS)),
@@ -134,7 +135,7 @@ export function SignInScreen() {
       Sentry.captureException(e, { tags: { area: "auth", flow: "sign_in_email" } });
       const code =
         e && typeof e === "object" && "code" in e ? String((e as { code?: string }).code) : "";
-      trackAuthErrorEncountered({ errorCode: code || "unknown", authMethod: "email" });
+      trackAuthSigninFailed({ errorCode: code || "unknown", authMethod: "email" });
       const mapped = mapSignInScreenError(e);
       if (mapped.emailError) {
         setEmailError(mapped.emailError);
@@ -156,18 +157,15 @@ export function SignInScreen() {
     startArtboard();
 
     try {
-      trackAuthInteractionStarted({
-        focusedField: "oauth_apple",
-        authMethodAttempted: "apple",
-      });
-      trackAuthFormSubmitted("apple");
+      trackAuthSigninStarted({ authMethod: "apple", focusedField: "oauth_apple" });
+      trackAuthSigninSubmitted("apple");
       const [result] = await Promise.all([
         appleSignIn(),
         new Promise<void>((resolve) => setTimeout(resolve, SIGN_IN_ARTBOARD_MIN_MS)),
       ]);
 
       if (!result) {
-        trackAuthErrorEncountered({ errorCode: "apple/canceled", authMethod: "apple" });
+        trackAuthSigninFailed({ errorCode: "apple/canceled", authMethod: "apple" });
         cancel();
         return;
       }
@@ -188,7 +186,7 @@ export function SignInScreen() {
       startVideo(result.user.uid, markResult === "unknown");
     } catch (e) {
       Sentry.captureException(e, { tags: { area: "auth", flow: "sign_in_apple" } });
-      trackAuthErrorEncountered({ errorCode: "apple/unknown", authMethod: "apple" });
+      trackAuthSigninFailed({ errorCode: "apple/unknown", authMethod: "apple" });
       cancel();
     }
   }, [appleSignIn, cancel, clearError, startArtboard, startVideo]);
@@ -202,18 +200,15 @@ export function SignInScreen() {
     startArtboard();
 
     try {
-      trackAuthInteractionStarted({
-        focusedField: "oauth_google",
-        authMethodAttempted: "google",
-      });
-      trackAuthFormSubmitted("google");
+      trackAuthSigninStarted({ authMethod: "google", focusedField: "oauth_google" });
+      trackAuthSigninSubmitted("google");
       const [result] = await Promise.all([
         googleSignIn(),
         new Promise<void>((resolve) => setTimeout(resolve, SIGN_IN_ARTBOARD_MIN_MS)),
       ]);
 
       if (!result) {
-        trackAuthErrorEncountered({ errorCode: "google/canceled", authMethod: "google" });
+        trackAuthSigninFailed({ errorCode: "google/canceled", authMethod: "google" });
         cancel();
         return;
       }
@@ -234,7 +229,7 @@ export function SignInScreen() {
       startVideo(result.user.uid, markResult === "unknown");
     } catch (e) {
       Sentry.captureException(e, { tags: { area: "auth", flow: "sign_in_google" } });
-      trackAuthErrorEncountered({ errorCode: "google/unknown", authMethod: "google" });
+      trackAuthSigninFailed({ errorCode: "google/unknown", authMethod: "google" });
       cancel();
     }
   }, [cancel, clearGoogleError, googleSignIn, startArtboard, startVideo]);
@@ -275,14 +270,17 @@ export function SignInScreen() {
     <AuthArtboardScreen
       backgroundSource={backgroundSource}
       footer={
-        <Pressable
-          accessibilityRole="link"
-          accessibilityLabel="Delete account without signing in"
-          onPress={() => void Linking.openURL(DELETE_ACCOUNT_WEB_URL)}
-          style={loginFooterStyles.link}
-        >
-          <Text style={loginFooterStyles.linkText}>Delete account</Text>
-        </Pressable>
+        <View style={loginFooterStyles.footer}>
+          <AnalyticsPrivacySection compact />
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Delete account without signing in"
+            onPress={() => void Linking.openURL(DELETE_ACCOUNT_WEB_URL)}
+            style={loginFooterStyles.link}
+          >
+            <Text style={loginFooterStyles.linkText}>Delete account</Text>
+          </Pressable>
+        </View>
       }
     >
       <ErrorOverlay
@@ -317,10 +315,7 @@ export function SignInScreen() {
         style={[authArtboardFieldStyles.textInput, emailInputStyle as TextStyle, inputTextStyle]}
         value={email}
         onChangeText={(t) => {
-          trackAuthInteractionStarted({
-            focusedField: "email",
-            authMethodAttempted: "email",
-          });
+          trackAuthSigninStarted({ authMethod: "email", focusedField: "email" });
           setEmail(t);
           setEmailError(null);
           setGeneralError(null);
@@ -346,10 +341,7 @@ export function SignInScreen() {
           ]}
           value={password}
           onChangeText={(t) => {
-            trackAuthInteractionStarted({
-              focusedField: "password",
-              authMethodAttempted: "email",
-            });
+            trackAuthSigninStarted({ authMethod: "email", focusedField: "password" });
             setPassword(t);
             setPasswordError(null);
             setGeneralError(null);
@@ -406,6 +398,10 @@ export function SignInScreen() {
 export default SignInScreen;
 
 const loginFooterStyles = {
+  footer: {
+    gap: 16,
+    marginTop: 16,
+  },
   link: {
     minHeight: 48,
     alignItems: "center" as const,

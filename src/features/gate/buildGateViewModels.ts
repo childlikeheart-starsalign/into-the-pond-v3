@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 
-import { formatGatePrice, translateGateCopy } from "@/src/features/gate/gateCopy";
+import {
+  formatGatePrice,
+  formatStorePriceLabel,
+  translateGateCopy,
+} from "@/src/features/gate/gateCopy";
+import type { LogicalProductId } from "@/src/services/iap/catalog";
 import {
   currentAccessDescriptionKey,
   currentAccessEntitlementLabelKey,
@@ -10,10 +15,27 @@ import {
 import type {
   CurrentAccessViewModel,
   GateEntitlementContext,
+  GatePriceEntry,
   GatePricingTier,
   GateTiersConfig,
   PricingCardViewModel,
 } from "@/src/features/gate/types";
+
+function resolvePriceLabel(
+  productId: LogicalProductId | null,
+  fallback: GatePriceEntry | null,
+  storePriceLabels: Partial<Record<LogicalProductId, string>>,
+  periodSuffixKey: "gate.pricing.perMonth" | "gate.pricing.oneTime",
+  locale: "en" = "en",
+): string | null {
+  if (!fallback) return null;
+  const storePrice = productId ? storePriceLabels[productId] : undefined;
+  if (storePrice) {
+    return formatStorePriceLabel(storePrice, periodSuffixKey, locale);
+  }
+  const periodSuffix = translateGateCopy(periodSuffixKey, locale);
+  return `${formatGatePrice(fallback.amountHkd, fallback.labelKey, locale)} · ${periodSuffix}`;
+}
 
 export function buildCurrentAccessViewModel(
   config: GateTiersConfig,
@@ -42,12 +64,24 @@ export function buildPricingCardViewModel(
 
   const monthlyPriceLabel =
     tier.pricing.monthly && state !== "unavailable" && state !== "owned"
-      ? `${formatGatePrice(tier.pricing.monthly.amountHkd, tier.pricing.monthly.labelKey, locale)} · ${translateGateCopy("gate.pricing.perMonth", locale)}`
+      ? resolvePriceLabel(
+          tier.monthlyProductId,
+          tier.pricing.monthly,
+          ctx.storePriceLabels,
+          "gate.pricing.perMonth",
+          locale,
+        )
       : null;
 
   const lifetimePriceLabel =
     tier.pricing.lifetime && state !== "unavailable" && state !== "owned"
-      ? `${formatGatePrice(tier.pricing.lifetime.amountHkd, tier.pricing.lifetime.labelKey, locale)} · ${translateGateCopy("gate.pricing.oneTime", locale)}`
+      ? resolvePriceLabel(
+          tier.lifetimeProductId,
+          tier.pricing.lifetime,
+          ctx.storePriceLabels,
+          "gate.pricing.oneTime",
+          locale,
+        )
       : null;
 
   return {

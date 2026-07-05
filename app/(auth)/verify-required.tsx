@@ -34,9 +34,11 @@ import { useAuthBoot } from "@/src/hooks/useAuthBoot";
 import { routes } from "@/src/navigation/routes";
 import { completeSanctuaryInitWithLegacyFallback } from "@/src/services/auth/completeSanctuaryInit";
 import {
-  trackVerifyDwellFriction,
-  trackVerifyEmailOpened,
-  trackVerifyScreenViewed,
+  trackAuthVerifyAbandoned,
+  trackAuthVerifyCompleted,
+  trackAuthVerifyEmailOpened,
+  trackAuthVerifyPending,
+  trackAuthVerifyResent,
 } from "@/src/services/analytics/authFunnel";
 import {
   sendEmailVerificationForCurrentUser,
@@ -70,14 +72,14 @@ export default function VerifyRequiredScreen() {
   const verifyOpenedTrackedRef = useRef(false);
 
   useEffect(() => {
-    trackVerifyScreenViewed();
+    trackAuthVerifyPending();
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!dwellTrackedRef.current) {
         dwellTrackedRef.current = true;
-        trackVerifyDwellFriction(VERIFY_DWELL_MS);
+        trackAuthVerifyAbandoned(VERIFY_DWELL_MS / 1000);
       }
     }, VERIFY_DWELL_MS);
     return () => clearTimeout(timer);
@@ -88,7 +90,7 @@ export default function VerifyRequiredScreen() {
       if (state === "background" || state === "inactive") {
         if (!verifyOpenedTrackedRef.current) {
           verifyOpenedTrackedRef.current = true;
-          trackVerifyEmailOpened();
+          trackAuthVerifyEmailOpened();
         }
       }
       if (state === "active") {
@@ -109,6 +111,7 @@ export default function VerifyRequiredScreen() {
       if (!uid) return;
       const result = await completeSanctuaryInitWithLegacyFallback(uid);
       if (result.status === "success" || result.status === "already_initialized") {
+        trackAuthVerifyCompleted();
         router.replace(routes.emailVerified);
         return;
       }
@@ -173,6 +176,7 @@ export default function VerifyRequiredScreen() {
     setStatusIsError(false);
     try {
       await sendEmailVerificationForCurrentUser();
+      trackAuthVerifyResent();
       setCooldownSeconds(60);
       setStatusMessage(AUTH_VERIFY_RESEND_SUCCESS);
       setStatusIsStillWaiting(false);

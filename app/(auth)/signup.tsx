@@ -34,9 +34,9 @@ import { SANCTUARY_STAGE_MODE, usePortrait916Layout } from "@/src/hooks/usePortr
 import { routes } from "@/src/navigation/routes";
 import {
   setInitialAuthMethod,
-  trackAuthErrorEncountered,
-  trackAuthFormSubmitted,
-  trackAuthInteractionStarted,
+  trackAuthSignupFailed,
+  trackAuthSignupStarted,
+  trackAuthSignupSubmitted,
 } from "@/src/services/analytics/authFunnel";
 import {
   sendEmailVerificationForCurrentUser,
@@ -134,7 +134,8 @@ export default function SignUpScreen() {
 
     setSubmitting(true);
     try {
-      trackAuthFormSubmitted("email");
+      setInitialAuthMethod("email");
+      trackAuthSignupSubmitted("email");
       await signUpWithEmail(email.trim(), password);
       try {
         await sendEmailVerificationForCurrentUser();
@@ -147,7 +148,7 @@ export default function SignUpScreen() {
       Sentry.captureException(e, { tags: { area: "auth", flow: "sign_up_email" } });
       const code =
         e && typeof e === "object" && "code" in e ? String((e as { code?: string }).code) : "";
-      trackAuthErrorEncountered({ errorCode: code || "unknown", authMethod: "email" });
+      trackAuthSignupFailed({ errorCode: code || "unknown", authMethod: "email" });
       const mapped = mapSignupError(code);
       if (mapped.field === "email") {
         setEmailError(mapped.message);
@@ -167,15 +168,12 @@ export default function SignUpScreen() {
     setPasswordError(null);
     setGeneralError(null);
     setSendFailure(false);
-    trackAuthInteractionStarted({
-      focusedField: "oauth_apple",
-      authMethodAttempted: "apple",
-    });
-    trackAuthFormSubmitted("apple");
+    trackAuthSignupStarted({ authMethod: "apple", focusedField: "oauth_apple" });
+    trackAuthSignupSubmitted("apple");
     setInitialAuthMethod("apple");
     const result = await appleSignIn();
     if (!result) {
-      trackAuthErrorEncountered({ errorCode: "apple/canceled", authMethod: "apple" });
+      trackAuthSignupFailed({ errorCode: "apple/canceled", authMethod: "apple" });
     }
   }, [appleSignIn, clearError]);
 
@@ -185,15 +183,12 @@ export default function SignUpScreen() {
     setPasswordError(null);
     setGeneralError(null);
     setSendFailure(false);
-    trackAuthInteractionStarted({
-      focusedField: "oauth_google",
-      authMethodAttempted: "google",
-    });
-    trackAuthFormSubmitted("google");
+    trackAuthSignupStarted({ authMethod: "google", focusedField: "oauth_google" });
+    trackAuthSignupSubmitted("google");
     setInitialAuthMethod("google");
     const result = await googleSignIn();
     if (!result) {
-      trackAuthErrorEncountered({ errorCode: "google/canceled", authMethod: "google" });
+      trackAuthSignupFailed({ errorCode: "google/canceled", authMethod: "google" });
     }
   }, [clearGoogleError, googleSignIn]);
 
@@ -325,10 +320,7 @@ export default function SignUpScreen() {
         style={[authArtboardFieldStyles.textInput, emailInputStyle as TextStyle, inputTextStyle]}
         value={email}
         onChangeText={(t) => {
-          trackAuthInteractionStarted({
-            focusedField: "email",
-            authMethodAttempted: "email",
-          });
+          trackAuthSignupStarted({ authMethod: "email", focusedField: "email" });
           setEmail(t);
           setEmailError(null);
           setGeneralError(null);
@@ -377,10 +369,7 @@ export default function SignUpScreen() {
           ]}
           value={password}
           onChangeText={(t) => {
-            trackAuthInteractionStarted({
-              focusedField: "password",
-              authMethodAttempted: "email",
-            });
+            trackAuthSignupStarted({ authMethod: "email", focusedField: "password" });
             setPassword(t);
             setPasswordError(null);
             setGeneralError(null);

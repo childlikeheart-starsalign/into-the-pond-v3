@@ -49,6 +49,13 @@ export const gateCopyEn: Record<string, string> = {
   "gate.footer.accountId": "Account ID",
   "gate.footer.restore": "Restore purchases",
 
+  "gate.analytics.title": "Analytics & privacy",
+  "gate.analytics.body":
+    "We use PostHog analytics, including masked session replay, to improve the app. You can turn this off anytime; core features still work.",
+  "gate.analytics.policyLink": "Privacy policy",
+  "gate.analytics.policyLinkA11y": "Open privacy policy",
+  "gate.analytics.toggleA11y": "Allow analytics and session replay",
+
   "gate.delete.open": "Delete account",
   "gate.delete.webLink": "Delete without signing in",
   "gate.delete.sheetTitle": "Delete your account?",
@@ -86,4 +93,12 @@ export function formatGatePrice(
 ): string {
   const label = translateGateCopy(labelKey, locale);
   return `HKD ${amountHkd} · ${label}`;
+}
+
+export function formatStorePriceLabel(
+  priceString: string,
+  periodSuffixKey: "gate.pricing.perMonth" | "gate.pricing.oneTime",
+  locale: GateLocale = "en",
+): string {
+  return `${priceString} · ${translateGateCopy(periodSuffixKey, locale)}`;
 }

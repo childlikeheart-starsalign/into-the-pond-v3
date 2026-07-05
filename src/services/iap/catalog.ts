@@ -18,6 +18,7 @@ export type LogicalProduct = {
   priceHkd: number;
 };
 
+/** Reference catalog only — Gate UI prices/availability come from RC offering (P3-C). */
 export const LOGICAL_PRODUCTS: LogicalProduct[] = [
   {
     id: PRODUCT_IDS.tier1Monthly,

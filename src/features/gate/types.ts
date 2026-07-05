@@ -62,6 +62,7 @@ export type GateEntitlementContext = {
   recommendedTierId: string;
   unavailableTierIds: string[];
   storeAvailability: Partial<Record<LogicalProductId, boolean>>;
+  storePriceLabels: Partial<Record<LogicalProductId, string>>;
 };
 
 export type CurrentAccessViewModel = {

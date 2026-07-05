@@ -117,7 +117,9 @@ exports.verifyPurchase = (0, https_1.onCall)(async (request) => {
         userRef,
         idempotencyKey,
         "purchase_verify",
-        { success: true },
+        {
+          success: true,
+        },
       );
     });
     firebase_functions_1.logger.info("Purchase audit entry created", {
@@ -349,14 +351,18 @@ exports.startCraft = (0, https_1.onCall)(async (request) => {
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
   const payload = request.data ?? {};
-  return (0, craftCallables_1.handleStartCraft)(uid, { rodId: payload.rodId });
+  return (0, craftCallables_1.handleStartCraft)(uid, {
+    rodId: payload.rodId,
+  });
 });
 exports.collectCraft = (0, https_1.onCall)(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
   const payload = request.data ?? {};
-  return (0, craftCallables_1.handleCollectCraft)(uid, { rodId: payload.rodId });
+  return (0, craftCallables_1.handleCollectCraft)(uid, {
+    rodId: payload.rodId,
+  });
 });
 exports.equipRod = (0, https_1.onCall)(async (request) => {
   const uid = request.auth?.uid;

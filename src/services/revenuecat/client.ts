@@ -28,26 +28,40 @@ function markRevenueCatConfigured() {
   (globalThis as Record<string, unknown>)[REVENUE_CAT_CONFIGURED_KEY] = true;
 }
 
-export async function configureRevenueCat(appUserID?: string | null) {
-  const apiKey = Platform.select({
+function getRevenueCatApiKey() {
+  return Platform.select({
     ios: env.revenueCat.appleApiKey,
     android: env.revenueCat.googleApiKey,
     default: "",
   });
+}
 
+/** One-time SDK bootstrap — call at module load before any Purchases.* usage. */
+export function ensureRevenueCatConfigured(): boolean {
+  if (isRevenueCatAlreadyConfigured()) {
+    return true;
+  }
+
+  const apiKey = getRevenueCatApiKey();
   if (!apiKey) {
     console.warn("RevenueCat API key missing for this platform.");
     Sentry.captureMessage("RevenueCat API key missing", {
       level: "warning",
       tags: { area: "revenuecat", flow: "configure" },
     });
-    return;
+    return false;
   }
 
-  if (!isRevenueCatAlreadyConfigured()) {
-    Purchases.setLogLevel(LOG_LEVEL.INFO);
-    Purchases.configure({ apiKey });
-    markRevenueCatConfigured();
+  Purchases.setLogLevel(LOG_LEVEL.INFO);
+  Purchases.configure({ apiKey });
+  markRevenueCatConfigured();
+  return true;
+}
+
+/** Sync Firebase uid to RevenueCat app user id — call from auth listener only. */
+export async function syncRevenueCatIdentity(appUserID: string | null | undefined): Promise<void> {
+  if (!ensureRevenueCatConfigured()) {
+    return;
   }
 
   try {

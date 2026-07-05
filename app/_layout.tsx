@@ -15,7 +15,7 @@ import { Stack, usePathname, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { AppState, View } from "react-native";
+import { AppState, Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
@@ -42,7 +42,12 @@ import { usePostHogIdentify } from "@/src/hooks/usePostHogIdentify";
 import { useRodProgressionSync } from "@/src/hooks/useRodProgressionSync";
 import { firebaseAuth, firestore } from "@/src/services/firebase/client";
 import { UserDoc, type DeletionStatus } from "@/src/services/firebase/types";
-import { configureRevenueCat } from "@/src/services/revenuecat/client";
+import { requestSubscriptionSync } from "@/src/services/firebase/serverActions";
+import {
+  ensureRevenueCatConfigured,
+  getSubscriptionStatus,
+  syncRevenueCatIdentity,
+} from "@/src/services/revenuecat/client";
 import { Sentry } from "@/src/services/sentry/init";
 import {
   hydrateAuthInitPhase,
@@ -53,6 +58,8 @@ import {
 } from "@/src/state/authInitStore";
 
 SplashScreen.preventAutoHideAsync();
+
+ensureRevenueCatConfigured();
 
 type RootLayoutShellProps = {
   fontsLoaded: boolean;
@@ -340,7 +347,7 @@ function RootLayout() {
           emailVerified: false,
           ready: true,
         });
-        void configureRevenueCat(undefined);
+        void syncRevenueCatIdentity(null);
         return;
       }
 
@@ -356,7 +363,7 @@ function RootLayout() {
         emailVerified: user?.emailVerified ?? false,
         ready: true,
       });
-      void configureRevenueCat(user?.uid);
+      void syncRevenueCatIdentity(user?.uid ?? null);
       if (user) {
         void hydrateAuthInitPhase(user.uid);
         void (async () => {
@@ -410,6 +417,14 @@ function RootLayout() {
           emailVerified: user?.emailVerified ?? false,
           ready: prev.ready,
         }));
+        if (user?.uid && (Platform.OS === "ios" || Platform.OS === "android")) {
+          void getSubscriptionStatus();
+          void requestSubscriptionSync(user.uid).catch((err) => {
+            Sentry.captureException(err, {
+              tags: { area: "revenuecat", flow: "foreground_sync" },
+            });
+          });
+        }
       })();
     });
     return () => {

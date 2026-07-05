@@ -2,6 +2,7 @@
 
 ## Prerequisites
 
+- RevenueCat SDK bootstraps at app load (see `ensureRevenueCatConfigured` in [`app/_layout.tsx`](app/_layout.tsx)); gate offerings should appear on first visit without app restart
 - RevenueCat products/offering configured with:
   - `Wooden_Rod_Monthly`
   - `Fiberglass_Rod_Monthly`
@@ -49,6 +50,40 @@
 2. Confirm next `syncSubscriptionStatus` or `verifyPurchase` updates:
    - `activeRod` -> `basic` (unless `isLifetime`)
    - `hasPaidRod` becomes false on client derived state.
+
+## Foreground refresh (P3-B)
+
+Verifies out-of-band subscription changes without force-quit. On AppState `"active"`, the app shell calls `getSubscriptionStatus` and `syncSubscriptionStatus` for signed-in native users.
+
+### Out-of-band cancel
+
+1. With an active sandbox subscription, open the app and confirm paid tier on Gate.
+2. Background the app (home button / app switcher).
+3. Cancel the subscription in iOS Settings → Subscriptions (or Play Store subscriptions).
+4. Foreground the app (do not force-quit).
+5. Confirm within a few seconds:
+   - Gate shows free / downgraded tier
+   - Firestore `users/{uid}.subscription.subscriptionStatus` reflects cancel (e.g. `free`)
+   - Sanctuary premium-gated UI updates if applicable (`useUserIsPremium`)
+
+### Out-of-band restore
+
+1. With no active subscription, background the app.
+2. Restore or resubscribe via App Store / Play (same store account).
+3. Foreground the app without restart.
+4. Confirm entitlements and Firestore subscription fields update without cold start.
+
+## Offerings-driven paywall (P3-C)
+
+Gate prices and product availability come from the RevenueCat **current offering**, not static HKD values in `assets/gate/tiers.json`.
+
+1. In RevenueCat dashboard, confirm the **current offering** includes:
+   - `Wooden_Rod_Monthly`
+   - `Fiberglass_Rod_Monthly`
+   - `Fiberglass_rod_lifetime`
+2. Open Gate on a native build — monthly/lifetime CTAs show **store-localized prices** (e.g. `$4.99`) from the SDK, not `HKD 38` fallback text.
+3. Temporarily remove a product from the offering — the matching tier purchase option shows **Unavailable**.
+4. Complete a sandbox purchase and restore — Firestore subscription fields still update as in sections above.
 
 ## Account Switch
 

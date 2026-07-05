@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import Purchases, { CustomerInfo } from "react-native-purchases";
+import { AppState } from "react-native";
+import { CustomerInfo } from "react-native-purchases";
 
 import {
   addCustomerInfoListener,
+  getSubscriptionStatus,
   removeCustomerInfoListener,
 } from "@/src/services/revenuecat/client";
 
@@ -23,9 +25,9 @@ export function useRevenueCatCustomerInfo(enabled: boolean) {
 
     let cancelled = false;
 
-    void Purchases.getCustomerInfo()
+    void getSubscriptionStatus()
       .then((info) => {
-        if (!cancelled) setCustomerInfo(info);
+        if (!cancelled && info) setCustomerInfo(info);
       })
       .catch(() => {
         /* SDK may not be configured on web / missing keys */
@@ -41,6 +43,23 @@ export function useRevenueCatCustomerInfo(enabled: boolean) {
     return () => {
       cancelled = true;
       removeCustomerInfoListener(listener);
+    };
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    let cancelled = false;
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state !== "active") return;
+      void getSubscriptionStatus().then((info) => {
+        if (!cancelled && info) setCustomerInfo(info);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      sub.remove();
     };
   }, [enabled]);
 

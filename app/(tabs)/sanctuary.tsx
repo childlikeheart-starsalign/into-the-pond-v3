@@ -11,7 +11,7 @@ import {
 } from "@/src/constants/sanctuaryAssets";
 import { FishingModal } from "@/src/features/fishing/FishingModal";
 import { noteCastDuringCraftBenchSession } from "@/src/services/analytics/analyticsSession";
-import { getMsSinceGate, trackSanctuaryEntered } from "@/src/services/analytics/authFunnel";
+import { trackSanctuaryArrived } from "@/src/services/analytics/authFunnel";
 import { isSanctuaryInitialized } from "@/src/state/authInitStore";
 import {
   claimServerCast,
@@ -126,16 +126,10 @@ export default function SanctuaryTabScreen() {
     return () => clearInterval(interval);
   }, [checkCastStatus]);
 
-  const sanctuaryEnteredTrackedRef = useRef(false);
-
   useFocusEffect(
     useCallback(() => {
-      if (isSanctuaryInitialized() && !sanctuaryEnteredTrackedRef.current) {
-        sanctuaryEnteredTrackedRef.current = true;
-        trackSanctuaryEntered({
-          isFirstEntry: true,
-          totalOnboardingDurationMs: getMsSinceGate(),
-        });
+      if (isSanctuaryInitialized()) {
+        trackSanctuaryArrived();
       }
       void reload()
         .then((loaded) => {

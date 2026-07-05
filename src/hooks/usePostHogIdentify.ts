@@ -2,6 +2,10 @@ import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useRef } from "react";
 
 import {
+  isAnalyticsCaptureDisabled,
+  setAnalyticsOptOut,
+} from "@/src/services/analytics/analyticsOptOut";
+import {
   getHasStitchedIdentity,
   resetAuthFunnelSession,
 } from "@/src/services/analytics/authFunnel";
@@ -16,6 +20,7 @@ export function usePostHogIdentify(uid: string | null, sanctuaryInitialized = fa
 
   useEffect(() => {
     if (!posthog) return;
+    if (isAnalyticsCaptureDisabled()) return;
     if (!uid) {
       posthog.reset();
       resetAuthFunnelSession();
@@ -36,6 +41,12 @@ export function usePostHogIdentify(uid: string | null, sanctuaryInitialized = fa
 
       const data = userSnap.data() as UserDoc;
       if (!isPlayableUserDoc(data)) return;
+
+      if (data.analyticsOptOut === true && !isAnalyticsCaptureDisabled()) {
+        await setAnalyticsOptOut(true);
+        return;
+      }
+      if (isAnalyticsCaptureDisabled()) return;
 
       const subscriptionTier = data.subscription?.subscriptionStatus ?? "free";
       const authUser = firebaseAuth.currentUser;

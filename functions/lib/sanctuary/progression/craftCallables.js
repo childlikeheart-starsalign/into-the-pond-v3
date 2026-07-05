@@ -348,7 +348,11 @@ async function handleEquipRod(uid, payload) {
       idempotencyKey,
     );
     if (idemRead.hit) {
-      return { outcome: "already_equipped", committed: false, cachedResponse: idemRead.response };
+      return {
+        outcome: "already_equipped",
+        committed: false,
+        cachedResponse: idemRead.response,
+      };
     }
     const freshRod = await tx.get(rodRef);
     const record = (0, playerRodHelpers_1.playerRodDocToRecord)(rodId, freshRod.data());
@@ -440,7 +444,11 @@ async function handleEquipRod(uid, payload) {
       );
       tx.set(userRef, { equippedRodId: rodId }, { merge: true });
     }
-    return { outcome: "equipped", committed: economyCommit.committed, cachedResponse: response };
+    return {
+      outcome: "equipped",
+      committed: economyCommit.committed,
+      cachedResponse: response,
+    };
   });
   if (outcome === "already_equipped") {
     return (

@@ -17,6 +17,7 @@ import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
 import { TAB_SCREEN_BOTTOM_PADDING } from "@/src/constants/tabScreenLayout";
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
 import { AccountFooter } from "@/src/features/gate/components/AccountFooter";
+import { AnalyticsPrivacySection } from "@/src/features/gate/components/AnalyticsPrivacySection";
 import { DeleteAccountSection } from "@/src/features/gate/components/DeleteAccountSection";
 import { CurrentAccessCard } from "@/src/features/gate/components/CurrentAccessCard";
 import { PricingCard } from "@/src/features/gate/components/PricingCard";
@@ -31,6 +32,7 @@ import {
   useRecommendedTierId,
   useUnavailableTierIds,
 } from "@/src/features/gate/useGateTiers";
+import { useGateOfferingProducts } from "@/src/hooks/useGateOfferingProducts";
 import { useRevenueCatCustomerInfo } from "@/src/hooks/useRevenueCatCustomerInfo";
 import { routes } from "@/src/navigation/routes";
 import { firebaseAuth } from "@/src/services/firebase/client";
@@ -40,9 +42,8 @@ import {
   toDerivedSubscriptionState,
 } from "@/src/services/firebase/entitlements";
 import { signOutCurrentUser } from "@/src/services/firebase/auth";
-import { LogicalProductId, LOGICAL_PRODUCTS } from "@/src/services/iap/catalog";
+import { LogicalProductId, PRODUCT_IDS } from "@/src/services/iap/catalog";
 import { runPurchase, runRestore } from "@/src/services/iap/purchaseFlow";
-import { listPackagesByProductId } from "@/src/services/revenuecat/client";
 
 const isNativeStore = Platform.OS === "ios" || Platform.OS === "android";
 const STICKY_THRESHOLD_PX = 8;
@@ -57,9 +58,6 @@ export function GateScreen() {
   const [subscription, setSubscription] = useState(
     toDerivedSubscriptionState(DEFAULT_SUBSCRIPTION_STATE),
   );
-  const [storeAvailability, setStoreAvailability] = useState<
-    Partial<Record<LogicalProductId, boolean>>
-  >({});
   const [busyProductId, setBusyProductId] = useState<LogicalProductId | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -73,28 +71,19 @@ export function GateScreen() {
   const scrollRef = useRef<ScrollView>(null);
 
   const { customerInfo } = useRevenueCatCustomerInfo(!!uid && isNativeStore);
+  const { availability: storeAvailability, priceLabels: storePriceLabels } =
+    useGateOfferingProducts(config, !!uid && isNativeStore, customerInfo);
+
+  const restoreProductId = useMemo(
+    () =>
+      config.tiers.find((t) => t.monthlyProductId)?.monthlyProductId ?? PRODUCT_IDS.tier1Monthly,
+    [config.tiers],
+  );
 
   useEffect(() => {
     if (!uid) return;
     return subscribeToUserSubscription(uid, setSubscription);
   }, [uid]);
-
-  useEffect(() => {
-    if (!isNativeStore) return;
-    let mounted = true;
-    void (async () => {
-      const packages = await listPackagesByProductId();
-      if (!mounted) return;
-      const availability: Partial<Record<LogicalProductId, boolean>> = {};
-      for (const product of LOGICAL_PRODUCTS) {
-        availability[product.id] = packages.has(product.id);
-      }
-      setStoreAvailability(availability);
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [customerInfo]);
 
   const entitlementContext: GateEntitlementContext = useMemo(
     () => ({
@@ -104,8 +93,9 @@ export function GateScreen() {
       recommendedTierId,
       unavailableTierIds,
       storeAvailability,
+      storePriceLabels,
     }),
-    [recommendedTierId, storeAvailability, subscription, unavailableTierIds],
+    [recommendedTierId, storeAvailability, storePriceLabels, subscription, unavailableTierIds],
   );
 
   const { currentAccess, pricingCards } = useGateViewModels(config, entitlementContext);
@@ -131,10 +121,10 @@ export function GateScreen() {
     if (!uid) return;
     setIsRestoring(true);
     setStatusMessage(null);
-    const result = await runRestore(LOGICAL_PRODUCTS[0].id);
+    const result = await runRestore(restoreProductId);
     setStatusMessage(result.message);
     setIsRestoring(false);
-  }, [uid]);
+  }, [restoreProductId, uid]);
 
   const handleTitlePress = useCallback(() => {
     if (!__DEV__) return;
@@ -228,6 +218,8 @@ export function GateScreen() {
               onSignOut={() => void handleSignOut()}
               onRestore={() => void handleRestore()}
             />
+
+            <AnalyticsPrivacySection />
 
             <DeleteAccountSection disabled={!uid || signingOut || busyProductId != null} />
           </ScrollView>

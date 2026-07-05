@@ -58,7 +58,10 @@ async function commitEconomyAction(input) {
     throw new index_1.EconomyError(
       "IDEMPOTENCY_CONFLICT",
       "Ledger entry id must match idempotency key",
-      { expectedLedgerId, actualId: built.entry.id },
+      {
+        expectedLedgerId,
+        actualId: built.entry.id,
+      },
     );
   }
   if (built.entry.idempotencyKey !== idempotencyKey) {

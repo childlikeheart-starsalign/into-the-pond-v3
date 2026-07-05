@@ -88,6 +88,8 @@ export type UserDoc = {
     completedAt?: string;
     lastUpdated?: string;
   };
+  /** When true, skip client and server PostHog events for this user. */
+  analyticsOptOut?: boolean;
   /** Server-written auth funnel marker — not client-writable. */
   authFunnel?: AuthFunnelDoc;
   /** Account deletion lifecycle — server-written only. */

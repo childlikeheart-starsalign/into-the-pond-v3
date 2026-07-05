@@ -1,6 +1,7 @@
 import PostHog from "posthog-react-native";
 
 import { env } from "@/src/config/env";
+import { loadAnalyticsOptOutPreference } from "@/src/services/analytics/analyticsOptOut";
 
 const apiKey = env.posthog.apiKey;
 
@@ -10,8 +11,11 @@ export const posthog = apiKey
       enableSessionReplay: true,
       sessionReplayConfig: {
         maskAllTextInputs: true,
-        maskAllImages: false,
+        maskAllImages: true,
+        maskAllSandboxedViews: true,
       },
       captureAppLifecycleEvents: true,
     })
   : null;
+
+void loadAnalyticsOptOutPreference();

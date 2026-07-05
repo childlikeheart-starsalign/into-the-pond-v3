@@ -71,11 +71,11 @@ git filter-repo \
 Verify before force-push:
 
 ```bash
-git log --all -- assets/GoogleService-Info.plist assets/google-services.json google-services.json
+git log --all -- assets/GoogleService-Info.plist assets/google-services.json google-services.json GoogleService-Info.plist
 # expect: no output
 
-git grep "AIzaSy" $(git rev-list --all)
-# expect: no output
+npm run verify:no-firebase-secrets
+# expect: ok
 ```
 
 Force-push clean history:
@@ -90,7 +90,8 @@ Anyone with an old clone must `git fetch --all && git reset --hard origin/main` 
 
 Re-run verification after push:
 
-- `git grep "AIzaSy" $(git rev-list --all)` → empty
+- `git log --all -- assets/GoogleService-Info.plist assets/google-services.json` → no commits
+- `npm run verify:no-firebase-secrets` → ok
 - Raw GitHub URLs for both `assets/` paths on `main` → 404
 
 ## 4. Resolve GitHub secret scanning
@@ -101,7 +102,7 @@ Re-run verification after push:
 ## 5. Ongoing prevention
 
 - Run `npm run verify:no-firebase-secrets` before release (see [`RELEASE.md`](../RELEASE.md))
-- Pre-commit hook blocks staging native config files or `AIzaSy` patterns
+- Pre-commit hook blocks staging native config files or Google API key patterns
 - CI `secret-scan` job on main/PR
 
 ## Related scripts

@@ -123,4 +123,4 @@ Builds use `npm run eas:build` with `--non-interactive --no-wait` (monitor progr
 - Firebase native files: EAS secrets `GOOGLE_SERVICE_INFO_PLIST_BASE64`, `GOOGLE_SERVICES_JSON_BASE64`
 - JS config: EAS env vars per [`.env.example`](.env.example) and [README.md](README.md)
 - GitHub Actions: repository secret `EXPO_TOKEN` (see **CI / EAS builds** above)
-- Never commit `assets/GoogleService-Info.plist`, `assets/google-services.json`, or root `GoogleService-Info.plist`
+- Never commit `assets/GoogleService-Info.plist`, `assets/google-services.json`, or root `GoogleService-Info.plist` / `google-services.json` (see [`docs/security-firebase-key-leak.md`](docs/security-firebase-key-leak.md) if a key was exposed)

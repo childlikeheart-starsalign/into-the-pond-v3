@@ -38,6 +38,7 @@ scripts/__pycache__/
 
 # Firebase native config (inject locally or via EAS secrets — see scripts/setup-eas-firebase-files.mjs)
 GoogleService-Info.plist
+/google-services.json
 assets/GoogleService-Info.plist
 assets/google-services.json
 

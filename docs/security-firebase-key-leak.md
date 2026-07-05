@@ -1,12 +1,114 @@
-# Firebase Android API key — post-leak checklist
+# Native Firebase secrets — post-leak checklist
 
-GitHub secret scanning flagged root `google-services.json` on `childlike-heart-parenting-course-index.html` branch `launch/v3-prep`. Complete these steps in Google Cloud / Firebase (cannot be automated from CI):
+GitHub secret scanning flagged Firebase native config files committed to git. Complete these steps in Google Cloud / Firebase and in git (cannot be fully automated from CI).
 
-1. [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials) (project **into-the-pond**)
-2. Find the Android API key (was exposed as `current_key` in committed root `google-services.json`)
-3. **Application restrictions** → Android apps → package `com.intothepond.app.v3` + your debug and release SHA-1 fingerprints
-4. **API restrictions** → Firebase-related APIs only
-5. If rotating: download fresh `google-services.json` from Firebase Console → replace local `assets/google-services.json` → run `npm run setup:eas-firebase-files` → disable the old key
-6. [Resolve secret scanning alert #1](https://github.com/childlikeheart-starsalign/childlike-heart-parenting-course-index.html/security/secret-scanning/1) as **revoked** (rotated) or **resolved** (restricted + branch removed)
+## What leaked
 
-Native config files belong only under `assets/` (gitignored). Never commit root `google-services.json`.
+| File                              | Secret field                               | Notes                                                                |
+| --------------------------------- | ------------------------------------------ | -------------------------------------------------------------------- |
+| `assets/google-services.json`     | `client[].api_key[].current_key` (Android) | Also root `google-services.json` on old repo branch `launch/v3-prep` |
+| `assets/GoogleService-Info.plist` | `API_KEY` (iOS)                            | Committed under `assets/` only                                       |
+
+Both files were added in commits `9d7c3e1` / `45c4f20`, removed from the working tree in `11ad905`, but remained in **git history** until `git filter-repo` purge (see **3. Purge git history** below).
+
+Do **not** paste live API keys into this doc after rotation — reference keys by file/field name only.
+
+## Where files belong (never commit)
+
+| Platform  | Local path                                            | EAS / CI                           |
+| --------- | ----------------------------------------------------- | ---------------------------------- |
+| Android   | `assets/google-services.json` (gitignored)            | `npm run setup:eas-firebase-files` |
+| iOS       | `assets/GoogleService-Info.plist` (gitignored)        | same script                        |
+| Templates | `assets/*.example` (committed, placeholder keys only) | n/a                                |
+
+Never commit root copies: `google-services.json`, `GoogleService-Info.plist`.
+
+Copy from [`assets/google-services.json.example`](../assets/google-services.json.example) and [`assets/GoogleService-Info.plist.example`](../assets/GoogleService-Info.plist.example), rename to drop `.example`, then replace placeholders from Firebase Console.
+
+## 1. Restrict keys in Google Cloud (minimum)
+
+Project: **into-the-pond** → [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+
+### Android API key
+
+From `google-services.json` → `client[].api_key[].current_key` (exposed in git history).
+
+- [ ] **Application restrictions** → Android apps → package `com.intothepond.app.v3`
+- [ ] Add debug + release SHA-1 fingerprints (Firebase Console → Project settings → Your apps → Android)
+- [ ] **API restrictions** → Restrict key → Firebase-related APIs only
+
+### iOS API key
+
+From `GoogleService-Info.plist` → `API_KEY` (exposed in git history).
+
+- [ ] **Application restrictions** → iOS apps → bundle ID `com.intothepond.app.v3`
+- [ ] **API restrictions** → Restrict key → Firebase-related APIs only
+
+## 2. Rotate keys (recommended)
+
+Keys were public on GitHub — treat as compromised even after restriction.
+
+- [ ] Firebase Console → Project settings → Your apps → download fresh Android JSON + iOS plist
+- [ ] Replace local `assets/google-services.json` and `assets/GoogleService-Info.plist`
+- [ ] `npm run setup:eas-firebase-files` (re-upload EAS secrets)
+- [ ] Disable old Android + iOS API keys in GCP Credentials
+- [ ] Trigger a test EAS build on both platforms
+
+## 3. Purge git history
+
+From repo root (requires [git-filter-repo](https://github.com/newren/git-filter-repo)):
+
+```bash
+git filter-repo \
+  --path google-services.json \
+  --path GoogleService-Info.plist \
+  --path assets/google-services.json \
+  --path assets/GoogleService-Info.plist \
+  --invert-paths \
+  --force
+```
+
+Verify before force-push:
+
+```bash
+git log --all -- assets/GoogleService-Info.plist assets/google-services.json google-services.json
+# expect: no output
+
+git grep "AIzaSy" $(git rev-list --all)
+# expect: no output
+```
+
+Force-push clean history:
+
+```bash
+git push --force-with-lease origin main
+```
+
+Or run [`scripts/finish-leak-remediation-push.sh`](../scripts/finish-leak-remediation-push.sh) for push + URL verification.
+
+Anyone with an old clone must `git fetch --all && git reset --hard origin/main` or re-clone after force-push.
+
+Re-run verification after push:
+
+- `git grep "AIzaSy" $(git rev-list --all)` → empty
+- Raw GitHub URLs for both `assets/` paths on `main` → 404
+
+## 4. Resolve GitHub secret scanning
+
+- [ ] Old repo: [alert #1](https://github.com/childlikeheart-starsalign/childlike-heart-parenting-course-index.html/security/secret-scanning/1) → **Revoked** (rotated) or **Resolved** (restricted + branch/history removed)
+- [ ] `into-the-pond-v3`: check **Security → Secret scanning** after force-push; resolve any new alerts the same way
+
+## 5. Ongoing prevention
+
+- Run `npm run verify:no-firebase-secrets` before release (see [`RELEASE.md`](../RELEASE.md))
+- Pre-commit hook blocks staging native config files or `AIzaSy` patterns
+- CI `secret-scan` job on main/PR
+
+## Related scripts
+
+| Script                                    | Purpose                                  |
+| ----------------------------------------- | ---------------------------------------- |
+| `scripts/setup-eas-firebase-files.mjs`    | Upload local assets to EAS               |
+| `scripts/write-firebase-native-files.mjs` | Write EAS secrets to assets locally      |
+| `scripts/finish-leak-remediation-push.sh` | Post-purge force-push + URL verification |
+| `scripts/verify-no-firebase-secrets.mjs`  | Guard against re-commit                  |

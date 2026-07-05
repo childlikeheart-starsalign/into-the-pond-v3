@@ -1,1 +1,2 @@
+node scripts/verify-no-firebase-secrets.mjs --staged || exit 1
 npx lint-staged

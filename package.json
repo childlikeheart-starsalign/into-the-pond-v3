@@ -13,6 +13,7 @@
     "verify": "tsc --noEmit",
     "verify:firebase-ios-native": "node scripts/verify-firebase-ios-native.mjs",
     "verify:firebase-rtdb-env": "node scripts/verify-firebase-rtdb-env.mjs",
+    "verify:no-firebase-secrets": "node scripts/verify-no-firebase-secrets.mjs",
     "deploy:database-rules": "node scripts/check-firebase-cli-auth.mjs && npx firebase-tools deploy --only database",
     "deploy:check-sign-in-email": "node scripts/check-firebase-cli-auth.mjs && npx firebase-tools deploy --only functions:checkSignInEmailRegistered",
     "deploy:h5-c8": "node scripts/check-firebase-cli-auth.mjs && npx firebase-tools deploy --only functions,firestore:rules,firestore:indexes",

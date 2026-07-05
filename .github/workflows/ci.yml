@@ -59,3 +59,18 @@ jobs:
 
       - name: Run Firestore rules tests
         run: npm run test:firestore-rules
+
+  secret-scan:
+    name: Firebase native config guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run secret scan
+        run: npm run verify:no-firebase-secrets

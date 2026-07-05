@@ -36,11 +36,10 @@ scripts/__pycache__/
 .DS_Store
 *.pem
 
-# Firebase native config (inject locally or via EAS secrets — see scripts/setup-eas-firebase-files.mjs)
-GoogleService-Info.plist
-/google-services.json
-assets/GoogleService-Info.plist
-assets/google-services.json
+# Firebase native config (real files — never commit; see scripts/setup-eas-firebase-files.mjs)
+**/GoogleService-Info.plist
+**/google-services.json
+!**/*.example
 
 # local env files
 .env

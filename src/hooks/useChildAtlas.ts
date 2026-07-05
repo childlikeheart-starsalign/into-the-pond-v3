@@ -1,4 +1,4 @@
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, limit, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DiscoveryCategory } from "@/shared/sanctuary/well/types";
@@ -86,7 +86,8 @@ export function useChildAtlas(uid: string | null | undefined): UseChildAtlasResu
         : () => {};
 
     const col = collection(firestore, "users", uid, "childAtlas");
-    const q = query(col, orderBy("dateDiscovered", "desc"));
+    // Firestore cap (P7-A); __DEV__ dev-store entries may add rows on top via mergeAtlasEntries.
+    const q = query(col, orderBy("dateDiscovered", "desc"), limit(200));
     const unsub = onSnapshot(
       q,
       (snapshot) => {

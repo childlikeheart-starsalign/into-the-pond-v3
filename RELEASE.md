@@ -50,14 +50,32 @@ After installing a **dev client** or **preview** build:
 - [ ] **Custom scheme fallback:** if testing `intothepond://` links, confirm they still open auth routes
 - [ ] **Rejected links:** phishing host with `oobCode` is ignored silently (no navigation)
 - [ ] **Sentry:** trigger wrong-password sign-in; confirm tagged event in Sentry (`area: auth`, `flow: sign_in_email`)
+- [ ] **Sentry:** confirm error message bodies show `[email]` not raw addresses (P4-A redaction)
 
 Repeat the deep link checklist on a **preview TestFlight** build before store submission.
+
+## CI (GitHub Actions)
+
+Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+
+- [ ] `auth-links` job green (5 tests)
+- [ ] `firestore-rules` job green (22 tests)
+
+Runs on push/PR to `main`. No secrets required.
+
+## Responsive layout P0 (required before preview sign-off)
+
+See [`docs/responsive-qa.md`](docs/responsive-qa.md).
+
+- [ ] iPhone SE: archetype selector — all three cards reachable
+- [ ] iPhone SE: gate scroll — purchase CTA + account footer visible
+- [ ] iPhone 15 + Pro Max: no blocked primary CTAs on auth + gate
 
 ## Account deletion (required for store)
 
 - [ ] Signed-in: Sanctuary Gate → scroll to **Delete account** → confirm sheet → sign out
 - [ ] Re-login during 30-day grace → **Deletion pending** screen → **Cancel deletion** restores profile
-- [ ] Signed-out: login footer **Delete account** opens `https://intothepond.app/delete-account`
+- [ ] Signed-out: login footer **Delete account** opens `https://intothepond.app/delete-account` (unchecked until page is hosted)
 - [ ] Web form returns generic success (no email enumeration)
 - [ ] `npm run test:firestore-rules` includes `deletion_requests` deny tests
 
@@ -72,7 +90,7 @@ Deploy env: set `ACCOUNT_DELETION_SECRET` in functions `.env` before enabling de
 
 ## Physical device validation (required)
 
-Do **not** submit from simulator-only testing. On a **physical device** with a **production** or **preview** build:
+Do **not** submit from simulator-only testing. On a **physical device** with a **production** or **preview** build. Also complete the responsive P0 matrix in [`docs/responsive-qa.md`](docs/responsive-qa.md) on simulators before preview sign-off.
 
 - [ ] Cold start → gate → sign up / sign in (email + Apple if available)
 - [ ] Email verification deep link opens app (`/finish-email`)

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -49,7 +50,11 @@ export default function ArchetypeSelectorRoute() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.inner}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.heading}>Which feels most like your child right now?</Text>
         <Text style={styles.subheading}>You can update this anytime in settings.</Text>
 
@@ -60,6 +65,8 @@ export default function ArchetypeSelectorRoute() {
             onPress={() => handleSelect(opt.value)}
             activeOpacity={0.75}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel={opt.label}
           >
             <Text style={styles.emoji}>{opt.emoji}</Text>
             <View style={styles.cardBody}>
@@ -70,7 +77,7 @@ export default function ArchetypeSelectorRoute() {
         ))}
 
         {loading && <ActivityIndicator size="small" color="#E8A830" style={{ marginTop: 24 }} />}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -80,10 +87,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1A1208",
   },
-  inner: {
-    flex: 1,
-    justifyContent: "center",
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 28,
+    paddingVertical: 24,
+    paddingBottom: 32,
   },
   heading: {
     color: "#F5F0E8",
@@ -110,6 +118,7 @@ const styles = StyleSheet.create({
     gap: 16,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
+    minHeight: 52,
   },
   emoji: {
     fontSize: 32,

@@ -4,6 +4,7 @@ import {
   onSnapshot,
   QuerySnapshot,
   collection,
+  limit,
   orderBy,
   query,
   DocumentData,
@@ -347,6 +348,14 @@ async function upsertDiaryEntries(uid: string, snapshot: QuerySnapshot<DocumentD
         });
       }
     }
+
+    const visibleIds = new Set(snapshot.docs.map((d) => d.id));
+    const stale = await table.query(Q.where("uid", uid)).fetch();
+    for (const row of stale) {
+      if (!visibleIds.has(row.entryId)) {
+        await row.markAsDeleted();
+      }
+    }
   });
 }
 
@@ -354,6 +363,8 @@ export function subscribeAndCacheDiaryEntries(uid: string) {
   const ref = query(
     collection(firestore, "users", uid, "diaryEntries"),
     orderBy("createdAt", "desc"),
+    // Launch cap — see P7-A; pagination post-launch if needed.
+    limit(100),
   );
   return onSnapshot(ref, (snapshot) => {
     void runSafeCacheTask("diaryEntries", async () => {

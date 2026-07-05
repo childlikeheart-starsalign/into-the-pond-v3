@@ -7,6 +7,13 @@ import {
   getSubscriptionStatus,
   removeCustomerInfoListener,
 } from "@/src/services/revenuecat/client";
+import { Sentry } from "@/src/services/sentry/init";
+
+function captureCustomerInfoHookError(err: unknown) {
+  Sentry.captureException(err, {
+    tags: { area: "revenuecat", flow: "customer_info_hook" },
+  });
+}
 
 /**
  * Keeps `CustomerInfo` in sync with RevenueCat (including purchases elsewhere on device).
@@ -29,8 +36,8 @@ export function useRevenueCatCustomerInfo(enabled: boolean) {
       .then((info) => {
         if (!cancelled && info) setCustomerInfo(info);
       })
-      .catch(() => {
-        /* SDK may not be configured on web / missing keys */
+      .catch((err) => {
+        captureCustomerInfoHookError(err);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -52,9 +59,13 @@ export function useRevenueCatCustomerInfo(enabled: boolean) {
     let cancelled = false;
     const sub = AppState.addEventListener("change", (state) => {
       if (state !== "active") return;
-      void getSubscriptionStatus().then((info) => {
-        if (!cancelled && info) setCustomerInfo(info);
-      });
+      void getSubscriptionStatus()
+        .then((info) => {
+          if (!cancelled && info) setCustomerInfo(info);
+        })
+        .catch((err) => {
+          captureCustomerInfoHookError(err);
+        });
     });
 
     return () => {

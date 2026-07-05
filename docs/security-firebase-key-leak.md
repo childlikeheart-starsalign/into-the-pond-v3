@@ -78,13 +78,14 @@ npm run verify:no-firebase-secrets
 # expect: ok
 ```
 
-Force-push clean history:
+Force-push clean history (fetch first — avoids `stale info` after filter-repo):
 
 ```bash
-git push --force-with-lease origin main
+git fetch origin main
+git push --force-with-lease=main:$(git rev-parse origin/main) origin main
 ```
 
-Or run [`scripts/finish-leak-remediation-push.sh`](../scripts/finish-leak-remediation-push.sh) for push + URL verification.
+Or run [`scripts/finish-leak-remediation-push.sh`](../scripts/finish-leak-remediation-push.sh) for fetch, push, and URL verification.
 
 Anyone with an old clone must `git fetch --all && git reset --hard origin/main` or re-clone after force-push.
 

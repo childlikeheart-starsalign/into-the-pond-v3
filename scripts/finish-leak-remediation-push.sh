@@ -7,8 +7,29 @@ cd "$(dirname "$0")/.."
 ORIGIN_REPO="childlikeheart-starsalign/into-the-pond-v3"
 OLD_REPO="childlikeheart-starsalign/childlike-heart-parenting-course-index.html"
 
-echo "Force-pushing clean history to into-the-pond-v3..."
-git push --force-with-lease -u origin main
+echo "Fetching origin/main (refreshes lease after filter-repo / stale remote-tracking ref)..."
+git fetch origin main
+
+REMOTE_SHA=$(git rev-parse origin/main)
+LOCAL_SHA=$(git rev-parse main)
+
+echo "  local main:  ${LOCAL_SHA}"
+echo "  remote main: ${REMOTE_SHA}"
+
+if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+  echo "Remote already matches local main — nothing to push."
+else
+  echo "Force-pushing rewritten history to into-the-pond-v3..."
+  # Explicit lease: only overwrite if remote is still at the SHA we just fetched.
+  # Fixes: ! [rejected] main -> main (stale info) after history rewrite.
+  if ! git push --force-with-lease=main:"${REMOTE_SHA}" -u origin main; then
+    echo ""
+    echo "Push rejected. Remote main changed during fetch/push."
+    echo "Re-run: git fetch origin main && ./scripts/finish-leak-remediation-push.sh"
+    echo "If you intentionally need to overwrite remote anyway: git push --force origin main"
+    exit 1
+  fi
+fi
 
 echo ""
 echo "Verify raw GitHub URLs return 404 (no leaked native configs on main):"

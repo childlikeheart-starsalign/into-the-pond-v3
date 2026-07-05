@@ -1,0 +1,52 @@
+{
+  "frames": [
+    {
+      "frameId": 60,
+      "timeOfDay": "night",
+      "color": "purple",
+      "source": "60.png",
+      "output": "assets/images/sanctuary/mood-night.png",
+      "frameOutput": "assets/images/sanctuary/frame-60.png",
+      "outputWidth": 576,
+      "outputHeight": 1024,
+      "artboardWidth": 576,
+      "artboardHeight": 1024
+    },
+    {
+      "frameId": 61,
+      "timeOfDay": "morning",
+      "color": "pink",
+      "source": "61.png",
+      "output": "assets/images/sanctuary/mood-morning.png",
+      "frameOutput": "assets/images/sanctuary/frame-61.png",
+      "outputWidth": 576,
+      "outputHeight": 1024,
+      "artboardWidth": 576,
+      "artboardHeight": 1024
+    },
+    {
+      "frameId": 62,
+      "timeOfDay": "afternoon",
+      "color": "green",
+      "source": "62.png",
+      "output": "assets/images/sanctuary/mood-afternoon.png",
+      "frameOutput": "assets/images/sanctuary/frame-62.png",
+      "outputWidth": 576,
+      "outputHeight": 1024,
+      "artboardWidth": 576,
+      "artboardHeight": 1024
+    },
+    {
+      "frameId": 63,
+      "timeOfDay": "lateAfternoon",
+      "color": "yellow",
+      "source": "63.png",
+      "output": "assets/images/sanctuary/mood-lateAfternoon.png",
+      "frameOutput": "assets/images/sanctuary/frame-63.png",
+      "outputWidth": 576,
+      "outputHeight": 1024,
+      "artboardWidth": 576,
+      "artboardHeight": 1024
+    }
+  ]
+}

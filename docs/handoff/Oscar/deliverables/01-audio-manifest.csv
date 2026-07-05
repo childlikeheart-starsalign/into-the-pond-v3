@@ -1,0 +1,10 @@
+filename,moment,trigger_in_app,duration_sec,loop,volume_0_to_1,notes
+cast-splash.mp3,Cast line hits water,createCast success → CastingScreen,,no,0.6,
+pond-waiting-ambient.mp3,Waiting for bite,CastingScreen idle loop,120,yes,0.15,
+claim-catch.mp3,New creature caught,claimCast outcome catch,,no,0.5,
+claim-duplicate.mp3,Duplicate creature,claimCast outcome duplicate,,no,0.45,
+claim-miss-chance.mp3,Chance miss,claimCast miss (not wonder_gate),,no,0.4,
+claim-miss-wonder-gate.mp3,Wonder gate miss,claimCast miss reason wonder_gate,,no,0.35,
+craft-begin.mp3,Craft started,startCraft success,,no,0.5,
+craft-ready.mp3,Rod ready to collect,collectCraft success,,no,0.5,
+craft-equip.mp3,Rod equipped,equipRod success,,no,0.5,

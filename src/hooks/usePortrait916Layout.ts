@@ -10,6 +10,9 @@ export type Portrait916Layout = {
 
 export type Portrait916LayoutMode = "contain" | "cover";
 
+/** Shared 9:16 stage mode for Sanctuary tab and Well flows. */
+export const SANCTUARY_STAGE_MODE: Portrait916LayoutMode = "contain";
+
 const PORTRAIT_916_ASPECT = 9 / 16;
 
 export function usePortrait916Layout(mode: Portrait916LayoutMode = "contain"): Portrait916Layout {

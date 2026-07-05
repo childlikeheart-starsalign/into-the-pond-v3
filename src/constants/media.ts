@@ -8,7 +8,7 @@ export const media = {
   gate: {
     background: require("@/assets/images/gate-home.png"),
     splash: require("@/assets/images/gate-splash.png"),
-    key: require("@/assets/images/gate-key-transparent.png"),
+    key: require("@/assets/images/gate-key-sprite.png"),
     showPassword: require("@/assets/images/show-password.png"),
     hidePassword: require("@/assets/images/hide-password.png"),
   },
@@ -112,5 +112,9 @@ export const media = {
   audio: {
     chime: require("@/assets/audio/gate-chime.mp4"),
     unlock: require("@/assets/audio/gate-unlock.mp4"),
+  },
+  /** Cold-start boot + shared waiting loop (PR2 ops checkpoint 4). */
+  startup: {
+    waitingScreen: require("@/assets/video/startup/waiting-screen.mp4"),
   },
 } as const;

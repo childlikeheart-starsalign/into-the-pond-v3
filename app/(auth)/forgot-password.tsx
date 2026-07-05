@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors, fontFamilies } from "@/src/constants/theme";
+import { AUTH_INVALID_EMAIL_FORMAT } from "@/src/constants/authCopy";
 import { media } from "@/src/constants/media";
 import {
   forgotPasswordHitRects,
@@ -22,6 +23,7 @@ import {
 } from "@/src/constants/forgotPasswordArtboard";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { sendPasswordReset } from "@/src/services/firebase/auth";
+import { Sentry } from "@/src/services/sentry/init";
 
 const forgotPasswordMedia = media.auth.forgotPassword;
 const COOLDOWN_SECONDS = 60;
@@ -65,7 +67,7 @@ export default function ForgotPasswordScreen() {
     setError(null);
 
     if (!isEmailFormatValid) {
-      setError("Invalid email address");
+      setError(AUTH_INVALID_EMAIL_FORMAT);
       return;
     }
 
@@ -75,10 +77,11 @@ export default function ForgotPasswordScreen() {
       setSent(true);
       setCooldown(COOLDOWN_SECONDS);
     } catch (e) {
+      Sentry.captureException(e, { tags: { area: "auth", flow: "forgot_password_submit" } });
       const code =
         e && typeof e === "object" && "code" in e ? String((e as { code?: string }).code) : "";
       if (code === "auth/user-not-found" || code === "auth/invalid-email") {
-        setError("Invalid email address");
+        setError(AUTH_INVALID_EMAIL_FORMAT);
       } else {
         setError("Could not send reset email. Try again.");
       }
@@ -93,7 +96,8 @@ export default function ForgotPasswordScreen() {
     try {
       await sendPasswordReset(email.trim());
       setCooldown(COOLDOWN_SECONDS);
-    } catch {
+    } catch (e) {
+      Sentry.captureException(e, { tags: { area: "auth", flow: "forgot_password_resend" } });
       setCooldown(10);
     } finally {
       setSubmitting(false);

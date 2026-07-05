@@ -1,0 +1,118 @@
+import { ALL_LESSON_IDS, MODULE_LESSON_IDS } from "./moduleRodMap";
+import type { LessonProgressRecord } from "./types";
+
+export const DIARY_COMPLETION_PARTS = 1;
+export const REVISIT_BONUS_PARTS = 1;
+export const CLUSTER_COMPLETION_BONUS = 5;
+export const REVISIT_MIN_DAYS = 7;
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export type PartsAwardBreakdown = {
+  base: number;
+  revisitBonus: number;
+  clusterBonus: number;
+  total: number;
+  wasRevisit: boolean;
+  clusterCompleted: boolean;
+  clusterModuleId: number | null;
+};
+
+export function isLessonCompleted(
+  lessonProgress: Record<string, LessonProgressRecord | boolean>,
+  lessonId: string,
+): boolean {
+  const entry = lessonProgress[lessonId];
+  if (typeof entry === "boolean") return entry;
+  return entry?.completed === true;
+}
+
+export function moduleIdForLesson(lessonId: string): number | null {
+  const [moduleRaw] = lessonId.split(".");
+  const moduleId = Number(moduleRaw);
+  return Number.isFinite(moduleId) ? moduleId : null;
+}
+
+export function isModuleClusterComplete(
+  lessonProgress: Record<string, LessonProgressRecord | boolean>,
+  moduleId: number,
+): boolean {
+  const lessonIds = MODULE_LESSON_IDS[moduleId];
+  if (!lessonIds?.length) return false;
+  return lessonIds.every((lessonId) => isLessonCompleted(lessonProgress, lessonId));
+}
+
+export function allLessonsComplete(
+  lessonProgress: Record<string, LessonProgressRecord | boolean>,
+): boolean {
+  return ALL_LESSON_IDS.every((lessonId) => isLessonCompleted(lessonProgress, lessonId));
+}
+
+export function computePartsAwardForLessonCompletion(input: {
+  lessonId: string;
+  lessonProgress: Record<string, LessonProgressRecord | boolean>;
+  now?: number;
+  alreadyCompleted?: boolean;
+}): PartsAwardBreakdown {
+  const { lessonId, lessonProgress, now = Date.now(), alreadyCompleted = false } = input;
+
+  if (alreadyCompleted || isLessonCompleted(lessonProgress, lessonId)) {
+    return {
+      base: 0,
+      revisitBonus: 0,
+      clusterBonus: 0,
+      total: 0,
+      wasRevisit: false,
+      clusterCompleted: false,
+      clusterModuleId: null,
+    };
+  }
+
+  const moduleId = moduleIdForLesson(lessonId);
+  const clusterWasComplete =
+    moduleId != null ? isModuleClusterComplete(lessonProgress, moduleId) : false;
+
+  let revisitBonus = 0;
+  let wasRevisit = false;
+  const prior = lessonProgress[lessonId];
+  if (prior && typeof prior !== "boolean" && prior.completedAt != null) {
+    const daysSince = (now - prior.completedAt) / MS_PER_DAY;
+    if (daysSince >= REVISIT_MIN_DAYS) {
+      revisitBonus = REVISIT_BONUS_PARTS;
+      wasRevisit = true;
+    }
+  }
+
+  const clusterBonus =
+    moduleId != null && !clusterWasComplete
+      ? willCompleteModuleCluster(lessonProgress, lessonId)
+        ? CLUSTER_COMPLETION_BONUS
+        : 0
+      : 0;
+
+  const base = DIARY_COMPLETION_PARTS;
+  const total = base + revisitBonus + clusterBonus;
+
+  return {
+    base,
+    revisitBonus,
+    clusterBonus,
+    total,
+    wasRevisit,
+    clusterCompleted: clusterBonus > 0,
+    clusterModuleId: clusterBonus > 0 ? moduleId : null,
+  };
+}
+
+function willCompleteModuleCluster(
+  lessonProgress: Record<string, LessonProgressRecord | boolean>,
+  completingLessonId: string,
+): boolean {
+  const moduleId = moduleIdForLesson(completingLessonId);
+  if (moduleId == null) return false;
+  const lessonIds = MODULE_LESSON_IDS[moduleId];
+  if (!lessonIds?.length) return false;
+  return lessonIds.every(
+    (lessonId) => lessonId === completingLessonId || isLessonCompleted(lessonProgress, lessonId),
+  );
+}

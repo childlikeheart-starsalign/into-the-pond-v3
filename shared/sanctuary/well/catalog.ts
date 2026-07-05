@@ -1,0 +1,40 @@
+/** Merged Well question catalog indices. */
+
+import { WELL_QUESTIONS_4_6 } from "./catalog-4-6";
+import { WELL_QUESTIONS_6_12 } from "./catalog-6-12";
+import type { AgeBand, DiscoveryCategory, WellBankQuestion } from "./types";
+
+export { WELL_QUESTIONS_4_6 } from "./catalog-4-6";
+export { WELL_QUESTIONS_6_12 } from "./catalog-6-12";
+
+export const WELL_QUESTIONS: WellBankQuestion[] = [...WELL_QUESTIONS_4_6, ...WELL_QUESTIONS_6_12];
+
+export const WELL_QUESTION_BY_ID: Record<string, WellBankQuestion> = Object.fromEntries(
+  WELL_QUESTIONS.map((question) => [question.questionId, question]),
+);
+
+export const QUESTIONS_BY_AGE_BAND: Record<AgeBand, WellBankQuestion[]> = {
+  "4-6": WELL_QUESTIONS_4_6,
+  "6-12": WELL_QUESTIONS_6_12,
+};
+
+export const QUESTIONS_BY_CATEGORY: Record<DiscoveryCategory, WellBankQuestion[]> =
+  WELL_QUESTIONS.reduce(
+    (acc, question) => {
+      if (!acc[question.category]) acc[question.category] = [];
+      acc[question.category].push(question);
+      return acc;
+    },
+    {} as Record<DiscoveryCategory, WellBankQuestion[]>,
+  );
+
+export function getWellQuestionById(questionId: string): WellBankQuestion | undefined {
+  return WELL_QUESTION_BY_ID[questionId];
+}
+
+export function isValidWellQuestionId(questionId: string, ageBand?: AgeBand): boolean {
+  const question = WELL_QUESTION_BY_ID[questionId];
+  if (!question) return false;
+  if (ageBand && question.ageBand !== ageBand) return false;
+  return true;
+}

@@ -1,6 +1,6 @@
 import type { SkImage } from "@shopify/react-native-skia";
 
-/** Retain SkImage refs for the active 3-spread window (GPU memory). */
+/** @deprecated Legacy write-only cache for FieldJournalSpreadView. Prefer releaseAllForScope('journal:'). */
 const spreadGpuCache = new Map<string, SkImage>();
 
 export function retainSpreadImage(spreadId: string, image: SkImage | null): void {
@@ -16,6 +16,7 @@ export function evictSpreadImagesExcept(keepIds: Set<string>): void {
   }
 }
 
+/** @deprecated No-op when cache empty; kept for back-to-Sanctuary until SpreadView path is removed. */
 export function clearSpreadImageCache(): void {
   spreadGpuCache.clear();
 }

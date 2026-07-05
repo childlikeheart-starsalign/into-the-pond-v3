@@ -11,6 +11,8 @@ export const colors = {
   primaryHover: "#684D3A",
   primarySoft: "#EFE4DA",
   secondary: "#6F7D68",
+  warning: "#9A7A42",
+  dangerSoft: "#B86A6A",
 };
 
 export const fontFamilies = {
@@ -21,8 +23,42 @@ export const fontFamilies = {
   gateTitleRegular: "CormorantGaramond_400Regular",
   handwritten: "CrustaceansSignatureDemo",
   body: "Inter_400Regular",
+  bodyMedium: "Inter_500Medium",
   bodySemi: "Inter_600SemiBold",
 };
+
+/** Well of Questions card typography */
+export const wellColors = {
+  sage: "#7A9070",
+  warmInk: "#2C1810",
+  warmBark: "#7A5C48",
+  leafUnfilled: "rgba(216, 220, 208, 0.4)",
+};
+
+/** Child Atlas reader */
+export const atlasColors = {
+  paper: "#F9F6F0",
+  paperDeep: "#F4EFE6",
+  ink: "#2C2418",
+  inkMuted: "#6B5A4A",
+  sepiaContour: "rgba(107, 90, 74, 0.06)",
+  cardSurface: "rgba(255, 255, 255, 0.9)",
+  shadow: "rgba(44, 36, 24, 0.12)",
+  borderInk: "#3D3428",
+  /** Atlas entry card — reflection excerpt (Zone B) */
+  reflectionInk: "#6A5A4A",
+  /** Atlas entry card — section labels + date (Zones A label, C) */
+  metaInk: "#8A7A68",
+  /** Atlas entry card — question prompt italic */
+  promptInk: "#7A5C48",
+};
+
+/** Sanctuary well landmark status overlay */
+export const wellStatusLabel = {
+  fontFamily: fontFamilies.handwritten,
+  fontSize: 16,
+  color: colors.surface,
+} as const;
 
 /** Handwritten overlay prompts such as "casting..." and "Tap to open". */
 export const handwrittenPrompt = {

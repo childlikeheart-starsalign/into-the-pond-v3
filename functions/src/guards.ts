@@ -2,7 +2,29 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { Timestamp } from "firebase-admin/firestore";
 
 import { db } from "./init";
-import { ActiveRod, SubscriptionStatus } from "./types";
+import { ActiveRod, DeletionStatus, SubscriptionStatus } from "./types";
+
+export type UserDeletionSlice = {
+  deletionStatus: DeletionStatus;
+  deletionPurgeAt: Timestamp | null;
+  deletionRequestedAt: Timestamp | null;
+};
+
+export async function assertAccountActive(uid: string): Promise<UserDeletionSlice> {
+  const snapshot = await db.collection("users").doc(uid).get();
+  const data = snapshot.data() ?? {};
+  const deletionStatus = (data.deletionStatus ?? "active") as DeletionStatus;
+
+  if (deletionStatus !== "active") {
+    throw new HttpsError("failed-precondition", "account/pending-deletion");
+  }
+
+  return {
+    deletionStatus,
+    deletionPurgeAt: (data.deletionPurgeAt as Timestamp | null | undefined) ?? null,
+    deletionRequestedAt: (data.deletionRequestedAt as Timestamp | null | undefined) ?? null,
+  };
+}
 
 const rank: Record<ActiveRod, number> = {
   basic: 0,

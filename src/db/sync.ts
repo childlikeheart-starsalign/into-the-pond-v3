@@ -19,6 +19,7 @@ import { LocalLesson } from "@/src/db/models/LocalLesson";
 import { LocalUserProfile } from "@/src/db/models/LocalUserProfile";
 import { LocalWellQuestion } from "@/src/db/models/LocalWellQuestion";
 import { buildLessonAccessRows } from "@/src/services/classroom/lessonAccess";
+import { isPlayableUserDoc } from "@/src/services/auth/sanctuaryPlayable";
 import { firestore } from "@/src/services/firebase/client";
 import {
   CreatureDoc,
@@ -28,6 +29,18 @@ import {
   SubscriptionStatus,
   UserDoc,
 } from "@/src/services/firebase/types";
+import { Sentry } from "@/src/services/sentry/init";
+
+async function runSafeCacheTask(label: string, task: () => Promise<void>): Promise<void> {
+  try {
+    await task();
+  } catch (error) {
+    console.warn(`[offline-cache] ${label} failed`, error);
+    Sentry.captureException(error, {
+      tags: { area: "db_sync", flow: label },
+    });
+  }
+}
 
 async function getCompletedLessonsMap(uid: string) {
   const table = database.get<LocalCompletedLesson>("local_completed_lessons");
@@ -89,6 +102,10 @@ async function upsertUserProfile(uid: string, data: UserDoc) {
       await row.update((entry) => {
         entry.email = data.email;
         entry.totalWonder = data.totalWonder;
+        entry.currentWonder = data.currentWonder ?? data.totalWonder;
+        entry.storedWonder = data.storedWonder ?? data.totalWonder;
+        entry.lifetimeWonderEarned = data.lifetimeWonderEarned ?? data.totalWonder;
+        entry.lastReflectionAt = data.lastReflectionAt?.toMillis?.() ?? null;
         entry.dailyQuestionCount = data.dailyQuestionCount;
         entry.fishingWonderToday = data.fishingWonderToday;
         entry.activeRod = data.activeRod;
@@ -104,6 +121,10 @@ async function upsertUserProfile(uid: string, data: UserDoc) {
         entry.uid = uid;
         entry.email = data.email;
         entry.totalWonder = data.totalWonder;
+        entry.currentWonder = data.currentWonder ?? data.totalWonder;
+        entry.storedWonder = data.storedWonder ?? data.totalWonder;
+        entry.lifetimeWonderEarned = data.lifetimeWonderEarned ?? data.totalWonder;
+        entry.lastReflectionAt = data.lastReflectionAt?.toMillis?.() ?? null;
         entry.dailyQuestionCount = data.dailyQuestionCount;
         entry.fishingWonderToday = data.fishingWonderToday;
         entry.activeRod = data.activeRod;
@@ -175,13 +196,16 @@ async function upsertCompletedLessons(uid: string, completed: Record<string, boo
 }
 
 export function subscribeAndCacheUserProfile(uid: string) {
-  return onSnapshot(doc(firestore, "users", uid), async (snapshot) => {
-    const data = snapshot.data() as UserDoc | undefined;
-    if (!data) return;
-    await upsertUserProfile(uid, data);
-    await upsertInventory(uid, data);
-    await upsertCompletedLessons(uid, data.completedLessons ?? {});
-    await rebuildLessonAccessCache(uid);
+  return onSnapshot(doc(firestore, "users", uid), (snapshot) => {
+    void runSafeCacheTask("userProfile", async () => {
+      const data = snapshot.data() as UserDoc | undefined;
+      if (!data) return;
+      if (!isPlayableUserDoc(data)) return;
+      await upsertUserProfile(uid, data);
+      await upsertInventory(uid, data);
+      await upsertCompletedLessons(uid, data.completedLessons ?? {});
+      await rebuildLessonAccessCache(uid);
+    });
   });
 }
 
@@ -225,49 +249,53 @@ export function subscribeAndCacheWellQuestions(uid: string) {
     collection(firestore, "users", uid, "wellQuestions"),
     orderBy("createdAt", "desc"),
   );
-  return onSnapshot(ref, async (snapshot) => {
-    await upsertWellQuestions(uid, snapshot);
+  return onSnapshot(ref, (snapshot) => {
+    void runSafeCacheTask("wellQuestions", async () => {
+      await upsertWellQuestions(uid, snapshot);
+    });
   });
 }
 
 export function subscribeAndCacheLessons(uid?: string) {
   const ref = query(collection(firestore, "lessons"), orderBy("order", "asc"));
-  return onSnapshot(ref, async (snapshot) => {
-    await database.write(async () => {
-      const table = database.get<LocalLesson>("local_lessons");
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data() as LessonDoc;
-        const existing = await table.query(Q.where("lesson_id", data.lessonId)).fetch();
-        const row = existing[0];
-        if (row) {
-          await row.update((entry) => {
-            entry.lessonOrder = data.order;
-            entry.module = data.module;
-            entry.title = data.title;
-            entry.content = data.content;
-            entry.videoUrl = data.videoUrl;
-            entry.commitmentMessage = data.commitmentMessage;
-            entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
-            entry.isPlaceholder = !!data.isPlaceholder;
-          });
-        } else {
-          await table.create((entry) => {
-            entry.lessonId = data.lessonId;
-            entry.lessonOrder = data.order;
-            entry.module = data.module;
-            entry.title = data.title;
-            entry.content = data.content;
-            entry.videoUrl = data.videoUrl;
-            entry.commitmentMessage = data.commitmentMessage;
-            entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
-            entry.isPlaceholder = !!data.isPlaceholder;
-          });
+  return onSnapshot(ref, (snapshot) => {
+    void runSafeCacheTask("lessons", async () => {
+      await database.write(async () => {
+        const table = database.get<LocalLesson>("local_lessons");
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data() as LessonDoc;
+          const existing = await table.query(Q.where("lesson_id", data.lessonId)).fetch();
+          const row = existing[0];
+          if (row) {
+            await row.update((entry) => {
+              entry.lessonOrder = data.order;
+              entry.module = data.module;
+              entry.title = data.title;
+              entry.content = data.content;
+              entry.videoUrl = data.videoUrl;
+              entry.commitmentMessage = data.commitmentMessage;
+              entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
+              entry.isPlaceholder = !!data.isPlaceholder;
+            });
+          } else {
+            await table.create((entry) => {
+              entry.lessonId = data.lessonId;
+              entry.lessonOrder = data.order;
+              entry.module = data.module;
+              entry.title = data.title;
+              entry.content = data.content;
+              entry.videoUrl = data.videoUrl;
+              entry.commitmentMessage = data.commitmentMessage;
+              entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
+              entry.isPlaceholder = !!data.isPlaceholder;
+            });
+          }
         }
+      });
+      if (uid) {
+        await rebuildLessonAccessCache(uid);
       }
     });
-    if (uid) {
-      await rebuildLessonAccessCache(uid);
-    }
   });
 }
 
@@ -327,9 +355,11 @@ export function subscribeAndCacheDiaryEntries(uid: string) {
     collection(firestore, "users", uid, "diaryEntries"),
     orderBy("createdAt", "desc"),
   );
-  return onSnapshot(ref, async (snapshot) => {
-    await upsertDiaryEntries(uid, snapshot);
-    await rebuildLessonAccessCache(uid);
+  return onSnapshot(ref, (snapshot) => {
+    void runSafeCacheTask("diaryEntries", async () => {
+      await upsertDiaryEntries(uid, snapshot);
+      await rebuildLessonAccessCache(uid);
+    });
   });
 }
 
@@ -369,9 +399,15 @@ async function upsertCreatures(uid: string, snapshot: QuerySnapshot<DocumentData
   });
 }
 
+// v1.1 — future offline cache for Well/Atlas (Firestore shapes finalized in Phase 2):
+// export function subscribeAndCacheWellState(uid: string): Unsubscribe
+// export function subscribeAndCacheChildAtlas(uid: string): Unsubscribe
+
 export function subscribeAndCacheCreatures(uid: string) {
   const ref = query(collection(firestore, "users", uid, "creatures"), orderBy("caughtAt", "desc"));
-  return onSnapshot(ref, async (snapshot) => {
-    await upsertCreatures(uid, snapshot);
+  return onSnapshot(ref, (snapshot) => {
+    void runSafeCacheTask("creatures", async () => {
+      await upsertCreatures(uid, snapshot);
+    });
   });
 }

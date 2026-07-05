@@ -38,14 +38,7 @@ export const gateAssets = {
     lifetimeArchway: require("@/assets/gate/illustrations/lifetime_key_archway.png"),
   },
   background: {
-    windowLeft: require("@/assets/gate/background/window_left.png"),
-    glassJarLarge: require("@/assets/gate/background/glass_jar_large.png"),
-    glassJarSmall: require("@/assets/gate/background/glass_jar_small.png"),
-    ivyHanging: require("@/assets/gate/background/ivy_hanging_segment.png"),
-    wildflowersLeft: require("@/assets/gate/background/wildflower_cluster_left.png"),
-    wildflowersRight: require("@/assets/gate/background/wildflower_cluster_right.png"),
-    woodenShelf: require("@/assets/gate/background/wooden_shelf_segment.png"),
-    parchmentNote: require("@/assets/gate/background/parchment_note_small.png"),
+    environment: require("@/assets/gate/background/sanctuary_gate_environment.png"),
   },
 } as const satisfies Record<string, Record<string, ImageSourcePropType>>;
 

@@ -8,6 +8,7 @@ type ExtraConfig = {
   firebaseMessagingSenderId?: string;
   firebaseAppId?: string;
   firebaseMeasurementId?: string;
+  firebaseDatabaseUrl?: string;
   revenueCatApiKeyApple?: string;
   revenueCatApiKeyGoogle?: string;
   /** Identifier for “Into the pond Pro” in RevenueCat (not the dashboard display title). */
@@ -16,6 +17,10 @@ type ExtraConfig = {
   revenueCatEntitlementFiberglass?: string;
   revenueCatEntitlementLifetime?: string;
   cloudFunctionsRegion?: string;
+  sentryDsn?: string;
+  posthogApiKey?: string;
+  posthogHost?: string;
+  googleWebClientId?: string;
 };
 
 const extra = (Constants.expoConfig?.extra ?? {}) as ExtraConfig;
@@ -29,6 +34,7 @@ export const env = {
     messagingSenderId: extra.firebaseMessagingSenderId ?? "",
     appId: extra.firebaseAppId ?? "",
     measurementId: extra.firebaseMeasurementId ?? "",
+    databaseUrl: extra.firebaseDatabaseUrl ?? "",
   },
   revenueCat: {
     appleApiKey: extra.revenueCatApiKeyApple ?? "",
@@ -39,6 +45,14 @@ export const env = {
     entitlementLifetime: extra.revenueCatEntitlementLifetime ?? "lifetime_keeper",
   },
   cloudFunctionsRegion: extra.cloudFunctionsRegion ?? "asia-east2",
+  sentry: {
+    dsn: extra.sentryDsn ?? process.env.EXPO_PUBLIC_SENTRY_DSN ?? "",
+  },
+  posthog: {
+    apiKey: extra.posthogApiKey ?? process.env.EXPO_PUBLIC_POSTHOG_API_KEY ?? "",
+    host: extra.posthogHost ?? process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://app.posthog.com",
+  },
+  googleWebClientId: extra.googleWebClientId ?? process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
 };
 
 export function assertRequiredEnv() {

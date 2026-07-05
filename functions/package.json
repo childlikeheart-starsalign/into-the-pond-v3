@@ -6,18 +6,26 @@
   },
   "main": "lib/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "node scripts/validate-firestore-rules-registry.js && node scripts/validate-economy-atomicity.js && node scripts/validate-ledger-immutability.js && node scripts/validate-invariant10-fishing-claim.mjs && node scripts/backfill-economy-ledger-from-wonder-tx.test.js && node scripts/generate-creature-refs.js && node scripts/sync-well-module.js && node scripts/sync-progression-module.js && node scripts/sync-wonder-module.js && node scripts/sync-bait-module.js && node scripts/sync-fishing-module.js && node scripts/sync-economy-module.js && node scripts/validate-sync-integrity.js && tsc && node --import tsx ../shared/sanctuary/fishing/encounterEngine.test.ts && node --import tsx ../shared/sanctuary/economy/economy.test.ts && node --import tsx ../shared/sanctuary/economy/foldBaitInventory.test.ts && node --import tsx ../shared/sanctuary/economy/callableResponses.test.ts && node --import tsx ../shared/sanctuary/wonder/rules.test.ts && node --import tsx ../shared/sanctuary/bait/catalog.test.ts && node --import tsx ../shared/sanctuary/progression/evaluateCraftable.test.ts && node --import tsx src/sanctuary/economy/reconcileUser.test.ts && node --import tsx src/sanctuary/economy/computeEconomyProjection.test.ts && node --import tsx src/sanctuary/economy/economySimulation.test.ts && node --import tsx src/sanctuary/economy/commitEconomyAction.integration.test.ts && node --import tsx src/sanctuary/createCast.integration.test.ts && node --import tsx src/sanctuary/claimEncounter.integration.test.ts && node --import tsx src/sanctuary/applyFishingClaim.integration.test.ts",
     "serve": "firebase emulators:start --only functions",
     "deploy": "firebase deploy --only functions",
-    "lint": "echo \"No lint configured\""
+    "lint": "echo \"No lint configured\"",
+    "dev:verify-email": "tsx scripts/dev-verify-email.ts",
+    "deploy:firestore-rules": "tsx scripts/deploy-firestore-rules.ts",
+    "get:firestore-rules": "tsx scripts/get-firestore-rules.ts",
+    "backfill:economy-ledger": "node scripts/backfill-economy-ledger-from-wonder-tx.js",
+    "backfill:economy-ledger:commit": "node scripts/backfill-economy-ledger-from-wonder-tx.js --commit",
+    "smoke:economy-phase0": "node scripts/economy-phase0-smoke.js",
+    "smoke:economy-phase0:probe": "node scripts/economy-phase0-smoke.js --probe"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
     "firebase-admin": "^12.7.0",
-    "firebase-functions": "^6.0.1"
+    "firebase-functions": "^6.0.1",
+    "posthog-node": "^5.38.2"
   },
   "devDependencies": {
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3"
   }
 }
-

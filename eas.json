@@ -1,19 +1,32 @@
 {
   "cli": {
-    "version": ">= 7.0.0"
+    "version": ">= 7.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "development",
+      "prebuildCommand": "node scripts/write-firebase-native-files.mjs"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "prebuildCommand": "node scripts/write-firebase-native-files.mjs"
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
       "env": {
+        "NODE_ENV": "production",
         "SENTRY_ORG": "childlike-heart",
         "SENTRY_PROJECT": "react-native"
-      }
+      },
+      "prebuildCommand": "node scripts/write-firebase-native-files.mjs"
     }
   }
 }

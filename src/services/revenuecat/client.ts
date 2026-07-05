@@ -9,8 +9,24 @@ import Purchases, {
 
 import { env } from "@/src/config/env";
 import { LogicalProductId } from "@/src/services/iap/catalog";
+import { Sentry } from "@/src/services/sentry/init";
 
 let revenueCatConfigured = false;
+let lastRevenueCatAppUserId: string | null | undefined;
+
+const REVENUE_CAT_CONFIGURED_KEY = "__intoThePondRevenueCatConfigured__";
+
+function isRevenueCatAlreadyConfigured() {
+  return (
+    revenueCatConfigured ||
+    Boolean((globalThis as Record<string, unknown>)[REVENUE_CAT_CONFIGURED_KEY])
+  );
+}
+
+function markRevenueCatConfigured() {
+  revenueCatConfigured = true;
+  (globalThis as Record<string, unknown>)[REVENUE_CAT_CONFIGURED_KEY] = true;
+}
 
 export async function configureRevenueCat(appUserID?: string | null) {
   const apiKey = Platform.select({
@@ -21,24 +37,39 @@ export async function configureRevenueCat(appUserID?: string | null) {
 
   if (!apiKey) {
     console.warn("RevenueCat API key missing for this platform.");
+    Sentry.captureMessage("RevenueCat API key missing", {
+      level: "warning",
+      tags: { area: "revenuecat", flow: "configure" },
+    });
     return;
   }
 
-  if (!revenueCatConfigured) {
+  if (!isRevenueCatAlreadyConfigured()) {
     Purchases.setLogLevel(LOG_LEVEL.INFO);
     Purchases.configure({ apiKey });
-    revenueCatConfigured = true;
+    markRevenueCatConfigured();
   }
 
   try {
     if (appUserID) {
-      await Purchases.logIn(appUserID);
-    } else {
+      if (lastRevenueCatAppUserId !== appUserID) {
+        await Purchases.logIn(appUserID);
+        lastRevenueCatAppUserId = appUserID;
+      }
+    } else if (lastRevenueCatAppUserId) {
       await Purchases.logOut();
+      lastRevenueCatAppUserId = null;
     }
   } catch (error) {
     console.warn("RevenueCat logIn/logOut failed", error);
+    Sentry.captureException(error, { tags: { area: "revenuecat", flow: "identity" } });
   }
+}
+
+export async function logOutRevenueCat(): Promise<void> {
+  if (!isRevenueCatAlreadyConfigured()) return;
+  await Purchases.logOut();
+  lastRevenueCatAppUserId = null;
 }
 
 export async function getSubscriptionStatus(): Promise<CustomerInfo | null> {
@@ -46,6 +77,7 @@ export async function getSubscriptionStatus(): Promise<CustomerInfo | null> {
     return await Purchases.getCustomerInfo();
   } catch (error) {
     console.warn("Failed to load RevenueCat customer info", error);
+    Sentry.captureException(error, { tags: { area: "revenuecat", flow: "customer_info" } });
     return null;
   }
 }
@@ -56,6 +88,7 @@ export async function getCurrentOffering(): Promise<PurchasesOffering | null> {
     return offerings.current ?? null;
   } catch (error) {
     console.warn("Failed to load RevenueCat offerings", error);
+    Sentry.captureException(error, { tags: { area: "revenuecat", flow: "offerings" } });
     return null;
   }
 }

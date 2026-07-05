@@ -37,6 +37,7 @@ export function Portrait916Frame({
           height,
           overflow: "hidden",
         }}
+        collapsable={false}
       >
         {children}
       </View>

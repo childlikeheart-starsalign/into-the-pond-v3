@@ -19,8 +19,6 @@ import {
 import { FIELD_JOURNAL_REFERENCE_WIDTH } from "@/src/features/fieldJournal/fieldJournalLayout";
 import { STILLWATER_CHAPTER } from "@/src/features/fieldJournal/stillwaterSpreads";
 import type { FieldJournalChapterId } from "@/src/features/fieldJournal/types";
-import { useSpreadWindow } from "@/src/features/fieldJournal/useSpreadWindow";
-
 type FieldJournalReaderProps = {
   width: number;
   height: number;
@@ -49,8 +47,6 @@ export function FieldJournalReader({
 
   const chapter = getFieldJournalChapter(chapterId) ?? STILLWATER_CHAPTER;
   const spreads = chapter.spreads;
-
-  const windowEntries = useSpreadWindow(spreads, pageIndex);
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
@@ -141,7 +137,6 @@ export function FieldJournalReader({
         height={height}
         spreads={spreads}
         activeSpread={activeSpread}
-        windowEntries={windowEntries}
         pageIndex={pageIndex}
         pageCount={spreads.length}
         reduceMotion={reduceMotion}

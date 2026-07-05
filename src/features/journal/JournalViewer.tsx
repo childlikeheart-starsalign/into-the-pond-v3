@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { SpreadImagePreloader } from "@/src/components/fieldJournal/FieldJournalSpread";
 import {
   fitJournalSceneRect,
   journalBookPageFrameRect,
@@ -9,14 +8,12 @@ import {
 } from "@/src/features/fieldJournal/fitContainRect";
 import { SkiaPageCurlOverlay } from "@/src/features/journal/SkiaPageCurlOverlay";
 import type { FieldJournalSpread } from "@/src/features/fieldJournal/types";
-import type { SpreadWindowEntry } from "@/src/features/fieldJournal/useSpreadWindow";
 
 type JournalViewerProps = {
   width: number;
   height: number;
   spreads: FieldJournalSpread[];
   activeSpread: FieldJournalSpread;
-  windowEntries: SpreadWindowEntry[];
   pageIndex: number;
   pageCount: number;
   reduceMotion: boolean;
@@ -32,7 +29,6 @@ export function JournalViewer({
   height,
   spreads,
   activeSpread,
-  windowEntries,
   pageIndex,
   pageCount,
   reduceMotion,
@@ -53,10 +49,6 @@ export function JournalViewer({
 
   return (
     <View style={[styles.root, { width, height }]}>
-      {windowEntries.map((entry) => (
-        <SpreadImagePreloader key={`preload-${entry.spread.id}`} spread={entry.spread} />
-      ))}
-
       <SkiaPageCurlOverlay
         width={width}
         height={height}

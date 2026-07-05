@@ -1,64 +1,117 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import * as Haptics from "expo-haptics";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Animated,
-  Easing,
+  AccessibilityInfo,
+  Image,
   ImageBackground,
   Pressable,
   StyleSheet,
+  Text,
+  View,
   type GestureResponderEvent,
   type LayoutChangeEvent,
 } from "react-native";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
+import {
+  GATE_FADE_DELAY_MS,
+  GATE_FADE_DURATION_MS,
+  GATE_KEY_OPACITY_DIP_MS,
+  GATE_KEY_OPACITY_RESTORE_MS,
+  GATE_KEY_PULSE_DOWN_MS,
+  GATE_KEY_PULSE_UP_MS,
+  GATE_KEY_SETTLE_MS,
+} from "@/src/constants/gateTransition";
+import {
+  GATE_KEY_DEFAULT,
+  GATE_KEY_STORAGE_KEY,
+  GATE_KEY_WIDTH_RATIO,
+  LEGACY_STORAGE_KEY,
+  PREVIOUS_GATE_KEY_STORAGE_KEY,
+  parseGateKeyCalibration,
+  resolveGateKeyIntrinsic,
+  resolveGateKeyPosition,
+  resolveGateKeySize,
+  type GateKeyCalibration,
+} from "@/src/constants/gateKeyLayout";
 import { media } from "@/src/constants/media";
-import { routes } from "@/src/navigation/routes";
+import { fontFamilies } from "@/src/constants/theme";
+import { useAuthBoot } from "@/src/hooks/useAuthBoot";
+import { trackAuthGateViewed } from "@/src/services/analytics/authFunnel";
 
-const STORAGE_KEY = "gate.keyBox.v1";
+const defaultCalibration: GateKeyCalibration = {
+  leftPct: GATE_KEY_DEFAULT.leftPct,
+  topPct: GATE_KEY_DEFAULT.topPct,
+  widthRatio: GATE_KEY_WIDTH_RATIO,
+};
 
 /**
- * Gate screen: tap anywhere to animate the key, then enter Sanctuary.
- * Long press logs tap coordinates to help calibrate key placement.
+ * Gate screen: tap key to unlock sign-up (signed-out cold-start funnel).
+ * Long press (dev only) saves key center position to AsyncStorage for alignment tuning.
  */
 export default function GateScreen() {
-  const scale = useRef(new Animated.Value(1)).current;
-  const rotate = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
+  const { unlockGateAndGoToSignup, unlockGateAndGoToLogin } = useAuthBoot();
+  const keyScale = useSharedValue(1);
+  const keyOpacity = useSharedValue(1);
+  const gateOpacity = useSharedValue(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+  const [calibration, setCalibration] = useState<GateKeyCalibration>(defaultCalibration);
 
-  // Calibration values for the animated key overlay.
-  const [keyBox, setKeyBox] = useState({
-    leftPct: 22,
-    topPct: 46,
-    width: 90,
-    height: 50,
-  });
+  const navigateToSignup = useCallback(() => {
+    unlockGateAndGoToSignup();
+  }, [unlockGateAndGoToSignup]);
+
+  useEffect(() => {
+    trackAuthGateViewed();
+  }, []);
+
+  const keyIntrinsic = useMemo(() => resolveGateKeyIntrinsic(), []);
+
+  const keySize = useMemo(
+    () =>
+      resolveGateKeySize(
+        screenSize.width,
+        calibration.widthRatio ?? GATE_KEY_WIDTH_RATIO,
+        keyIntrinsic.width,
+        keyIntrinsic.height,
+      ),
+    [calibration.widthRatio, keyIntrinsic.height, keyIntrinsic.width, screenSize.width],
+  );
+
+  const keyPosition = useMemo(
+    () => resolveGateKeyPosition(screenSize.width, screenSize.height, calibration, keySize),
+    [calibration, keySize, screenSize.height, screenSize.width],
+  );
+
+  const keyStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: keyScale.value }],
+    opacity: keyOpacity.value,
+  }));
+
+  const gateStyle = useAnimatedStyle(() => ({
+    opacity: gateOpacity.value,
+  }));
 
   useEffect(() => {
     if (!__DEV__) return;
     void (async () => {
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        await AsyncStorage.removeItem(LEGACY_STORAGE_KEY);
+        await AsyncStorage.removeItem(PREVIOUS_GATE_KEY_STORAGE_KEY);
+        const stored = await AsyncStorage.getItem(GATE_KEY_STORAGE_KEY);
         if (!stored) return;
-        const parsed = JSON.parse(stored) as {
-          leftPct?: number;
-          topPct?: number;
-          width?: number;
-          height?: number;
-        };
-        if (
-          typeof parsed.leftPct === "number" &&
-          typeof parsed.topPct === "number" &&
-          typeof parsed.width === "number" &&
-          typeof parsed.height === "number"
-        ) {
-          setKeyBox({
-            leftPct: parsed.leftPct,
-            topPct: parsed.topPct,
-            width: parsed.width,
-            height: parsed.height,
-          });
+        const parsed = parseGateKeyCalibration(JSON.parse(stored));
+        if (parsed) {
+          setCalibration(parsed);
         }
       } catch {
         // ignore bad storage entries
@@ -66,78 +119,142 @@ export default function GateScreen() {
     })();
   }, []);
 
-  const handleScreenTap = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-
-    Animated.parallel([
-      Animated.timing(scale, {
-        toValue: 1.5,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(rotate, {
-        toValue: 1,
-        duration: 600,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      router.replace(routes.sanctuary);
+  const startGateFadeAndNavigate = useCallback(() => {
+    gateOpacity.value = withTiming(0, { duration: GATE_FADE_DURATION_MS }, (finished) => {
+      if (finished) {
+        runOnJS(navigateToSignup)();
+      }
     });
-  };
+  }, [gateOpacity, navigateToSignup]);
 
-  const spin = rotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
+  const handleKeyTap = useCallback(() => {
+    if (isAnimating) return;
+
+    void AccessibilityInfo.isReduceMotionEnabled().then((reduceMotion) => {
+      if (reduceMotion) {
+        navigateToSignup();
+        return;
+      }
+
+      setIsAnimating(true);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      keyScale.value = 1;
+      keyOpacity.value = 1;
+
+      keyScale.value = withSequence(
+        withTiming(0.92, {
+          duration: GATE_KEY_PULSE_DOWN_MS,
+          easing: Easing.out(Easing.quad),
+        }),
+        withTiming(1.04, {
+          duration: GATE_KEY_PULSE_UP_MS,
+          easing: Easing.out(Easing.quad),
+        }),
+        withTiming(1, {
+          duration: GATE_KEY_SETTLE_MS,
+          easing: Easing.out(Easing.quad),
+        }),
+      );
+
+      keyOpacity.value = withSequence(
+        withTiming(0.6, { duration: GATE_KEY_OPACITY_DIP_MS }),
+        withTiming(1, { duration: GATE_KEY_OPACITY_RESTORE_MS }),
+      );
+
+      setTimeout(() => {
+        startGateFadeAndNavigate();
+      }, GATE_FADE_DELAY_MS);
+    });
+  }, [isAnimating, keyOpacity, keyScale, navigateToSignup, startGateFadeAndNavigate]);
 
   const handleCalibrationTap = (e: GestureResponderEvent) => {
-    if (!__DEV__) return;
+    if (!__DEV__ || isAnimating) return;
     if (!screenSize.width || !screenSize.height) return;
     const { locationX, locationY } = e.nativeEvent;
-    const leftPct = ((locationX - keyBox.width / 2) / screenSize.width) * 100;
-    const topPct = ((locationY - keyBox.height / 2) / screenSize.height) * 100;
-    const next = {
-      ...keyBox,
-      leftPct: Number(leftPct.toFixed(2)),
-      topPct: Number(topPct.toFixed(2)),
+    const next: GateKeyCalibration = {
+      leftPct: Number((locationX / screenSize.width).toFixed(4)),
+      topPct: Number((locationY / screenSize.height).toFixed(4)),
+      widthRatio: calibration.widthRatio ?? GATE_KEY_WIDTH_RATIO,
     };
-    setKeyBox(next);
-    void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    console.log("Key box updated:", next);
+    setCalibration(next);
+    keyOpacity.value = 1;
+    keyScale.value = 1;
+    void AsyncStorage.setItem(GATE_KEY_STORAGE_KEY, JSON.stringify(next));
+    console.log("Gate key calibration updated:", next);
   };
 
   return (
-    <Pressable
+    <View
       style={styles.container}
-      onPress={handleScreenTap}
-      onLongPress={handleCalibrationTap}
       onLayout={(event: LayoutChangeEvent) => setScreenSize(event.nativeEvent.layout)}
     >
-      <ImageBackground source={media.gate.splash} style={styles.background} resizeMode="cover">
-        <Animated.Image
-          source={require("@/assets/images/gate-key.png")}
-          resizeMode="contain"
-          style={[
-            styles.key,
-            {
-              left: `${keyBox.leftPct}%`,
-              top: `${keyBox.topPct}%`,
-              width: keyBox.width,
-              height: keyBox.height,
-              opacity,
-              transform: [{ scale }, { rotate: spin }],
-            },
-          ]}
-        />
-      </ImageBackground>
-    </Pressable>
+      <Animated.View style={[styles.gateLayer, gateStyle]}>
+        <ImageBackground source={media.gate.splash} style={styles.background} resizeMode="cover">
+          {keySize.width > 0 && keySize.height > 0 ? (
+            <Pressable
+              style={[
+                styles.keyPressable,
+                {
+                  left: keyPosition.left,
+                  top: keyPosition.top,
+                  width: keySize.width,
+                  height: keySize.height,
+                },
+              ]}
+              onPress={handleKeyTap}
+              onLongPress={handleCalibrationTap}
+              disabled={isAnimating}
+              accessibilityRole="button"
+              accessibilityLabel="Key to enter"
+              accessibilityState={{ disabled: isAnimating }}
+            >
+              <Animated.View
+                style={[
+                  keyStyle,
+                  {
+                    width: keySize.width,
+                    height: keySize.height,
+                  },
+                ]}
+              >
+                <Image
+                  source={media.gate.key}
+                  resizeMode="contain"
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  style={[
+                    styles.key,
+                    {
+                      width: keySize.width,
+                      height: keySize.height,
+                    },
+                  ]}
+                />
+              </Animated.View>
+            </Pressable>
+          ) : null}
+
+          <Text style={styles.hintText} accessibilityElementsHidden>
+            Tap the key when you&apos;re ready.
+          </Text>
+
+          <Pressable
+            onPress={unlockGateAndGoToLogin}
+            disabled={isAnimating}
+            style={styles.signInLink}
+            accessibilityLabel="Already have a pond? Sign in"
+            accessibilityRole="link"
+            accessibilityState={{ disabled: isAnimating }}
+            hitSlop={{ top: 12, bottom: 12, left: 24, right: 24 }}
+          >
+            <Text style={styles.signInLinkText}>
+              Already have a pond? <Text style={styles.signInEmphasis}>Sign in</Text>
+            </Text>
+          </Pressable>
+        </ImageBackground>
+      </Animated.View>
+    </View>
   );
 }
 
@@ -145,12 +262,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  gateLayer: {
+    flex: 1,
+  },
   background: {
     flex: 1,
     width: "100%",
     height: "100%",
   },
-  key: {
+  keyPressable: {
     position: "absolute",
+    backgroundColor: "transparent",
+  },
+  key: {
+    backgroundColor: "transparent",
+  },
+  hintText: {
+    fontFamily: fontFamilies.handwritten,
+    fontSize: 19,
+    color: "#2C1810",
+    opacity: 0.45,
+    textAlign: "center",
+    position: "absolute",
+    bottom: "22%",
+    alignSelf: "center",
+    letterSpacing: 0.3,
+  },
+  signInLink: {
+    position: "absolute",
+    bottom: "16%",
+    alignSelf: "center",
+    padding: 8,
+    minHeight: 48,
+    justifyContent: "center",
+  },
+  signInLinkText: {
+    fontFamily: fontFamilies.handwritten,
+    fontSize: 18,
+    color: "#2C1810",
+    opacity: 0.55,
+    textDecorationLine: "underline",
+    textAlign: "center",
+  },
+  signInEmphasis: {
+    opacity: 1,
   },
 });

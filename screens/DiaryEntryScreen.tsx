@@ -6,8 +6,6 @@ import {
   getDocs,
   limit,
   query,
-  serverTimestamp,
-  setDoc,
   where,
   type DocumentReference,
   type DocumentData,
@@ -26,6 +24,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ExportBottomSheet } from "@/components/ExportBottomSheet";
+import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { DiaryRitualFlow } from "@/src/components/diary/DiaryRitualFlow";
 import { DiaryPromptMultiselect } from "@/src/components/diary/DiaryPromptMultiselect";
 import { DiaryPromptSlider } from "@/src/components/diary/DiaryPromptSlider";
@@ -43,6 +42,8 @@ import {
 } from "@/src/state/sanctuaryCultivation";
 import { routes } from "@/src/navigation/routes";
 import { firebaseAuth, firestore } from "@/src/services/firebase/client";
+import { completeLessonReflection } from "@/src/services/firebase/serverActions";
+import { Sentry } from "@/src/services/sentry/init";
 import type { ExportEntryData } from "@/utils/exportHelpers";
 
 type PromptType = "text" | "slider" | "multiselect";
@@ -422,6 +423,22 @@ function ritualResponsesToExport(
   return prompts;
 }
 
+function promptAnswersFromResponses(
+  prompts: DiaryPrompt[],
+  responses: ResponsesByPrompt,
+): { prompts: string[]; answers: string[] } {
+  return {
+    prompts: prompts.map((prompt) => prompt.question),
+    answers: prompts.map((prompt) => {
+      const response = responses[prompt.id];
+      if (typeof response === "string") return response;
+      if (typeof response === "number") return String(response);
+      if (Array.isArray(response)) return response.join(", ");
+      return "";
+    }),
+  };
+}
+
 async function saveRitualEntryLocal(
   ritual: SelfCheckRitual,
   lesson: LoadedLesson,
@@ -433,46 +450,6 @@ async function saveRitualEntryLocal(
   setPendingArrivalBloomId(bloom.id);
   await refreshSanctuaryCultivation();
   await clearRitualDraft(lesson.id);
-}
-
-function saveRitualEntryCloud(
-  ritual: SelfCheckRitual,
-  lesson: LoadedLesson,
-  responses: SelfCheckResponses,
-) {
-  const uid = firebaseAuth.currentUser?.uid;
-  if (!uid) return;
-
-  const prompts = ritualResponsesToExport(ritual, responses);
-  const entryRef = doc(collection(firestore, "diaryEntries"));
-
-  const entryWrite = setDoc(entryRef, {
-    lessonId: lesson.id,
-    userId: uid,
-    ritualId: ritual.id,
-    prompts: prompts.map((item, index) => ({
-      promptId: `ritual-${index + 1}`,
-      question: item.question,
-      response: item.response,
-    })),
-    savedAt: serverTimestamp(),
-  });
-
-  const followUpWrites: Promise<void>[] = [
-    setDoc(
-      doc(firestore, "users", uid, "lessonProgress", lesson.id),
-      { diaryEntryId: entryRef.id },
-      { merge: true },
-    ),
-  ];
-
-  if (lesson.ref) {
-    followUpWrites.push(setDoc(lesson.ref, { diaryEntryId: entryRef.id }, { merge: true }));
-  }
-
-  void Promise.all([entryWrite, ...followUpWrites]).catch((error) => {
-    console.warn("[DiaryEntry] failed to save ritual entry", error);
-  });
 }
 
 async function fetchLesson(lessonId: string): Promise<LoadedLesson | null> {
@@ -608,12 +585,27 @@ export function DiaryEntryScreen({ lessonId }: DiaryEntryScreenProps) {
     async (responses: SelfCheckResponses) => {
       if (!ritual || !lesson || ritualCompleting) return;
 
+      const uid = firebaseAuth.currentUser?.uid;
+      if (!uid) return;
+
       setRitualCompleting(true);
       try {
         await saveRitualEntryLocal(ritual, lesson, responses);
-        saveRitualEntryCloud(ritual, lesson, responses);
+        const exportPrompts = ritualResponsesToExport(ritual, responses);
+        await completeLessonReflection(uid, {
+          lessonId: lesson.id,
+          prompts: exportPrompts.map((item) => item.question),
+          answers: exportPrompts.map((item) =>
+            Array.isArray(item.response) ? item.response.join(", ") : String(item.response),
+          ),
+          source: "lesson",
+          ritualId: ritual.id,
+        });
       } catch (error) {
-        console.warn("[DiaryEntry] failed to save ritual locally", error);
+        console.warn("[DiaryEntry] failed to complete lesson reflection", error);
+        Sentry.captureException(error, {
+          tags: { area: "diary", flow: "ritual_complete_reflection" },
+        });
       } finally {
         setSaved(true);
         allowLeaveRef.current = true;
@@ -636,56 +628,33 @@ export function DiaryEntryScreen({ lessonId }: DiaryEntryScreenProps) {
     Keyboard.dismiss();
     setSaving(true);
 
-    try {
-      const entryRef = doc(collection(firestore, "diaryEntries"));
-      const entryWrite = setDoc(entryRef, {
-        lessonId: lesson.id,
-        userId: uid,
-        prompts: lesson.prompts.map((prompt) => ({
-          promptId: prompt.id,
-          question: prompt.question,
-          response: responses[prompt.id],
-        })),
-        savedAt: serverTimestamp(),
-      });
+    const { prompts, answers } = promptAnswersFromResponses(lesson.prompts, responses);
 
-      const followUpWrites: Promise<void>[] = [
-        setDoc(
-          doc(firestore, "users", uid, "lessonProgress", lesson.id),
-          {
-            diaryEntryId: entryRef.id,
-          },
-          { merge: true },
-        ),
-      ];
-
-      if (lesson.ref) {
-        followUpWrites.push(
-          setDoc(
-            lesson.ref,
-            {
-              diaryEntryId: entryRef.id,
-            },
-            { merge: true },
-          ),
-        );
-      }
-
-      void Promise.all([entryWrite, ...followUpWrites]).catch((error) => {
-        console.warn("[DiaryEntry] failed to save entry", error);
-      });
-
-      void addReflectionBloom(lesson.id, `diary-${lesson.id}`)
-        .then((bloom) => {
-          setPendingArrivalBloomId(bloom.id);
-          return refreshSanctuaryCultivation();
-        })
-        .catch((error) => {
-          console.warn("[DiaryEntry] failed to record sanctuary bloom", error);
+    void completeLessonReflection(uid, {
+      lessonId: lesson.id,
+      prompts,
+      answers,
+      source: "lesson",
+    })
+      .then(() =>
+        addReflectionBloom(lesson.id, `diary-${lesson.id}`)
+          .then((bloom) => {
+            setPendingArrivalBloomId(bloom.id);
+            return refreshSanctuaryCultivation();
+          })
+          .catch((error) => {
+            console.warn("[DiaryEntry] failed to record sanctuary bloom", error);
+            Sentry.captureException(error, {
+              tags: { area: "diary", flow: "sanctuary_bloom" },
+            });
+          }),
+      )
+      .catch((error) => {
+        console.warn("[DiaryEntry] failed to complete lesson reflection", error);
+        Sentry.captureException(error, {
+          tags: { area: "diary", flow: "complete_reflection" },
         });
-    } catch (error) {
-      console.warn("[DiaryEntry] failed to queue entry save", error);
-    }
+      });
 
     setExportEntryData({
       diaryEntryId: lesson.id,
@@ -787,9 +756,11 @@ export function DiaryEntryScreen({ lessonId }: DiaryEntryScreenProps) {
       ) : loadError ? (
         <View style={styles.center}>
           <Text style={styles.errorTitle}>{loadError}</Text>
-          <Pressable style={layout.btnPrimary} onPress={() => router.back()}>
-            <Text style={layout.btnPrimaryText}>Go back</Text>
-          </Pressable>
+          <PrimaryButton
+            label="Go back"
+            accessibilityLabel="Return from diary reflection"
+            onPress={() => router.back()}
+          />
         </View>
       ) : lesson ? (
         <>
@@ -819,20 +790,14 @@ export function DiaryEntryScreen({ lessonId }: DiaryEntryScreenProps) {
           </ScrollView>
 
           <View style={[styles.footer, { paddingBottom: Math.max(spacing.inner, insets.bottom) }]}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Save entry"
-              accessibilityState={{ disabled: !isValid || saving }}
-              style={[
-                layout.btnPrimary,
-                styles.saveButton,
-                (!isValid || saving) && styles.disabled,
-              ]}
+            <PrimaryButton
+              label={saving ? "Saving..." : "Save entry"}
+              accessibilityLabel="Save diary reflection"
               disabled={!isValid || saving}
+              busy={saving}
+              style={styles.saveButton}
               onPress={handleSave}
-            >
-              <Text style={layout.btnPrimaryText}>{saving ? "Saving..." : "Save entry"}</Text>
-            </Pressable>
+            />
           </View>
         </>
       ) : null}
@@ -845,12 +810,17 @@ export function DiaryEntryScreen({ lessonId }: DiaryEntryScreenProps) {
               Discarding will erase your response from this screen.
             </Text>
             <View style={styles.sheetActions}>
-              <Pressable style={layout.btnSecondary} onPress={discardAndLeave}>
-                <Text style={layout.btnSecondaryText}>Discard</Text>
-              </Pressable>
-              <Pressable style={layout.btnPrimary} onPress={() => setShowDiscardSheet(false)}>
-                <Text style={layout.btnPrimaryText}>Keep editing</Text>
-              </Pressable>
+              <PrimaryButton
+                label="Discard"
+                accessibilityLabel="Discard diary entry"
+                variant="destructive"
+                onPress={discardAndLeave}
+              />
+              <PrimaryButton
+                label="Keep editing"
+                accessibilityLabel="Keep editing diary entry"
+                onPress={() => setShowDiscardSheet(false)}
+              />
             </View>
           </View>
         </View>

@@ -17,9 +17,10 @@ import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
 import { TAB_SCREEN_BOTTOM_PADDING } from "@/src/constants/tabScreenLayout";
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
 import { AccountFooter } from "@/src/features/gate/components/AccountFooter";
+import { DeleteAccountSection } from "@/src/features/gate/components/DeleteAccountSection";
 import { CurrentAccessCard } from "@/src/features/gate/components/CurrentAccessCard";
-import { GateBackgroundLayer } from "@/src/features/gate/components/GateBackgroundLayer";
 import { PricingCard } from "@/src/features/gate/components/PricingCard";
+import { SanctuaryGateBackground } from "@/src/features/gate/components/SanctuaryGateBackground";
 import { StickyCurrentTierHeader } from "@/src/features/gate/components/StickyCurrentTierHeader";
 import { useGateViewModels } from "@/src/features/gate/buildGateViewModels";
 import { translateGateCopy } from "@/src/features/gate/gateCopy";
@@ -165,7 +166,7 @@ export function GateScreen() {
       <View style={styles.root}>
         <StatusBar barStyle="dark-content" />
         <Portrait916Frame mode="contain">
-          <GateBackgroundLayer />
+          <SanctuaryGateBackground />
 
           <StickyCurrentTierHeader
             visible={showStickyHeader}
@@ -227,6 +228,8 @@ export function GateScreen() {
               onSignOut={() => void handleSignOut()}
               onRestore={() => void handleRestore()}
             />
+
+            <DeleteAccountSection disabled={!uid || signingOut || busyProductId != null} />
           </ScrollView>
         </Portrait916Frame>
       </View>

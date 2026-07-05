@@ -8,6 +8,7 @@ const FADE_MS = 350;
 
 type SanctuaryAvatarProps = {
   poses: SanctuaryAvatarPoseAsset[];
+  onFirstPoseLoad?: () => void;
 };
 
 function hitRectToStyle(pose: SanctuaryAvatarPoseAsset): ViewStyle {
@@ -25,7 +26,7 @@ function hitRectToStyle(pose: SanctuaryAvatarPoseAsset): ViewStyle {
  * The pose PNGs are transparent 9:16 canvases, so rendering them full-frame
  * preserves the reference placement from the source artwork.
  */
-export function SanctuaryAvatar({ poses }: SanctuaryAvatarProps) {
+export function SanctuaryAvatar({ poses, onFirstPoseLoad }: SanctuaryAvatarProps) {
   const [index, setIndex] = useState(0);
   const opacity = useRef(new Animated.Value(1)).current;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -73,6 +74,7 @@ export function SanctuaryAvatar({ poses }: SanctuaryAvatarProps) {
           style={styles.image}
           resizeMode="cover"
           accessibilityIgnoresInvertColors
+          onLoad={index === 0 ? onFirstPoseLoad : undefined}
         />
       </Animated.View>
 

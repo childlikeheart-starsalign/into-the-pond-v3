@@ -18,6 +18,20 @@ export const narrativeContent = {
     reassurance: "You can explore all paths later. This just helps us start in the right place.",
   },
 
+  childBirthDate: {
+    headline: "When were they born?",
+    subtext:
+      "Month and year are enough. This helps the Well choose questions that fit your child's age.",
+    reassurance: "You can update this later in settings.",
+    continueLabel: "Continue",
+    errorInvalid: "Please choose a valid month and year.",
+    errorSyncFailed: "Couldn't save your answer. Check your connection and try again.",
+    errorTooYoung: "Into the Pond is designed for children ages 4–12.",
+    errorTooOld: "Into the Pond is designed for children ages 4–12.",
+    wellGateHeadline: "Before the Well can speak",
+    wellGateSubtext: "We need to know your child's age so the questions fit where they are now.",
+  },
+
   /** Human-readable scene names — useful for accessibility labels and analytics. */
   sceneNames: {
     scene1: "The Finding",

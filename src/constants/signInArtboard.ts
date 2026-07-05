@@ -19,10 +19,12 @@ export type NormRect = {
  * Tuned to match the sign-in design with parchment card layout.
  */
 export const signInHitRects = {
+  /** Sign in with Apple + or divider (iOS only). */
+  appleSignIn: { left: 0.26, top: 0.28, width: 0.525, height: 0.09 },
   /** Email input inside wavy-bordered field. */
-  emailInput: { left: 0.24, top: 0.4, width: 0.64, height: 0.055 },
+  emailInput: { left: 0.26, top: 0.4, width: 0.525, height: 0.055 },
   /** Password input (shorter width to leave room for toggle icon). */
-  passwordInput: { left: 0.24, top: 0.54, width: 0.52, height: 0.055 },
+  passwordInput: { left: 0.26, top: 0.53, width: 0.52, height: 0.055 },
   /** Show/hide password key icon; sized for ≥48px tap target. */
   passwordToggle: { left: 0.71, top: 0.495, width: 0.11, height: 0.07 },
   /** Sign in button (cloud shape with wave decoration). */

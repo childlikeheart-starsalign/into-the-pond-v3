@@ -19,11 +19,13 @@ export type NormRect = {
  * Tuned to match the sign-up design with parchment card layout.
  */
 export const signUpHitRects = {
+  /** Sign in with Apple + or divider (iOS only). */
+  appleSignIn: { left: 0.26, top: 0.28, width: 0.525, height: 0.09 },
   /** Email input inside wavy-bordered field. */
-  emailInput: { left: 0.24, top: 0.412, width: 0.6, height: 0.048 },
+  emailInput: { left: 0.26, top: 0.405, width: 0.51, height: 0.048 },
   /** Password input (shorter width to leave room for toggle icon). */
-  passwordInput: { left: 0.24, top: 0.532, width: 0.6, height: 0.048 },
-  /** Show/hide password key icon; height expanded for ≥48px tap target. */
+  passwordInput: { left: 0.26, top: 0.534, width: 0.51, height: 0.048 },
+  /** Show/hide password key icon; heigh expanded for ≥48px tap target. */
   passwordToggle: { left: 0.725, top: 0.555, width: 0.08, height: 0.055 },
   /** Create Account button (cloud shape with wave decoration). */
   createAccountButton: { left: 0.3, top: 0.586, width: 0.4, height: 0.062 },

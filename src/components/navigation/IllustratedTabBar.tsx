@@ -1,26 +1,12 @@
-import { usePathname, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePathname } from "expo-router";
+import { useSyncExternalStore } from "react";
+import { StyleSheet, View } from "react-native";
 
-import {
-  ILLUSTRATED_TAB_BAR_HEIGHT,
-  ILLUSTRATED_TABS,
-  type IllustratedTabId,
-} from "@/src/constants/illustratedTabBar";
+import { SanctuaryTabBarOverlay } from "@/src/components/sanctuary/SanctuaryTabBarOverlay";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
-import { routes } from "@/src/navigation/routes";
 import { getClassroomView, subscribeClassroomView } from "@/src/state/classroomView";
 
-const TAB_ROUTES: Record<IllustratedTabId, (typeof routes)[keyof typeof routes]> = {
-  net: routes.net,
-  classroom: routes.classroom,
-  sanctuary: routes.sanctuary,
-  store: routes.store,
-  gate: routes.gate,
-};
-
-function activeTabFromPath(pathname: string): IllustratedTabId | null {
+function activeTabFromPath(pathname: string): string | null {
   if (pathname.includes("/net")) return "net";
   if (pathname.includes("/classroom")) return "classroom";
   if (pathname.includes("/sanctuary")) return "sanctuary";
@@ -30,91 +16,54 @@ function activeTabFromPath(pathname: string): IllustratedTabId | null {
 }
 
 /**
- * Invisible tap targets over the illustrated bottom tab bar in sanctuary art.
- * Replaces the native Expo tab bar.
+ * Frame-aligned sanctuary tab bar for off-sanctuary tab screens.
+ * Sanctuary embeds nav in its artboard; all other tabs use this overlay.
  */
 export function IllustratedTabBar() {
-  const router = useRouter();
   const pathname = usePathname();
-  const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const frame = usePortrait916Layout();
+  const frame = usePortrait916Layout("contain");
   const activeTab = activeTabFromPath(pathname);
+  const classroomView = useSyncExternalStore(
+    subscribeClassroomView,
+    getClassroomView,
+    getClassroomView,
+  );
   const onSanctuary = activeTab === "sanctuary";
-  const onNet = activeTab === "net";
-  const onClassroom = activeTab === "classroom";
-  const [classroomView, setClassroomViewState] = useState(getClassroomView);
 
-  useEffect(() => subscribeClassroomView(setClassroomViewState), []);
-
-  // Sanctuary embeds nav in art; net journal and classroom open/menu are full-screen without tab chrome.
-  if (
-    onSanctuary ||
-    onNet ||
-    (onClassroom && (classroomView === "open" || classroomView === "menu"))
-  ) {
+  if (onSanctuary) {
     return null;
   }
 
-  const frameBottomInset = Math.max(0, windowHeight - frame.top - frame.height);
+  if (activeTab === "classroom" && classroomView === "menu") {
+    return null;
+  }
+
+  if (frame.width <= 0 || frame.height <= 0) {
+    return null;
+  }
 
   return (
     <View
       style={[
-        styles.bar,
+        styles.frameHost,
         {
-          height: ILLUSTRATED_TAB_BAR_HEIGHT + insets.bottom,
-          paddingBottom: insets.bottom,
+          left: frame.left,
+          top: frame.top,
+          width: frame.width,
+          height: frame.height,
         },
-        onSanctuary
-          ? {
-              left: frame.left,
-              width: frame.width,
-              bottom: frameBottomInset,
-            }
-          : null,
-        !onSanctuary && !onClassroom && styles.barOffSanctuary,
       ]}
       pointerEvents="box-none"
     >
-      <View style={styles.row}>
-        {ILLUSTRATED_TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              accessibilityRole="button"
-              accessibilityLabel={tab.label}
-              accessibilityState={{ selected: isActive }}
-              style={[styles.slot, { flex: tab.widthShare }]}
-              onPress={() => router.replace(TAB_ROUTES[tab.id])}
-            />
-          );
-        })}
-      </View>
+      <SanctuaryTabBarOverlay frameHeight={frame.height} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: {
+  frameHost: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "flex-end",
-  },
-  barOffSanctuary: {
-    backgroundColor: "rgba(250,247,242,0.92)",
-    borderTopWidth: 1,
-    borderTopColor: "#E8DDD3",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    height: ILLUSTRATED_TAB_BAR_HEIGHT,
-  },
-  slot: {
-    minHeight: 48,
+    zIndex: 100,
+    elevation: 8,
   },
 });

@@ -1,0 +1,40 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "economyLedger",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "authFunnel.verifyAbandonedEventSent", "order": "ASCENDING" },
+        { "fieldPath": "authFunnel.emailVerified", "order": "ASCENDING" },
+        { "fieldPath": "authFunnel.provider", "order": "ASCENDING" },
+        { "fieldPath": "authFunnel.createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "authFunnel.sanctuaryInitialized", "order": "ASCENDING" },
+        { "fieldPath": "authFunnel.emailVerified", "order": "ASCENDING" },
+        { "fieldPath": "authFunnel.provider", "order": "ASCENDING" },
+        { "fieldPath": "authFunnel.createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "deletionStatus", "order": "ASCENDING" },
+        { "fieldPath": "deletionPurgeAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

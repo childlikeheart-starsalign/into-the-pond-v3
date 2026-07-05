@@ -1,0 +1,60 @@
+import type { FishingClaim, PoolTier } from "../types";
+import type { FishingClaimClientSummary } from "../economy/callableResponses";
+
+export type FishingClaimPresentation = {
+  outcome: FishingClaim["outcome"];
+  caughtCreature: { id: string; displayName: string } | null;
+  rarity: FishingClaim["rarityIndicator"];
+  poolTier: PoolTier;
+  wonderDelta: number;
+  materialDelta: number;
+  duplicateReward: { wonder: number; materials: number } | null;
+  consolationReward: { wonder: number; materials: number; spiritMessage?: string } | null;
+  spiritMessage?: string;
+};
+
+export function toFishingClaimPresentation(claim: FishingClaim): FishingClaimPresentation {
+  const caughtCreature =
+    claim.creatureTypeId && claim.creatureDisplayName
+      ? { id: claim.creatureTypeId, displayName: claim.creatureDisplayName }
+      : null;
+
+  const duplicateReward =
+    claim.outcome === "duplicate"
+      ? { wonder: claim.wonderAwarded, materials: claim.materialsAwarded }
+      : null;
+
+  const consolationReward =
+    claim.outcome === "miss"
+      ? {
+          wonder: claim.wonderAwarded,
+          materials: claim.materialsAwarded,
+          spiritMessage: claim.spiritMessage,
+        }
+      : null;
+
+  return {
+    outcome: claim.outcome,
+    caughtCreature,
+    rarity: claim.rarityIndicator,
+    poolTier: claim.poolTier,
+    wonderDelta: claim.wonderAwarded,
+    materialDelta: claim.materialsAwarded,
+    duplicateReward,
+    consolationReward,
+    spiritMessage: claim.spiritMessage,
+  };
+}
+
+/** Client-safe summary — no percentages exposed. */
+export function toClientClaimSummary(claim: FishingClaim): FishingClaimClientSummary {
+  return {
+    outcome: claim.outcome,
+    rarityIndicator: claim.rarityIndicator,
+    creatureTypeId: claim.creatureTypeId,
+    creatureDisplayName: claim.creatureDisplayName,
+    wonderAwarded: claim.wonderAwarded,
+    materialsAwarded: claim.materialsAwarded,
+    spiritMessage: claim.spiritMessage,
+  };
+}

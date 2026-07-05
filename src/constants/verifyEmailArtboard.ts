@@ -19,9 +19,22 @@ export type NormRect = {
  * Tuned to match the verify-email-sent design with parchment card layout.
  */
 export const verifyEmailHitRects = {
-  /** Resend button (cloud shape with wave decoration). */
-  resendButton: { left: 0.27, top: 0.624, width: 0.46, height: 0.062 },
+  /** Signed-in email displayed on parchment card. */
+  emailDisplay: { left: 0.1, top: 0.468, width: 0.8, height: 0.044 },
+  /** Continue checking verification status (refresh). */
+  refreshButton: { left: 0.2, top: 0.538, width: 0.6, height: 0.065 },
+  /** Resend verification email button. */
+  resendButton: { left: 0.2, top: 0.618, width: 0.6, height: 0.065 },
+  /** Countdown label below resend button. */
+  resendCountdownLabel: { left: 0.1, top: 0.69, width: 0.8, height: 0.04 },
+  /** Return to sign-up link below countdown. */
+  returnToSignUpLink: { left: 0.1, top: 0.728, width: 0.8, height: 0.04 },
+  /** Status feedback below countdown. */
+  statusMessage: { left: 0.08, top: 0.735, width: 0.84, height: 0.08 },
 } as const satisfies Record<string, NormRect>;
+
+/** Dev-only: draw semi-transparent rects over hit targets for on-device tuning. */
+export const VERIFY_EMAIL_HIT_DEBUG = __DEV__ && false;
 
 /** Resolved intrinsic size from Metro bundle metadata (fallback when unavailable, e.g. RN Web). */
 export function resolveVerifyEmailArtboardIntrinsic(): { width: number; height: number } {

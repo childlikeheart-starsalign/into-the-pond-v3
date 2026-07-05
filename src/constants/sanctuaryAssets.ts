@@ -43,6 +43,12 @@ export const sanctuaryAssets = {
     lateAfternoon: require("@/assets/images/sanctuary/late_afternoon:background.png"),
     night: require("@/assets/images/sanctuary/night:background.png"),
   },
+  moodOverlays: {
+    morning: require("@/assets/images/sanctuary/frame-61.png"),
+    afternoon: require("@/assets/images/sanctuary/frame-62.png"),
+    lateAfternoon: require("@/assets/images/sanctuary/frame-63.png"),
+    night: require("@/assets/images/sanctuary/frame-60.png"),
+  },
   avatarPoses: {
     standing: {
       source: require("@/assets/images/Avatar_poses/avatar_standing.png"),
@@ -85,6 +91,7 @@ export const sanctuaryAssets = {
   },
 } as const satisfies {
   backgrounds: Record<SanctuaryTimeOfDay, ImageSourcePropType>;
+  moodOverlays: Record<SanctuaryTimeOfDay, ImageSourcePropType>;
   avatarPoses: Record<SanctuaryAvatarPose, SanctuaryAvatarPoseAsset>;
   navIcons: Record<IllustratedTabId, SanctuaryNavIconSet>;
 };
@@ -96,6 +103,10 @@ export function getSanctuaryAvatarPoseAssets(): SanctuaryAvatarPoseAsset[] {
 
 export function getSanctuaryBackground(timeOfDay: SanctuaryTimeOfDay): ImageSourcePropType {
   return sanctuaryAssets.backgrounds[timeOfDay];
+}
+
+export function getSanctuaryMoodOverlay(timeOfDay: SanctuaryTimeOfDay): ImageSourcePropType {
+  return sanctuaryAssets.moodOverlays[timeOfDay];
 }
 
 export type SanctuaryNavTab = {

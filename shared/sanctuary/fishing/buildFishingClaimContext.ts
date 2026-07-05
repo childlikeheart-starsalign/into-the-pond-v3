@@ -1,0 +1,41 @@
+import { filterCreaturesByRodPermission } from "../progression/rodFishingAccess";
+import { uiBaitIdToTier, uiRodIdToDomain } from "./castMapping";
+import type { CreatureRef, ResolveClaimInput } from "./encounterEngine";
+import { resolveFishingClaim } from "./encounterEngine";
+import type { FishingClaim } from "../types";
+
+export type FishingClaimContextInput = {
+  claimId: string;
+  userId: string;
+  castId: string;
+  encounterId: string;
+  rodUiId: string;
+  baitUiId: string;
+  currentWonderAtClaim: number;
+  caughtIds: Set<string>;
+  creatureCatalog: CreatureRef[];
+  now?: number;
+};
+
+export function buildResolveClaimInput(ctx: FishingClaimContextInput): ResolveClaimInput {
+  const rodId = uiRodIdToDomain(ctx.rodUiId);
+  const baitTier = uiBaitIdToTier(ctx.baitUiId);
+  const filteredCatalog = filterCreaturesByRodPermission(rodId, ctx.creatureCatalog);
+
+  return {
+    claimId: ctx.claimId,
+    encounterId: ctx.encounterId,
+    userId: ctx.userId,
+    castId: ctx.castId,
+    rodId,
+    baitTier,
+    currentWonderAtClaim: ctx.currentWonderAtClaim,
+    caughtIds: ctx.caughtIds,
+    creatureCatalog: filteredCatalog,
+    now: ctx.now,
+  };
+}
+
+export function resolveFishingClaimFromContext(ctx: FishingClaimContextInput): FishingClaim {
+  return resolveFishingClaim(buildResolveClaimInput(ctx));
+}

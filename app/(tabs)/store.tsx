@@ -1,8 +1,9 @@
 import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ILLUSTRATED_TAB_BAR_HEIGHT } from "@/src/constants/illustratedTabBar";
+import { PrimaryButton } from "@/src/components/PrimaryButton";
+import { TAB_SCREEN_BOTTOM_PADDING } from "@/src/constants/tabScreenLayout";
 import { layout, spacing } from "@/src/constants/theme";
 import { routes } from "@/src/navigation/routes";
 
@@ -19,13 +20,12 @@ export default function StoreScreen() {
           <Text style={layout.muted}>
             Store inventory UI will connect to RevenueCat and Firestore.
           </Text>
-          <Pressable
-            accessibilityRole="button"
-            style={[layout.btnPrimary, styles.cta]}
+          <PrimaryButton
+            label="Manage subscription"
+            accessibilityLabel="Manage subscription"
+            style={styles.cta}
             onPress={() => router.push(routes.customerCenter)}
-          >
-            <Text style={layout.btnPrimaryText}>Manage subscription</Text>
-          </Pressable>
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -35,7 +35,7 @@ export default function StoreScreen() {
 const styles = StyleSheet.create({
   screen: {
     paddingHorizontal: spacing.inner,
-    paddingBottom: ILLUSTRATED_TAB_BAR_HEIGHT + spacing.section,
+    paddingBottom: TAB_SCREEN_BOTTOM_PADDING + spacing.section,
   },
   content: {
     gap: spacing.section,

@@ -1,16 +1,18 @@
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
+import { ImageBackground, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
-import { SanctuaryNavBar } from "@/src/components/sanctuary/SanctuaryNavBar";
 import {
   CLASSROOM_MODULE_COUNT,
+  CLASSROOM_MENU_SCENE_TOP_SHIFT,
   classroomAssets,
   classroomHitRects,
+  classroomOpenCroppedImageStyle,
+  classroomOpenRectInCrop,
   getClassroomChapterFrame,
   getClassroomMenuFrame,
   type ClassroomView,
@@ -20,7 +22,10 @@ import { getLessonForChapterRow } from "@/src/features/classroom/lessonCatalog";
 import { PaywallModal } from "@/src/features/classroom/PaywallModal";
 import { useLessonNavigation } from "@/src/features/classroom/useLessonNavigation";
 import { VideoPlayerModal } from "@/src/features/classroom/VideoPlayer";
+import { WellTopBar } from "@/src/features/well/WellTopBar";
 import { useSanctuaryTimeOfDay } from "@/src/hooks/useSanctuaryTimeOfDay";
+import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
+import { closeSceneScreen } from "@/src/navigation/closeSceneScreen";
 import { setClassroomView } from "@/src/state/classroomView";
 
 const SWIPE_THRESHOLD_PX = 36;
@@ -36,6 +41,8 @@ function percentRectStyle(rect: { left: number; top: number; width: number; heig
 export function ClassroomScreen() {
   const timeOfDay = useSanctuaryTimeOfDay();
   const insets = useSafeAreaInsets();
+  const frame = usePortrait916Layout("contain");
+  const menuSceneShift = frame.height > 0 ? frame.height * CLASSROOM_MENU_SCENE_TOP_SHIFT : 0;
   const { handleLessonPress, paywallVisible, closePaywall, video, closeVideo } =
     useLessonNavigation();
   const [view, setView] = useState<ClassroomView>("open");
@@ -59,9 +66,8 @@ export function ClassroomScreen() {
     setSelectedModule(1);
   }, []);
 
-  const closeMenu = useCallback(() => {
-    setView("open");
-    setSelectedModule(1);
+  const handleClose = useCallback(() => {
+    closeSceneScreen("classroom");
   }, []);
 
   const closeChapters = useCallback(() => {
@@ -120,27 +126,31 @@ export function ClassroomScreen() {
   let screenContent: ReactNode;
 
   if (view === "open") {
+    const openTapRect = classroomOpenRectInCrop(classroomHitRects.openTap);
+
     screenContent = (
-      <Portrait916Frame mode="contain">
-        <ImageBackground
-          source={backgroundSource}
-          style={styles.background}
-          resizeMode="contain"
-          accessibilityLabel="Classroom open"
-        >
+      <Portrait916Frame mode="contain" backgroundColor={colors.bg}>
+        <View style={styles.openScene} accessibilityLabel="Classroom open">
+          <Image
+            source={classroomAssets.open}
+            style={[styles.openSceneImage, classroomOpenCroppedImageStyle()]}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+          />
           <View style={styles.overlay} pointerEvents="box-none">
+            <View style={styles.topBarWrap} pointerEvents="box-none">
+              <WellTopBar onClose={handleClose} closeAccessibilityLabel="Close Classroom" />
+            </View>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Tap to open classroom menu"
-              style={[styles.openTapTarget, percentRectStyle(classroomHitRects.openTap)]}
+              style={[styles.openTapTarget, percentRectStyle(openTapRect)]}
               onPress={openMenu}
             >
               <Text style={styles.tapToOpenLabel}>Tap to open</Text>
             </Pressable>
-
-            <SanctuaryNavBar embedded />
           </View>
-        </ImageBackground>
+        </View>
       </Portrait916Frame>
     );
   } else if (view === "chapters") {
@@ -149,7 +159,7 @@ export function ClassroomScreen() {
         <ImageBackground
           source={backgroundSource}
           style={styles.background}
-          resizeMode="contain"
+          resizeMode="cover"
           accessibilityLabel={`Module ${selectedModule} lessons`}
         >
           <Pressable
@@ -182,59 +192,96 @@ export function ClassroomScreen() {
     );
   } else {
     screenContent = (
-      <Portrait916Frame mode="contain" backgroundColor="transparent">
-        <ImageBackground
-          source={backgroundSource}
-          style={styles.background}
-          resizeMode="contain"
-          accessibilityLabel={`Classroom module ${selectedModule}`}
-        >
-          <View style={styles.overlay} pointerEvents="box-none">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Cancel and return to classroom open screen"
-              onPress={closeMenu}
-              style={[styles.cancelButton, { top: Math.max(10, insets.top + 2) }]}
-            >
-              <Text style={styles.cancelText}>×</Text>
-            </Pressable>
-
-            <GestureDetector gesture={menuPanGesture}>
-              <View style={styles.menuOverlay} collapsable={false}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Open commission gate"
-                  style={[
-                    styles.hitTarget,
-                    styles.bookTarget,
-                    percentRectStyle(classroomHitRects.menuBook),
-                  ]}
-                  onPress={openCommissionGate}
-                />
-
-                <View style={[styles.hitTarget, percentRectStyle(classroomHitRects.moduleDial)]} />
-              </View>
-            </GestureDetector>
+      <Portrait916Frame mode="contain" backgroundColor={colors.bg}>
+        <View style={styles.menuFrameRoot}>
+          <View style={styles.topBarWrap} pointerEvents="box-none">
+            <WellTopBar onClose={handleClose} closeAccessibilityLabel="Close Classroom" />
           </View>
-        </ImageBackground>
+
+          <View
+            style={[
+              styles.menuSceneShift,
+              {
+                top: -menuSceneShift,
+                bottom: -menuSceneShift,
+              },
+            ]}
+          >
+            <ImageBackground
+              source={backgroundSource}
+              style={styles.background}
+              resizeMode="cover"
+              accessibilityLabel={`Classroom module ${selectedModule}`}
+            >
+              <GestureDetector gesture={menuPanGesture}>
+                <View style={styles.menuOverlay} collapsable={false}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Open commission gate"
+                    style={[
+                      styles.hitTarget,
+                      styles.bookTarget,
+                      percentRectStyle(classroomHitRects.menuBook),
+                    ]}
+                    onPress={openCommissionGate}
+                  />
+
+                  <View
+                    style={[styles.hitTarget, percentRectStyle(classroomHitRects.moduleDial)]}
+                  />
+                </View>
+              </GestureDetector>
+            </ImageBackground>
+          </View>
+        </View>
       </Portrait916Frame>
     );
   }
 
   return (
     <>
-      {screenContent}
+      <View style={styles.screenRoot}>{screenContent}</View>
       {lessonModals}
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  screenRoot: {
+    flex: 1,
+  },
+  openScene: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+  },
+  openSceneImage: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+  },
   background: {
     flex: 1,
   },
+  menuFrameRoot: {
+    flex: 1,
+    overflow: "hidden",
+  },
+  menuSceneShift: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
+  },
+  topBarWrap: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
   menuOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -261,19 +308,6 @@ const styles = StyleSheet.create({
   },
   bookTarget: {
     zIndex: 2,
-  },
-  cancelButton: {
-    position: "absolute",
-    right: 8,
-    zIndex: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(122,92,69,0.55)",
-    backgroundColor: "rgba(239,228,218,0.82)",
-    justifyContent: "center",
-    alignItems: "center",
   },
   chapterCancelButton: {
     position: "absolute",

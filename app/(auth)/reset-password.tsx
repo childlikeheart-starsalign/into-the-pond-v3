@@ -21,6 +21,7 @@ import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { confirmNewPassword } from "@/src/services/firebase/auth";
 import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
+import { Sentry } from "@/src/services/sentry/init";
 
 const resetPasswordMedia = media.auth.resetPassword;
 
@@ -63,6 +64,7 @@ export default function ResetPasswordScreen() {
       await confirmNewPassword(oobCode, password);
       router.replace(routes.login);
     } catch (e) {
+      Sentry.captureException(e, { tags: { area: "auth", flow: "reset_password" } });
       setError(formatFirebaseAuthError(e));
     } finally {
       setSubmitting(false);

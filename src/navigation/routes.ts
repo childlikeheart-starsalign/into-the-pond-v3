@@ -6,12 +6,16 @@ function href(path: string): Href {
 }
 
 export const routes = {
+  /** Gate entry screen (app/index.tsx) */
+  gateEntry: href("/"),
   login: href("/login"),
   signup: href("/signup"),
   forgotPassword: href("/forgot-password"),
   resetPassword: href("/reset-password"),
   finishEmail: href("/finish-email"),
   verifyRequired: href("/verify-required"),
+  emailVerified: href("/email-verified"),
+  deletionPending: href("/deletion-pending"),
   narrativeOnboarding: href("/narrative-onboarding"),
   /** Default tab after sign-in */
   sanctuary: href("/sanctuary"),
@@ -22,7 +26,9 @@ export const routes = {
   diaryEntry: href("/diary-entry"),
   lessonComplete: href("/lesson-complete"),
   well: href("/well"),
+  childAtlas: href("/child-atlas"),
   craft: href("/craft"),
+  practiceMoment: href("/practice-moment"),
   customerCenter: href("/customer-center"),
   casting: href("/casting"),
 };

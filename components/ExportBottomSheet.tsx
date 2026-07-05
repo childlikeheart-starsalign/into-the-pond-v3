@@ -2,6 +2,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/botto
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { DiaryStoryCapture, type DiaryStoryCaptureHandle } from "@/components/DiaryStoryCapture";
 import { colors, fontFamilies, layout, spacing } from "@/src/constants/theme";
 import {
@@ -126,17 +127,15 @@ export function ExportBottomSheet({
           ) : null}
 
           <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Export as PDF"
-              style={[layout.btnPrimary, isBusy && styles.disabled]}
+            <PrimaryButton
+              label="Export as PDF"
+              accessibilityLabel="Export diary entry as PDF"
               disabled={isBusy}
+              busy={isBusy}
               onPress={() => {
                 void handleShare("more");
               }}
-            >
-              <Text style={layout.btnPrimaryText}>Export as PDF</Text>
-            </Pressable>
+            />
 
             <View style={styles.targetGrid}>
               <ShareTarget

@@ -13,6 +13,14 @@ module.exports = () => {
   const expoBlock = appJson.expo;
   const baseExtra = expoBlock.extra ?? {};
 
+  const authDomainRaw = (
+    process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN ??
+    baseExtra.firebaseAuthDomain ??
+    ""
+  )
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+
   const mergedExtra = {
     ...baseExtra,
     firebaseApiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY ?? baseExtra.firebaseApiKey,
@@ -26,6 +34,8 @@ module.exports = () => {
     firebaseAppId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID ?? baseExtra.firebaseAppId,
     firebaseMeasurementId:
       process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID ?? baseExtra.firebaseMeasurementId,
+    firebaseDatabaseUrl:
+      process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL ?? baseExtra.firebaseDatabaseUrl,
     revenueCatApiKeyApple: process.env.REVENUECAT_APPLE_API_KEY ?? baseExtra.revenueCatApiKeyApple,
     revenueCatApiKeyGoogle:
       process.env.REVENUECAT_GOOGLE_API_KEY ?? baseExtra.revenueCatApiKeyGoogle,
@@ -43,6 +53,7 @@ module.exports = () => {
     posthogApiKey: process.env.EXPO_PUBLIC_POSTHOG_API_KEY ?? baseExtra.posthogApiKey,
     posthogHost:
       process.env.EXPO_PUBLIC_POSTHOG_HOST ?? baseExtra.posthogHost ?? "https://app.posthog.com",
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? baseExtra.googleWebClientId,
   };
 
   const basePlugins = (expoBlock.plugins ?? []).filter(
@@ -53,8 +64,44 @@ module.exports = () => {
     expo: {
       ...expoBlock,
       owner: "childlike-heart",
+      runtimeVersion: {
+        policy: "appVersion",
+      },
+      updates: {
+        url: "https://u.expo.dev/d758a6d8-d626-40cc-8dae-f7e546f064dd",
+      },
+      ios: {
+        ...expoBlock.ios,
+        jsEngine: "hermes",
+        associatedDomains: authDomainRaw ? [`applinks:${authDomainRaw}`] : [],
+        entitlements: {
+          "com.apple.developer.applesignin": ["Default"],
+        },
+      },
+      android: {
+        ...expoBlock.android,
+        jsEngine: "hermes",
+        intentFilters: authDomainRaw
+          ? [
+              {
+                action: "VIEW",
+                autoVerify: true,
+                data: [
+                  {
+                    scheme: "https",
+                    host: authDomainRaw,
+                    pathPrefix: "/finish-email",
+                  },
+                ],
+                category: ["BROWSABLE", "DEFAULT"],
+              },
+            ]
+          : [],
+      },
       plugins: [
         ...basePlugins,
+        "expo-apple-authentication",
+        "@react-native-google-signin/google-signin",
         [
           "@sentry/react-native/expo",
           {
@@ -63,6 +110,8 @@ module.exports = () => {
           },
         ],
         "./plugins/withFirebaseNativeFiles",
+        "./plugins/withSplashFrameDensities",
+        "./plugins/withPrivacyManifest",
       ],
       extra: mergedExtra,
     },

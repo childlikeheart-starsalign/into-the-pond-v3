@@ -1,0 +1,198 @@
+import type { Creature } from "./types";
+
+export const pool_epic_electric: Creature[] = [
+  {
+    creatureTypeId: "lightning-elder",
+    displayName: "Lightning Elder",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "5.5",
+    moduleId: 5,
+    visualMetaphor:
+      "A vast electric creature that generates slow, beautiful arcs across the pond floor",
+    masteryTip:
+      "Independent thinking at its fullest: a child who disagrees with a parent and knows they are still loved. You built the circuit that can hold that charge.",
+    partnerEcho: "The biggest electricity is the slowest.",
+    illustrationAssetKey: "epic_electric_lightning_elder",
+    netSlotIndex: 138,
+  },
+  {
+    creatureTypeId: "aurora-wraith",
+    displayName: "Aurora Wraith",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "5.6",
+    moduleId: 5,
+    visualMetaphor:
+      "A creature that cycles through all electric colours, never fixed, always becoming",
+    masteryTip:
+      "Meaning-driven motivation at depth: the aurora wraith finds its meaning in movement, not destination. So does a child with genuine intrinsic drive.",
+    illustrationAssetKey: "epic_electric_aurora_wraith",
+    netSlotIndex: 139,
+  },
+  {
+    creatureTypeId: "zenith-sovereign",
+    displayName: "Zenith Sovereign",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "5.7",
+    moduleId: 5,
+    visualMetaphor:
+      "A being of pure coherent light at the deepest point, absolutely still, absolutely present",
+    masteryTip:
+      "Long-term integration of electric: when what you've learned becomes how you love. The zenith is not a destination. It's a direction.",
+    partnerEcho: "The deepest light doesn't flicker.",
+    illustrationAssetKey: "epic_electric_zenith_sovereign",
+    netSlotIndex: 149,
+  },
+  {
+    creatureTypeId: "network-elder",
+    displayName: "Network Elder",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "5.1",
+    moduleId: 5,
+    visualMetaphor:
+      "A creature at the centre of an invisible network — every other creature in the deep faintly responds to it",
+    masteryTip:
+      "Identity at depth is relational: your child's sense of self is formed in a network. Every node you've tended has strengthened the whole.",
+    illustrationAssetKey: "epic_electric_network_elder",
+    netSlotIndex: 140,
+  },
+  {
+    creatureTypeId: "deep-circuit",
+    displayName: "Deep Circuit",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "2.2",
+    moduleId: 2,
+    visualMetaphor: "A complete circuit creature — no open ends, no loose charge, deeply whole",
+    masteryTip:
+      "Control fully released: the deep circuit is whole without external management. The child who has been trusted with their own agency eventually becomes one.",
+    illustrationAssetKey: "epic_electric_deep_circuit",
+    netSlotIndex: 141,
+  },
+  {
+    creatureTypeId: "quiet-charge",
+    displayName: "Quiet Charge",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "2.4",
+    moduleId: 2,
+    visualMetaphor: "A fish that carries enormous charge invisibly, showing nothing on the surface",
+    masteryTip:
+      "Cooperation at depth: the parent whose energy is managed and directed creates a child who learns the same. The charge is enormous. The quiet is chosen.",
+    illustrationAssetKey: "epic_electric_quiet_charge",
+    netSlotIndex: 142,
+  },
+  {
+    creatureTypeId: "grid-sovereign",
+    displayName: "Grid Sovereign",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "3.5",
+    moduleId: 3,
+    visualMetaphor:
+      "The oldest electric creature — the grid from which all other electric life in the pond draws power",
+    masteryTip:
+      "Motivation shift at its fullest: the grid sovereign doesn't need to be plugged in. It is the source. This is what intrinsic motivation looks like at its deepest.",
+    partnerEcho: "Everything that lights up here draws from the same source.",
+    illustrationAssetKey: "epic_electric_grid_sovereign",
+    netSlotIndex: 143,
+  },
+  {
+    creatureTypeId: "field-sovereign",
+    displayName: "Field Sovereign",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "5.2",
+    moduleId: 5,
+    visualMetaphor:
+      "A creature whose electric field now encompasses the whole pond — it is indistinguishable from the water itself",
+    masteryTip:
+      "The language that shapes identity, fully integrated: the field sovereign's words are the water now. The child swims in what you said.",
+    illustrationAssetKey: "epic_electric_field_sovereign",
+    netSlotIndex: 144,
+  },
+  {
+    creatureTypeId: "arc-sovereign",
+    displayName: "Arc Sovereign",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "2.6",
+    moduleId: 2,
+    visualMetaphor:
+      "The master of arcs — each one deliberate, beautiful, and landing exactly as intended",
+    masteryTip:
+      "Boundaries without threat, fully mastered: the arc sovereign's boundaries are so clear and so consistent they are no longer even noticed. They simply are.",
+    illustrationAssetKey: "epic_electric_arc_sovereign",
+    netSlotIndex: 145,
+  },
+  {
+    creatureTypeId: "coherence-fish",
+    displayName: "Coherence Fish",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "4.4",
+    moduleId: 4,
+    visualMetaphor:
+      "A fish whose entire electric output is coherent — all frequencies aligned, all energy unified",
+    masteryTip:
+      "Reflection loops fully integrated: the coherent parent models reflection without announcing it. The child absorbs the practice because it is simply what the family does.",
+    illustrationAssetKey: "epic_electric_coherence_fish",
+    netSlotIndex: 146,
+  },
+  {
+    creatureTypeId: "resonant-sovereign",
+    displayName: "Resonant Sovereign",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "4.6",
+    moduleId: 4,
+    visualMetaphor:
+      "A creature whose resonant frequency matches the deepest natural frequency of the pond itself",
+    masteryTip:
+      "Real-life scenarios mastered: the resonant sovereign no longer has to think about the lesson. The response is the frequency of its being.",
+    illustrationAssetKey: "epic_electric_resonant_sovereign",
+    netSlotIndex: 147,
+  },
+  {
+    creatureTypeId: "deep-signal",
+    displayName: "Deep Signal",
+    poolTier: "epic",
+    elementType: "electric",
+    rodRequired: "epic4",
+    peakWonderGate: 90,
+    lessonId: "5.3",
+    moduleId: 5,
+    visualMetaphor:
+      "A signal sent from the deepest point that takes years to arrive at the surface — but always arrives",
+    masteryTip:
+      "Emotional stability under uncertainty fully integrated: the signal was sent long ago. Your child is receiving it now, and will keep receiving it.",
+    partnerEcho: "What you sent is still travelling. It will arrive when it's needed.",
+    illustrationAssetKey: "epic_electric_deep_signal",
+    netSlotIndex: 148,
+  },
+];

@@ -1,0 +1,39 @@
+import type { BaitTier, FishingRodId } from "../types";
+
+/** Maps UI rod ids (rare_1, epic_2) to domain rod ids. */
+export function uiRodIdToDomain(rodId: string): FishingRodId {
+  const map: Record<string, FishingRodId> = {
+    basic: "basic",
+    rare_1: "rare_fire",
+    rare_2: "rare_water",
+    rare_3: "rare_wind",
+    rare_4: "rare_electric",
+    rare_5: "rare_wildcard",
+    epic_1: "epic_fire",
+    epic_2: "epic_water",
+    epic_3: "epic_wind",
+    epic_4: "epic_electric",
+    rare_fire: "rare_fire",
+    rare_water: "rare_water",
+    rare_wind: "rare_wind",
+    rare_electric: "rare_electric",
+    rare_wildcard: "rare_wildcard",
+    epic_fire: "epic_fire",
+    epic_water: "epic_water",
+    epic_wind: "epic_wind",
+    epic_electric: "epic_electric",
+  };
+  return map[rodId] ?? "basic";
+}
+
+export function uiBaitIdToTier(baitId: string): BaitTier | null {
+  if (!baitId || baitId === "random_bait") return null;
+  if (baitId.includes("premium") || baitId.includes("epic") || baitId === "bait_premium") {
+    return "epic";
+  }
+  if (baitId.includes("mid") || baitId.includes("scale") || baitId === "bait_mid") return "rare";
+  if (baitId.includes("basic") || baitId.includes("feather") || baitId === "bait_basic") {
+    return "basic";
+  }
+  return null;
+}

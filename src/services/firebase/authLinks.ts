@@ -2,6 +2,16 @@ import Constants from "expo-constants";
 import * as Linking from "expo-linking";
 import type { ActionCodeSettings } from "firebase/auth";
 
+import {
+  AUTH_INVALID_EMAIL_FORMAT,
+  AUTH_NETWORK_ERROR,
+  AUTH_UNKNOWN_ERROR,
+  AUTH_WRONG_PASSWORD,
+} from "@/src/constants/authCopy";
+import { isAllowedAuthDeepLinkUrl as isAllowedAuthDeepLinkUrlCore } from "@/shared/auth/authDeepLinkValidation";
+
+export { normalizeFirebaseAuthHost } from "@/shared/auth/authDeepLinkValidation";
+
 /** Matches native bundle / package identifiers in app config for Firebase Auth action emails. */
 export const IOS_BUNDLE_ID = "com.intothepond.app.v3";
 export const ANDROID_PACKAGE = "com.intothepond.app.v3";
@@ -18,9 +28,32 @@ function pickQueryParam(queryParams: Record<string, unknown>, key: string): stri
   return typeof v === "string" ? v : undefined;
 }
 
+type AuthDeepLinkAllowOptions = {
+  authDomain?: string;
+  appScheme?: string;
+};
+
 /**
- * Extract Firebase Auth email-action query params (`mode`, `oobCode`, …) from a URL opened via deep link or universal link.
+ * Rejects auth action URLs from unknown hosts/schemes before routing oobCode handlers.
+ * HTTPS links must match configured firebaseAuthDomain; custom scheme must match app scheme.
  */
+export function isAllowedAuthDeepLinkUrl(
+  rawUrl: string,
+  options?: AuthDeepLinkAllowOptions,
+): boolean {
+  const extra = Constants.expoConfig?.extra as Record<string, unknown> | undefined;
+  const authDomainRaw =
+    options?.authDomain ??
+    (typeof extra?.firebaseAuthDomain === "string" ? extra.firebaseAuthDomain : "");
+  const appScheme =
+    options?.appScheme ??
+    (typeof Constants.expoConfig?.scheme === "string"
+      ? Constants.expoConfig.scheme
+      : "intothepond");
+
+  return isAllowedAuthDeepLinkUrlCore(rawUrl, { authDomain: authDomainRaw, appScheme });
+}
+
 export function parseFirebaseAuthLink(rawUrl: string): ParsedFirebaseAuthLink | null {
   try {
     const parsed = Linking.parse(rawUrl);
@@ -72,7 +105,8 @@ export function buildAuthActionCodeSettings(): ActionCodeSettings {
   const projectId = typeof extra?.firebaseProjectId === "string" ? extra.firebaseProjectId : "";
 
   const host = authDomainRaw || (projectId ? `${projectId}.firebaseapp.com` : "");
-  const url = host ? `https://${host}/` : "https://localhost/";
+  const universalContinue = host ? `https://${host}/finish-email` : null;
+  const url = universalContinue ?? Linking.createURL("/finish-email");
 
   return {
     url,
@@ -87,11 +121,13 @@ export function buildAuthActionCodeSettings(): ActionCodeSettings {
 }
 
 const FIREBASE_AUTH_MESSAGES: Record<string, string> = {
-  "auth/invalid-email": "That email doesn’t look valid.",
-  "auth/user-not-found": "No account found for that email.",
-  "auth/wrong-password": "Incorrect password.",
-  "auth/too-many-requests": "Too many attempts. Try again later.",
-  "auth/network-request-failed": "Network error. Check your connection.",
+  "auth/invalid-email": AUTH_INVALID_EMAIL_FORMAT,
+  "auth/user-not-found": AUTH_INVALID_EMAIL_FORMAT,
+  "auth/wrong-password": AUTH_WRONG_PASSWORD,
+  "auth/invalid-credential": AUTH_WRONG_PASSWORD,
+  "auth/invalid-login-credentials": AUTH_WRONG_PASSWORD,
+  "auth/too-many-requests": "You've sent a few already — wait a few minutes before trying again.",
+  "auth/network-request-failed": AUTH_NETWORK_ERROR,
   "auth/invalid-action-code": "This link has expired or was already used.",
   "auth/expired-action-code": "This link has expired.",
   "auth/user-disabled": "This account has been disabled.",
@@ -101,5 +137,6 @@ export function formatFirebaseAuthError(err: unknown): string {
   const code =
     err && typeof err === "object" && "code" in err ? String((err as { code?: string }).code) : "";
   if (code && FIREBASE_AUTH_MESSAGES[code]) return FIREBASE_AUTH_MESSAGES[code];
-  return err instanceof Error ? err.message : String(err);
+  if (err instanceof Error && err.message) return err.message;
+  return AUTH_UNKNOWN_ERROR;
 }

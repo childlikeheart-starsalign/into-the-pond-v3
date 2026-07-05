@@ -6,23 +6,10 @@ import { fitJournalSceneRect, type FitRect } from "@/src/features/fieldJournal/f
 import { retainSpreadImage } from "@/src/features/fieldJournal/spreadImageCache";
 import type { FieldJournalSpread } from "@/src/features/fieldJournal/types";
 
-/** Loads spread textures into GPU cache without painting. */
+/** Optional spread preload hook — not mounted in JournalViewer (overlay loads textures). */
 export function SpreadImagePreloader({ spread }: { spread: FieldJournalSpread }) {
-  const sceneImage = useImage(spread.asset);
-  const pageImage = useImage(spread.pageAsset ?? null);
-
-  useEffect(() => {
-    if (sceneImage) {
-      retainSpreadImage(`${spread.id}-scene`, sceneImage);
-    }
-  }, [sceneImage, spread.id]);
-
-  useEffect(() => {
-    if (pageImage) {
-      retainSpreadImage(`${spread.id}-page`, pageImage);
-    }
-  }, [pageImage, spread.id]);
-
+  useImage(spread.asset);
+  useImage(spread.pageAsset ?? null);
   return null;
 }
 

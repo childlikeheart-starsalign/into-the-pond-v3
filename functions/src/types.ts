@@ -1,5 +1,7 @@
 export type ActiveRod = "basic" | "wooden" | "fiberglass";
 export type SubscriptionStatus = "free" | "wooden" | "fiberglass";
+export type DeletionStatus = "active" | "pending" | "purging" | "purged";
+export type DeletionSource = "in_app" | "web_email";
 
 export type SubscriptionState = {
   productId: string | null;

@@ -1,0 +1,74 @@
+import type { ElementType, FishingRodId } from "../types";
+
+/** Firestore `playerRods.state` — never shown verbatim to parents. */
+export type PlayerRodState = "locked" | "craftable" | "crafting" | "ready" | "equipped";
+
+export type PlayerRodGiftSource = "journey_gift";
+
+/** `users/{uid}/playerRods/{domainRodId}` */
+export type PlayerRodRecord = {
+  rodId: FishingRodId;
+  state: PlayerRodState;
+  craftStartedAt: number | null;
+  craftCompletedAt: number | null;
+  wonderInvested: number;
+  partsSpentOnCraft: number;
+  sourceModule: 1 | 2 | 3 | 4 | 5 | null;
+  giftSource?: PlayerRodGiftSource | null;
+};
+
+/** `users/{uid}/lessonProgress/{lessonId}` */
+export type LessonProgressRecord = {
+  lessonId: string;
+  completed: boolean;
+  completedAt: number | null;
+  lastOpenedAt: number | null;
+};
+
+export type SubscriptionCraftTier = "free" | "wooden" | "fiberglass" | "lifetime";
+
+export type ProgressionInventory = {
+  parts: number;
+  storedWonder: number;
+};
+
+/** Parent-facing UX labels — mapped from internal `PlayerRodState`. */
+export type RodUxLabel = "Waiting" | "Ready to begin" | "Taking shape" | "Complete" | "In hand";
+
+export type RodProgressionTier = "basic" | "rare" | "epic";
+
+export type ModuleRodAssignment = {
+  moduleId: number;
+  rodId: FishingRodId;
+  element: ElementType;
+  theme: string;
+  clusterLessonIds: readonly string[];
+};
+
+export type CraftCost = {
+  parts: number;
+  storedWonder: number;
+};
+
+export type StateTransition = {
+  rodId: FishingRodId;
+  from: PlayerRodState;
+  to: PlayerRodState;
+  reason: string;
+};
+
+export type EvaluateCraftableInput = {
+  lessonProgress: Record<string, LessonProgressRecord | boolean>;
+  playerRods: Partial<Record<FishingRodId, PlayerRodRecord>>;
+  subscriptionTier: SubscriptionCraftTier;
+  inventory: ProgressionInventory;
+  now?: number;
+};
+
+export type EvaluateCraftableResult = {
+  transitions: StateTransition[];
+  /** Rods that newly reached `craftable` (for `rod_unlocked` analytics). */
+  rodUnlocked: FishingRodId[];
+  /** Wildcard journey gift applied (`rare_wildcard` → `ready`). */
+  wildcardGifted: boolean;
+};

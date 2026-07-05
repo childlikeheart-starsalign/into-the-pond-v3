@@ -13,6 +13,8 @@ type OfflineDiaryPayload = {
   status: "draft" | "completed";
   wonderAwarded?: number;
   plantStage?: 0 | 1 | 2 | 3 | 4;
+  /** Stable id for server idempotency on offline resubmit. */
+  requestId?: string;
 };
 
 function isLikelyNetworkError(error: unknown) {
@@ -26,7 +28,8 @@ function isLikelyNetworkError(error: unknown) {
 }
 
 export async function queueDiaryEntryOffline(uid: string, payload: OfflineDiaryPayload) {
-  const entryId = `pending_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const entryId =
+    payload.requestId ?? `pending_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
   await database.write(async () => {
     const table = database.get<LocalDiaryEntry>("local_diary_entries");
     await table.create((entry) => {
@@ -51,14 +54,18 @@ export async function submitDiaryEntryWithOfflineFallback(
   uid: string,
   payload: OfflineDiaryPayload,
 ) {
+  const requestId =
+    payload.requestId ?? `pending_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const payloadWithRequestId = { ...payload, requestId };
+
   try {
-    const result = await submitDiaryEntry(uid, payload);
+    const result = await submitDiaryEntry(uid, payloadWithRequestId);
     return { mode: "online" as const, result };
   } catch (error) {
     if (!isLikelyNetworkError(error)) {
       throw error;
     }
-    const queuedEntryId = await queueDiaryEntryOffline(uid, payload);
+    const queuedEntryId = await queueDiaryEntryOffline(uid, payloadWithRequestId);
     return { mode: "queued" as const, queuedEntryId };
   }
 }
@@ -80,11 +87,15 @@ export async function retryPendingDiaryEntries(uid: string) {
         status: entry.status,
         wonderAwarded: entry.wonderAwarded,
         plantStage: (entry.plantStage as 0 | 1 | 2 | 3 | 4) ?? 0,
+        requestId: entry.entryId,
       };
-      await submitDiaryEntry(uid, payload);
+      const result = await submitDiaryEntry(uid, payload);
       await database.write(async () => {
         await entry.update((row) => {
           row.queueStatus = "synced";
+          if (typeof result.wonderAwarded === "number") {
+            row.wonderAwarded = result.wonderAwarded;
+          }
         });
       });
       await rebuildLessonAccessCache(uid);

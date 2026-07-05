@@ -41,13 +41,27 @@ export const gateCopyEn: Record<string, string> = {
   "gate.pricing.perMonth": "per month",
   "gate.pricing.oneTime": "one-time",
 
-  "gate.cta.chooseMonthly": "Choose monthly",
-  "gate.cta.chooseLifetime": "Choose lifetime",
+  "gate.cta.chooseMonthly": "Choose",
+  "gate.cta.chooseLifetime": "Choose",
   "gate.cta.unavailable": "Unavailable",
 
   "gate.footer.signOut": "Sign out",
   "gate.footer.accountId": "Account ID",
   "gate.footer.restore": "Restore purchases",
+
+  "gate.delete.open": "Delete account",
+  "gate.delete.webLink": "Delete without signing in",
+  "gate.delete.sheetTitle": "Delete your account?",
+  "gate.delete.sheetBody":
+    "Your profile and journal entries will be removed immediately. For the next 30 days you can sign back in and cancel deletion. After that date, deletion is permanent and cannot be undone.",
+  "gate.delete.subscriptionNote":
+    "Deleting your account does not cancel App Store or Google Play billing. Manage your subscription in your device settings.",
+  "gate.delete.confirmLabel": "Type DELETE to confirm",
+  "gate.delete.confirm": "Delete account",
+  "gate.delete.cancel": "Keep account",
+  "gate.delete.scheduled": "Your account is scheduled for deletion on {date}.",
+  "gate.delete.scheduledFallback": "Your account is scheduled for deletion.",
+  "gate.delete.error": "Unable to delete account. Please try again.",
 
   "gate.sticky.currentTier": "Current tier",
   "gate.a11y.pricingCard": "Membership tier",

@@ -1,0 +1,233 @@
+import type { Creature } from "./types";
+
+export const pool_rare_wildcard: Creature[] = [
+  {
+    creatureTypeId: "prism-drifter",
+    displayName: "Prism Drifter",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "1.1",
+    moduleId: 1,
+    visualMetaphor:
+      "A fish that refracts all elements at once — fire, water, wind, electric all visible through its body",
+    masteryTip:
+      "When you understand emotional flooding, you begin to see it everywhere: in yourself, your child, your parents. The prism shows all colours at once.",
+    partnerEcho: "All colours, all at once. None cancels the others.",
+    illustrationAssetKey: "rare_any_prism_drifter",
+    netSlotIndex: 86,
+  },
+  {
+    creatureTypeId: "threshold-fish",
+    displayName: "Threshold Fish",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "1.6",
+    moduleId: 1,
+    visualMetaphor:
+      "A fish that exists precisely at the boundary between two depths, belonging to both",
+    masteryTip:
+      "High-stress scenarios are thresholds. The parent who recognises the doorway can choose how to cross it.",
+    illustrationAssetKey: "rare_any_threshold_fish",
+    netSlotIndex: 87,
+  },
+  {
+    creatureTypeId: "double-current",
+    displayName: "Double Current",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "2.3",
+    moduleId: 2,
+    visualMetaphor:
+      "A fish that swims in two opposite directions simultaneously — one half, then the other, never splitting",
+    masteryTip:
+      "Connection before instruction holds two truths at once: I see you, and I still have to ask this of you.",
+    illustrationAssetKey: "rare_any_double_current",
+    netSlotIndex: 88,
+  },
+  {
+    creatureTypeId: "compass-glide",
+    displayName: "Compass Glide",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "2.8",
+    moduleId: 2,
+    visualMetaphor:
+      "A fish with markings like compass points that always finds its way regardless of current",
+    masteryTip:
+      "Boundaries without threat work because they are oriented by values, not by emotion. The compass doesn't change because the water does.",
+    partnerEcho: "True north doesn't shift with the weather.",
+    illustrationAssetKey: "rare_any_compass_glide",
+    netSlotIndex: 89,
+  },
+  {
+    creatureTypeId: "convergence",
+    displayName: "Convergence",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "3.4",
+    moduleId: 3,
+    visualMetaphor:
+      "A fish that appears only where multiple different currents meet, thriving in complexity",
+    masteryTip:
+      "The motivation shift happens at a convergence: the moment external reward meets internal curiosity. The parent's job is to keep the space open until they meet.",
+    illustrationAssetKey: "rare_any_convergence",
+    netSlotIndex: 90,
+  },
+  {
+    creatureTypeId: "deep-mirror",
+    displayName: "Deep Mirror",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "3.5",
+    moduleId: 3,
+    visualMetaphor: "A fish whose scales reflect the entire pond back at you from a single angle",
+    masteryTip:
+      "Language that builds agency reflects the child's own capacity back to them before they can see it themselves.",
+    illustrationAssetKey: "rare_any_deep_mirror",
+    netSlotIndex: 91,
+  },
+  {
+    creatureTypeId: "phase-swimmer",
+    displayName: "Phase Swimmer",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "4.1",
+    moduleId: 4,
+    visualMetaphor:
+      "A fish that moves through phases of visibility — solid, translucent, invisible, solid again",
+    masteryTip:
+      "The hidden cost of praise and pressure: a child under pressure moves in and out of their authentic self, depending on who is watching.",
+    partnerEcho: "Real presence doesn't depend on who is watching.",
+    illustrationAssetKey: "rare_any_phase_swimmer",
+    netSlotIndex: 92,
+  },
+  {
+    creatureTypeId: "echo-twin",
+    displayName: "Echo Twin",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "4.3",
+    moduleId: 4,
+    visualMetaphor: "Two fish that move in perfect synchrony — always together, always distinct",
+    masteryTip:
+      "Emotional processing after failure is easier with a companion who doesn't try to fix, just stays. You are that companion for your child.",
+    illustrationAssetKey: "rare_any_echo_twin",
+    netSlotIndex: 93,
+  },
+  {
+    creatureTypeId: "origin-spark",
+    displayName: "Origin Spark",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "5.1",
+    moduleId: 5,
+    visualMetaphor:
+      "A fish of uncertain origin — no element, no depth, no fixed colour — perpetually becoming",
+    masteryTip:
+      "Identity formation: the child is perpetually becoming. Your role is not to complete the picture but to hand them better brushes.",
+    partnerEcho: "It isn't finished yet. Neither are they.",
+    illustrationAssetKey: "rare_any_origin_spark",
+    netSlotIndex: 94,
+  },
+  {
+    creatureTypeId: "horizon-walker",
+    displayName: "Horizon Walker",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "5.3",
+    moduleId: 5,
+    visualMetaphor: "A fish that swims along the exact line where light stops and depth begins",
+    masteryTip:
+      "Emotional stability under uncertainty: the parent who can stand at the horizon — not knowing what's coming, not afraid of it — teaches their child to do the same.",
+    illustrationAssetKey: "rare_any_horizon_walker",
+    netSlotIndex: 95,
+  },
+  {
+    creatureTypeId: "memory-fish",
+    displayName: "Memory Fish",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "5.4",
+    moduleId: 5,
+    visualMetaphor:
+      "A fish that seems to remember every route it has ever swum, navigating by accumulated knowledge",
+    masteryTip:
+      "Independent thinking in a child is built on a rich memory of being listened to. Memory fish knows: every time you were heard, something was stored.",
+    illustrationAssetKey: "rare_any_memory_fish",
+    netSlotIndex: 96,
+  },
+  {
+    creatureTypeId: "bridge-swimmer",
+    displayName: "Bridge Swimmer",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "5.5",
+    moduleId: 5,
+    visualMetaphor:
+      "A fish that spans two depth bands simultaneously, connecting what would otherwise not meet",
+    masteryTip:
+      'Meaning-driven motivation bridges the child\'s inner world to the outer one. The parent who asks "what matters to you?" builds that bridge.',
+    illustrationAssetKey: "rare_any_bridge_swimmer",
+    netSlotIndex: 97,
+  },
+  {
+    creatureTypeId: "liminal-glide",
+    displayName: "Liminal Glide",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "5.6",
+    moduleId: 5,
+    visualMetaphor:
+      "A fish that exists between states — not quite surface, not quite deep, not quite any element",
+    masteryTip:
+      "Long-term integration lives in the liminal: between lesson and life, between intention and action, between knowing and being.",
+    partnerEcho: "The in-between is where the real work happens.",
+    illustrationAssetKey: "rare_any_liminal_glide",
+    netSlotIndex: 98,
+  },
+  {
+    creatureTypeId: "whole-current",
+    displayName: "Whole Current",
+    poolTier: "rare",
+    elementType: "any",
+    rodRequired: "rare5",
+    peakWonderGate: 65,
+    lessonId: "5.7",
+    moduleId: 5,
+    visualMetaphor:
+      "A fish that moves the entire pond when it swims — all other currents respond to it",
+    masteryTip:
+      "When integration is complete, parenting is not a practice you do. It is the current you are. The whole pond moves with you.",
+    partnerEcho: "When one thing becomes whole, everything else arranges around it.",
+    illustrationAssetKey: "rare_any_whole_current",
+    netSlotIndex: 99,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+];

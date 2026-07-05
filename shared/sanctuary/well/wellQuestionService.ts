@@ -1,0 +1,109 @@
+import { pickIndex } from "../random";
+import { QUESTIONS_BY_AGE_BAND, WELL_QUESTION_BY_ID } from "./catalog";
+import {
+  DEFAULT_USER_WELL_STATE,
+  MAX_REROLLS_PER_DAY,
+  RECENT_CATEGORY_WINDOW,
+  RECENT_REPEAT_AVOIDANCE,
+  type AgeBand,
+  type UserWellState,
+  type WellBankQuestion,
+} from "./types";
+
+export function hasAnsweredToday(state: UserWellState, today: string, questionId: string): boolean {
+  return state.currentQuestionDate === today && state.answeredQuestionIds.includes(questionId);
+}
+
+export function mergeWellState(base: Partial<UserWellState> | undefined): UserWellState {
+  return { ...DEFAULT_USER_WELL_STATE, ...base };
+}
+
+/** Sticky daily question — returns existing if same day and still valid in catalog. */
+export function getTodaysQuestion(
+  state: UserWellState,
+  ageBand: AgeBand,
+  today: string,
+  seed: string,
+): { question: WellBankQuestion; statePatch: Partial<UserWellState> | null } {
+  if (
+    state.currentQuestionDate === today &&
+    state.currentQuestionId &&
+    WELL_QUESTION_BY_ID[state.currentQuestionId]?.ageBand === ageBand
+  ) {
+    const existing = WELL_QUESTION_BY_ID[state.currentQuestionId];
+    if (existing) return { question: existing, statePatch: null };
+  }
+
+  const { question, questionId } = selectNewQuestion(state, ageBand, seed);
+  return {
+    question,
+    statePatch: {
+      currentQuestionId: questionId,
+      currentQuestionDate: today,
+      rerollsUsedToday: 0,
+      askedQuestionIds: [...state.askedQuestionIds, questionId],
+    },
+  };
+}
+
+function selectNewQuestion(
+  state: UserWellState,
+  ageBand: AgeBand,
+  seed: string,
+): { question: WellBankQuestion; questionId: string } {
+  const pool = QUESTIONS_BY_AGE_BAND[ageBand];
+  const asked = new Set(state.askedQuestionIds);
+  const unseen = pool.filter((question) => !asked.has(question.questionId));
+
+  let candidates: WellBankQuestion[];
+  if (unseen.length > 0) {
+    candidates = unseen;
+  } else {
+    const recentIds = new Set(state.askedQuestionIds.slice(-RECENT_REPEAT_AVOIDANCE));
+    const notRecent = pool.filter((question) => !recentIds.has(question.questionId));
+    candidates = notRecent.length > 0 ? notRecent : pool;
+  }
+
+  const rotated = rotateByCategory(candidates, state);
+  const index = pickIndex(seed, rotated.length);
+  const question = rotated[index];
+  return { question, questionId: question.questionId };
+}
+
+function rotateByCategory(
+  candidates: WellBankQuestion[],
+  state: UserWellState,
+): WellBankQuestion[] {
+  const recentCategories = new Set(
+    state.askedQuestionIds
+      .slice(-RECENT_CATEGORY_WINDOW)
+      .map((id) => WELL_QUESTION_BY_ID[id]?.category)
+      .filter(Boolean),
+  );
+  const preferred = candidates.filter((question) => !recentCategories.has(question.category));
+  return preferred.length > 0 ? preferred : candidates;
+}
+
+export function canReroll(state: UserWellState, today: string): boolean {
+  return state.currentQuestionDate === today && state.rerollsUsedToday < MAX_REROLLS_PER_DAY;
+}
+
+export function applyReroll(
+  state: UserWellState,
+  ageBand: AgeBand,
+  today: string,
+  seed: string,
+): { question: WellBankQuestion; nextState: UserWellState } | null {
+  if (!canReroll(state, today)) return null;
+  const { question, questionId } = selectNewQuestion(state, ageBand, seed);
+  return {
+    question,
+    nextState: {
+      ...state,
+      currentQuestionId: questionId,
+      currentQuestionDate: today,
+      rerollsUsedToday: state.rerollsUsedToday + 1,
+      askedQuestionIds: [...state.askedQuestionIds, questionId],
+    },
+  };
+}

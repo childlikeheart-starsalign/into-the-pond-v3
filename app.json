@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.intothepond.app.v3",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -23,7 +24,9 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.intothepond.app.v3"
+      "package": "com.intothepond.app.v3",
+      "versionCode": 1,
+      "googleServicesFile": "./assets/google-services.json"
     },
     "web": {
       "output": "static",
@@ -35,12 +38,24 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#FAF7F2",
-          "dark": {
-            "backgroundColor": "#1F1A17"
+          "image": "./assets/images/splash-frames/splash-frame.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#BEC4B3",
+          "ios": {
+            "image": "./assets/images/splash-frames/splash-frame.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#BEC4B3",
+            "enableFullScreenImage_legacy": true
+          },
+          "android": {
+            "image": "./assets/images/splash-frames/splash-frame.png",
+            "mdpi": "./assets/images/splash-frames/splash-frame.png",
+            "hdpi": "./assets/images/splash-frames/splash-frame.png",
+            "xhdpi": "./assets/images/splash-frames/splash-frame@2x.png",
+            "xxhdpi": "./assets/images/splash-frames/splash-frame@3x.png",
+            "xxxhdpi": "./assets/images/splash-frames/splash-frame@3x.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#BEC4B3"
           }
         }
       ],

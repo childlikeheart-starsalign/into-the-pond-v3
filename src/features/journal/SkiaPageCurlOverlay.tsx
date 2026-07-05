@@ -12,7 +12,7 @@ import {
   rrect,
   Shader,
   Skia,
-  useImage,
+  type SkImage,
 } from "@shopify/react-native-skia";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -42,6 +42,7 @@ import {
 } from "@/src/features/fieldJournal/fitContainRect";
 import type { FieldJournalSpread } from "@/src/features/fieldJournal/types";
 import { PAGE_CURL_SKSL, pageBackColorUniform } from "@/src/features/journal/pageCurlShader";
+import { useSharedSkiaImage } from "@/src/features/journal/useSharedSkiaImage";
 
 const COMMIT_RATIO = 0.3;
 const VELOCITY_THRESHOLD = 600;
@@ -78,7 +79,7 @@ function OpenBookSceneLayer({
   sceneImage,
   sceneRect,
 }: {
-  sceneImage: NonNullable<ReturnType<typeof useImage>>;
+  sceneImage: SkImage;
   sceneRect: FitRect;
 }) {
   return (
@@ -99,7 +100,7 @@ function ClippedSpreadLayer({
   sceneRect,
   pageRect,
 }: {
-  spreadImage: NonNullable<ReturnType<typeof useImage>>;
+  spreadImage: SkImage;
   sceneRect: FitRect;
   pageRect: FitRect;
 }) {
@@ -119,13 +120,7 @@ function ClippedSpreadLayer({
   );
 }
 
-function PageCropLayer({
-  pageImage,
-  sceneRect,
-}: {
-  pageImage: NonNullable<ReturnType<typeof useImage>>;
-  sceneRect: FitRect;
-}) {
+function PageCropLayer({ pageImage, sceneRect }: { pageImage: SkImage; sceneRect: FitRect }) {
   const cropRect = journalPageCropFrameRect(sceneRect);
   const clip = rrect(rect(cropRect.x, cropRect.y, cropRect.width, cropRect.height), 0, 0);
 
@@ -165,13 +160,17 @@ export function SkiaPageCurlOverlay({
 
   const compositeMode = usesPageComposite(currentSpread);
 
-  const openBookImage = useImage(fieldJournalMedia.openBookScene);
-  const currentSpreadImage = useImage(currentSpread.asset);
-  const nextSpreadImage = useImage(nextSpread?.asset ?? null);
-  const prevSpreadImage = useImage(prevSpread?.asset ?? null);
-  const currentPageImage = useImage(compositeMode ? currentSpread.pageAsset : null);
-  const nextPageImage = useImage(usesPageComposite(nextSpread) ? nextSpread.pageAsset : null);
-  const prevPageImage = useImage(usesPageComposite(prevSpread) ? prevSpread.pageAsset : null);
+  const openBookImage = useSharedSkiaImage(fieldJournalMedia.openBookScene);
+  const currentSpreadImage = useSharedSkiaImage(currentSpread.asset);
+  const nextSpreadImage = useSharedSkiaImage(nextSpread?.asset ?? null);
+  const prevSpreadImage = useSharedSkiaImage(prevSpread?.asset ?? null);
+  const currentPageImage = useSharedSkiaImage(compositeMode ? currentSpread.pageAsset : null);
+  const nextPageImage = useSharedSkiaImage(
+    usesPageComposite(nextSpread) ? nextSpread.pageAsset : null,
+  );
+  const prevPageImage = useSharedSkiaImage(
+    usesPageComposite(prevSpread) ? prevSpread.pageAsset : null,
+  );
 
   const [isCurling, setIsCurling] = useState(false);
   const [renderDirection, setRenderDirection] = useState<CurlDirection | null>(null);

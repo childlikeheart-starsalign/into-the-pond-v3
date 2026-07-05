@@ -28,10 +28,18 @@ web-build/
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+.cursor/
+firestore-debug.log
+scripts/__pycache__/
 
 # macOS
 .DS_Store
 *.pem
+
+# Firebase native config (inject locally or via EAS secrets — see scripts/setup-eas-firebase-files.mjs)
+GoogleService-Info.plist
+assets/GoogleService-Info.plist
+assets/google-services.json
 
 # local env files
 .env
@@ -43,6 +51,9 @@ functions/**/serviceAccount*.json
 # Console "Generate new private key" downloads (e.g. *-firebase-adminsdk-*.json)
 *-firebase-adminsdk-*.json
 
+# Firebase Apple SDK manual zip (local only; iOS uses SPM via prebuild plugin)
+/Firebase/
+
 # typescript
 *.tsbuildinfo
 
@@ -53,3 +64,7 @@ app-example
 
 expo-env.d.ts
 # @end expo-cli
+
+# local python venvs (docx generator)
+.venv-handoff/
+.env.local

@@ -9,16 +9,18 @@ export const fieldJournalMedia = {
   },
   stillwater: {
     creatures0to2: require("@/assets/journal/stillwater/creatures_0-2.png"),
-    /** Full-scene spreads (941×1672) — clipped to the page slot in the reader. */
+    // Asset gap — no 576×1024 export on disk; still 941×1672 until asset pipeline delivers.
     creatures3to5: require("@/assets/journal/stillwater/3-5_page.png"),
     creatures6to8: require("@/assets/journal/stillwater/6-8_page.png"),
-    creatures9to11: require("@/assets/journal/stillwater/9-11_page.png"),
-    creatures12to14: require("@/assets/journal/stillwater/12-14_page.png"),
+    creatures9to11: require("@/assets/journal/stillwater/spread_01_creatures_9-11.png"),
+    creatures12to14: require("@/assets/journal/stillwater/spread_02_creatures_12-14.png"),
+    // Asset gap — no 576×1024 export on disk; still 941×1672 until asset pipeline delivers.
     creatures15to17: require("@/assets/journal/stillwater/15-17_page.png"),
-    creatures18to20: require("@/assets/journal/stillwater/18-20_page.png"),
-    creatures21to23: require("@/assets/journal/stillwater/21-23_page.png"),
-    creatures24to26: require("@/assets/journal/stillwater/24-26_page.png"),
-    creatures27to29: require("@/assets/journal/stillwater/27-29_page.png"),
+    creatures18to20: require("@/assets/journal/stillwater/spread_03_creatures_18-20.png"),
+    creatures21to23: require("@/assets/journal/stillwater/spread_04_creatures_21-23.png"),
+    creatures24to26: require("@/assets/journal/stillwater/spread_05_creatures_24-26.png"),
+    creatures27to29: require("@/assets/journal/stillwater/spread_06_creatures_27-29.png"),
+    // Deep Current — asset gap for 30–42 (941×1672 *_page.png); no small variant on disk.
     creatures30to32: require("@/assets/journal/stillwater/30-33_page.png"),
     creatures33to35: require("@/assets/journal/stillwater/34-35_page.png"),
     creatures36to38: require("@/assets/journal/stillwater/36-38_page.png"),

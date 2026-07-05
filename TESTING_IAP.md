@@ -8,7 +8,7 @@
   - `Wooden_Rod_Lifetime`
   - `Fiberglass_rod_lifetime`
 - Entitlement identifier for Into the Pond Pro (e.g. `into_the_pond_pro`) attached to products as needed for paywalls
-- Firebase Functions deployed (`verifyPurchase`, `syncSubscriptionStatus`, `castClaim`, `submitDiaryEntry`, `createWellQuestion`, `createCast`, `claimCast`)
+- Firebase Functions deployed (`verifyPurchase`, `syncSubscriptionStatus`, `submitDiaryEntry`, `createWellQuestion`, `createCast`, `claimCast`)
 - App built in native runtime (not Expo Go)
 - Test account signed in with Firebase Auth
 

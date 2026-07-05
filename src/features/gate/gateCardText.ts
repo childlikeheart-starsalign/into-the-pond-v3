@@ -56,9 +56,9 @@ export const gateCardText = StyleSheet.create({
   } satisfies TextStyle,
   price: {
     fontFamily: fontFamilies.bodySemi,
-    fontSize: 13,
-    lineHeight: 18,
-    color: colors.textPrimary,
+    fontSize: 11.05,
+    lineHeight: 15.3,
+    color: "#65574E",
     textAlign: "center",
   } satisfies TextStyle,
   cta: {
@@ -94,7 +94,7 @@ export const gateCardText = StyleSheet.create({
   } satisfies ViewStyle,
   /** Single-line price slot inside pricingFrame. */
   priceBlock: {
-    height: 18,
+    height: 15.3,
     width: "100%",
     justifyContent: "center",
     alignItems: "center",

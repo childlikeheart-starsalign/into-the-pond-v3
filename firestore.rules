@@ -1,0 +1,193 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Economy + progression — server-write only (Admin SDK / Cloud Functions).
+    // Keep in sync with shared/firestore/economyFieldRegistry.ts
+    function economyFieldKeys() {
+      return [
+        'totalWonder',
+        'currentWonder',
+        'storedWonder',
+        'lifetimeWonderEarned',
+        'lastReflectionAt',
+        'inventory',
+        'activeCast',
+        'lastClaimedCastId',
+        'fishingWonderToday',
+        'lastFishingResetDate',
+        'dailyQuestionCount',
+        'lastQuestionResetDate',
+        'activeRod',
+        'rodDullnessCount',
+        'isRodDull',
+        'equippedRodId',
+        'subscription',
+        'completedLessons',
+      ];
+    }
+
+    // Client-safe fields for users/{uid} create — keep in sync with economyFieldRegistry.ts
+    function clientSafeUserCreateKeys() {
+      return [
+        'email',
+        'hasSeenTutorial',
+        'childArchetype',
+        'hasCompletedDay1Narrative',
+      ];
+    }
+
+    function economyFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(economyFieldKeys());
+    }
+
+    function hasOnlyClientSafeCreateFields(data) {
+      return data.keys().hasOnly(clientSafeUserCreateKeys());
+    }
+
+    function clientProfileCreateAllowed(uid) {
+      return false;
+    }
+
+    function authFunnelFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['authFunnel']);
+    }
+
+    function clientProfileUpdateAllowed(uid) {
+      return isOwner(uid) && economyFieldsUnchanged() && authFunnelFieldsUnchanged();
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if clientProfileCreateAllowed(uid);
+      allow update: if clientProfileUpdateAllowed(uid);
+      allow delete: if false;
+
+      // Offline sync + journal (server-write via callables / legacy functions).
+      match /diaryEntries/{entryId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Fishing collection sync (server-write via claimEncounter).
+      match /creatures/{creatureId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Legacy well Q&A cache (server-write only).
+      match /wellQuestions/{questionId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Well progression state — server-write-only (Cloud Functions).
+      match /wellState/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Child Atlas insights — immutable parent-authored records, server-write-only.
+      match /childAtlas/{entryId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+        allow delete: if false;
+      }
+
+      // Rod progression — server-write-only (startCraft / collectCraft callables).
+      match /playerRods/{rodId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /lessonProgress/{lessonId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Wonder ledger — append-only, server-write-only (legacy dual-write during migration).
+      match /wonderTransactions/{transactionId} {
+        allow read: if isOwner(uid);
+        allow create, update, delete: if false;
+      }
+
+      // Economy ledger — append-only, server-write-only (Admin SDK only).
+      match /economyLedger/{entryId} {
+        allow read: if isOwner(uid);
+        allow create, update, delete: if false;
+      }
+
+      // Economy idempotency — server-write-only.
+      match /economyIdempotency/{key} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Folded ledger prefix checkpoint — server-write-only (Invariant 7: ledger rows unchanged).
+      match /economyLedgerCheckpoint/{docId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Analytics + audit — server-write-only.
+      match /sanctuaryAnalytics/{eventId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /fishingClaims/{claimId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /practiceCompletions/{completionId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /purchases/{purchaseId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Catch-all: deny client writes to any other subcollection under users/{uid}.
+      match /{subcollection}/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+    }
+
+    match /lessons/{lessonId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    function isEconomyAdmin() {
+      return request.auth != null && request.auth.token.economyAdmin == true;
+    }
+
+    // Ops drift reports — economy admin read, server-write only.
+    match /admin/{docId} {
+      allow read: if isEconomyAdmin();
+      allow write: if false;
+    }
+
+    // Account deletion backups — server-write-only (Admin SDK / Cloud Functions).
+    match /deletion_requests/{uid} {
+      allow read, write: if false;
+    }
+
+    match /deletion_web_tokens/{uid} {
+      allow read, write: if false;
+    }
+
+    // Detached financial records at permanent purge — server-write-only.
+    match /financialRecords/{recordId} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,32 +1,30 @@
 import { router, type Href, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Image, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthFrame, CloudButton } from "@/src/components/auth/AuthArtwork";
-import { colors } from "@/src/constants/theme";
+import {
+  AUTH_FINISH_EMAIL_BACK_TO_SIGN_IN,
+  AUTH_FINISH_EMAIL_CONFIRMING,
+  AUTH_FINISH_EMAIL_HELPER,
+  AUTH_FINISH_EMAIL_INVALID_LINK,
+  AUTH_FINISH_EMAIL_VERIFIED_SIGNED_OUT,
+} from "@/src/constants/authCopy";
+import { colors, fontFamilies } from "@/src/constants/theme";
 import { media } from "@/src/constants/media";
-import { emailVerifiedHitRects, normRectToStyle } from "@/src/constants/emailVerifiedArtboard";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { applyEmailActionCode, reloadCurrentUser } from "@/src/services/firebase/auth";
 import { formatFirebaseAuthError } from "@/src/services/firebase/authLinks";
+import { firebaseAuth } from "@/src/services/firebase/client";
 
 function paramFirst(value: string | string[] | undefined): string | undefined {
   if (value == null) return undefined;
   return Array.isArray(value) ? value[0] : value;
 }
 
-type Status = "idle" | "working" | "done" | "error";
+type Status = "idle" | "working" | "done" | "error" | "verified_signed_out";
 
 /** Single Firebase apply per (mode, oobCode) per JS session — avoids duplicate applyEmailActionCode when React Strict Mode runs effects twice in development. */
 const verificationApplyPromises = new Map<string, Promise<void>>();
@@ -48,24 +46,19 @@ export default function FinishEmailScreen() {
   const oobCode = useMemo(() => paramFirst(params.oobCode), [params.oobCode]);
   const mode = useMemo(() => paramFirst(params.mode), [params.mode]);
   const { height: windowHeight } = useWindowDimensions();
-  const frame = usePortrait916Layout();
+  const frame = usePortrait916Layout("cover");
 
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
   const artboardWidth = frame.width;
   const artboardHeight = frame.height;
-  const enterButtonStyle = normRectToStyle(
-    emailVerifiedHitRects.enterButton,
-    artboardWidth,
-    artboardHeight,
-  );
   const layerSize = { width: artboardWidth, height: artboardHeight };
 
   useEffect(() => {
     if (!oobCode) {
       setStatus("error");
-      setError("Invalid link.");
+      setError(AUTH_FINISH_EMAIL_INVALID_LINK);
       return;
     }
 
@@ -79,7 +72,13 @@ export default function FinishEmailScreen() {
     setStatus("working");
 
     void memoizedVerificationApply(oobCode, mode).then(
-      () => setStatus("done"),
+      () => {
+        if (firebaseAuth.currentUser) {
+          setStatus("done");
+          return;
+        }
+        setStatus("verified_signed_out");
+      },
       (e: unknown) => {
         setStatus("error");
         setError(formatFirebaseAuthError(e));
@@ -87,81 +86,61 @@ export default function FinishEmailScreen() {
     );
   }, [oobCode, mode]);
 
-  if (status === "done") {
+  useEffect(() => {
+    if (status === "done") {
+      router.replace(routes.emailVerified);
+    }
+  }, [status]);
+
+  if (status === "working" || status === "idle") {
     return (
       <SafeAreaView style={styles.safe} edges={[]}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { minHeight: windowHeight, backgroundColor: colors.bg },
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
-          <View
-            style={[
-              styles.artboard,
-              {
-                marginLeft: frame.left,
-                marginTop: frame.top,
-                width: artboardWidth,
-                height: artboardHeight,
-              },
-            ]}
-          >
-            <Image
-              source={media.auth.emailVerified.background}
-              style={[styles.layerImage, layerSize]}
-              resizeMode="cover"
-              accessibilityIgnoresInvertColors
-            />
-
-            <Pressable
-              style={[styles.hitTarget, enterButtonStyle]}
-              onPress={() => router.replace(routes.sanctuary)}
-              accessibilityRole="button"
-              accessibilityLabel="Enter"
-            />
-          </View>
-        </ScrollView>
+        <View style={styles.loadingOverlay} pointerEvents="auto">
+          <Image
+            source={media.auth.signIn.loading}
+            style={[styles.loadingImage, layerSize]}
+            resizeMode="contain"
+            accessibilityLabel={AUTH_FINISH_EMAIL_CONFIRMING}
+          />
+          <Text style={styles.loadingCopy} accessibilityLiveRegion="polite">
+            {AUTH_FINISH_EMAIL_CONFIRMING}
+          </Text>
+        </View>
       </SafeAreaView>
     );
   }
 
-  return (
-    <AuthFrame helperText="Save your pond, sync across devices, and keep your Wonders">
-      {(status === "working" || status === "idle") && (
-        <View style={{ alignItems: "center", gap: 16 }}>
-          <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading" />
-          <Text
-            style={{
-              fontFamily: "Inter_600SemiBold",
-              fontSize: 18,
-              color: "#2E2520",
-              textAlign: "center",
-            }}
-          >
-            Confirming your email...
-          </Text>
-        </View>
-      )}
+  if (status === "verified_signed_out") {
+    return (
+      <AuthFrame helperText={AUTH_FINISH_EMAIL_HELPER}>
+        <Text style={styles.signedOutMessage}>{AUTH_FINISH_EMAIL_VERIFIED_SIGNED_OUT}</Text>
+        <CloudButton
+          label={AUTH_FINISH_EMAIL_BACK_TO_SIGN_IN}
+          onPress={() => router.replace(routes.login)}
+        />
+      </AuthFrame>
+    );
+  }
 
-      {status === "error" && (
-        <>
-          <Text
-            style={{
-              fontFamily: "Inter_600SemiBold",
-              fontSize: 17,
-              lineHeight: 26,
-              color: "#B86A6A",
-              textAlign: "center",
-            }}
-          >
-            {error}
-          </Text>
-          <CloudButton label="Back to sign in" onPress={() => router.replace(routes.login)} />
-        </>
-      )}
-    </AuthFrame>
+  if (status === "error") {
+    return (
+      <AuthFrame helperText={AUTH_FINISH_EMAIL_HELPER}>
+        <Text style={styles.errorMessage}>{error}</Text>
+        <CloudButton
+          label={AUTH_FINISH_EMAIL_BACK_TO_SIGN_IN}
+          onPress={() => router.replace(routes.login)}
+        />
+      </AuthFrame>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safe} edges={[]}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight }]}
+        showsVerticalScrollIndicator={false}
+      />
+    </SafeAreaView>
   );
 }
 
@@ -175,16 +154,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingVertical: 0,
   },
-  artboard: {
-    alignSelf: "stretch",
-    position: "relative",
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.bg,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+    zIndex: 1000,
+    paddingHorizontal: 16,
   },
-  layerImage: {
-    position: "absolute",
-    left: 0,
-    top: 0,
+  loadingImage: {
+    alignSelf: "center",
   },
-  hitTarget: {
-    backgroundColor: "transparent",
+  loadingCopy: {
+    fontFamily: fontFamilies.bodySemi,
+    fontSize: 18,
+    lineHeight: 26,
+    color: "#2E2520",
+    textAlign: "center",
+  },
+  signedOutMessage: {
+    fontFamily: fontFamilies.bodySemi,
+    fontSize: 17,
+    lineHeight: 26,
+    color: "#2E2520",
+    textAlign: "center",
+  },
+  errorMessage: {
+    fontFamily: fontFamilies.bodySemi,
+    fontSize: 17,
+    lineHeight: 26,
+    color: "#B86A6A",
+    textAlign: "center",
   },
 });

@@ -1,5 +1,6 @@
-import type { ImageSourcePropType } from "react-native";
+import type { ImageSourcePropType, ImageStyle } from "react-native";
 
+import { SANCTUARY_TAB_BAR_STRIP_HEIGHT_RATIO } from "@/src/constants/sanctuaryNavLayout";
 import type { SanctuaryTimeOfDay } from "@/src/constants/sanctuaryAssets";
 
 export const CLASSROOM_ARTBOARD_WIDTH = 576;
@@ -15,6 +16,86 @@ export type NormRect = {
   readonly width: number;
   readonly height: number;
 };
+
+/**
+ * Vertical crop on classroom-landing.png — hides top profile/menu chrome and
+ * bottom parchment tab strip when the open screen is framed in Portrait916Frame.
+ */
+export const CLASSROOM_OPEN_CONTENT_CROP = {
+  top: 0.16,
+  bottom: SANCTUARY_TAB_BAR_STRIP_HEIGHT_RATIO,
+} as const;
+
+/** Nudge open landing art upward inside the 9:16 frame (fraction of frame height). */
+export const CLASSROOM_OPEN_VERTICAL_SHIFT = 0.13;
+
+/** Nudge open landing art left inside the 9:16 frame (fraction of frame width). */
+export const CLASSROOM_OPEN_HORIZONTAL_SHIFT = 0.04;
+
+/** Uniform zoom for open landing art inside the 9:16 frame (1 = 100%). */
+export const CLASSROOM_OPEN_SCALE = 1.09;
+
+/**
+ * Nudge forest menu art upward inside the 9:16 frame (fraction of frame height).
+ * Balances top/bottom letterbox with Gate/Sanctuary; hit targets move with the scene.
+ */
+export const CLASSROOM_MENU_SCENE_TOP_SHIFT = 0.032;
+
+export function classroomOpenVisibleHeightFraction(
+  crop: typeof CLASSROOM_OPEN_CONTENT_CROP = CLASSROOM_OPEN_CONTENT_CROP,
+): number {
+  return 1 - crop.top - crop.bottom;
+}
+
+function classroomOpenScaleRect(rect: NormRect, scale: number): NormRect {
+  if (scale === 1) return rect;
+  return {
+    left: 0.5 + (rect.left - 0.5) * scale,
+    top: 0.5 + (rect.top - 0.5) * scale,
+    width: rect.width * scale,
+    height: rect.height * scale,
+  };
+}
+
+/** Remap a full-artboard hit rect into the cropped open-scene coordinate space. */
+export function classroomOpenRectInCrop(
+  rect: NormRect,
+  crop: typeof CLASSROOM_OPEN_CONTENT_CROP = CLASSROOM_OPEN_CONTENT_CROP,
+  verticalShift: number = CLASSROOM_OPEN_VERTICAL_SHIFT,
+  horizontalShift: number = CLASSROOM_OPEN_HORIZONTAL_SHIFT,
+  scale: number = CLASSROOM_OPEN_SCALE,
+): NormRect {
+  const visibleH = classroomOpenVisibleHeightFraction(crop);
+  return classroomOpenScaleRect(
+    {
+      left: rect.left - horizontalShift,
+      top: (rect.top - crop.top) / visibleH - verticalShift,
+      width: rect.width,
+      height: rect.height / visibleH,
+    },
+    scale,
+  );
+}
+
+/** Percent-based layout for vertically cropping classroom-landing.png at runtime. */
+export function classroomOpenCroppedImageStyle(
+  crop: typeof CLASSROOM_OPEN_CONTENT_CROP = CLASSROOM_OPEN_CONTENT_CROP,
+  verticalShift: number = CLASSROOM_OPEN_VERTICAL_SHIFT,
+  horizontalShift: number = CLASSROOM_OPEN_HORIZONTAL_SHIFT,
+  scale: number = CLASSROOM_OPEN_SCALE,
+): Pick<ImageStyle, "width" | "height" | "top" | "left"> {
+  const visibleH = classroomOpenVisibleHeightFraction(crop);
+  const baseTopPct = (-crop.top / visibleH) * 100;
+  const baseHeightPct = 100 / visibleH;
+  const widthPct = 100 * scale;
+  const heightPct = baseHeightPct * scale;
+  return {
+    width: `${widthPct.toFixed(4)}%`,
+    height: `${heightPct.toFixed(4)}%`,
+    left: `${(-horizontalShift * 100 - (widthPct - 100) / 2).toFixed(4)}%`,
+    top: `${(baseTopPct - verticalShift * 100 - (heightPct - baseHeightPct) / 2).toFixed(4)}%`,
+  };
+}
 
 /** Hit targets on the open screen and module menu artboards. */
 export const classroomHitRects = {

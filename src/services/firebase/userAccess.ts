@@ -182,9 +182,9 @@ export async function userProfileExistsForAuthUser(
 }
 
 export function canAccessMainApp(
-  user: Pick<User, "emailVerified"> | null,
-  hasExistingProfile: boolean,
+  user: Pick<User, "emailVerified" | "isAnonymous"> | null,
 ): boolean {
   if (!user) return false;
-  return user.emailVerified || hasExistingProfile;
+  if (user.isAnonymous) return false;
+  return user.emailVerified;
 }

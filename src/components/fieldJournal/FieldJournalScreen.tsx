@@ -1,5 +1,4 @@
-import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { StatusBar, StyleSheet, View } from "react-native";
 
 import { FieldJournalCover } from "@/src/components/fieldJournal/FieldJournalCover";
@@ -7,9 +6,11 @@ import { FieldJournalReader } from "@/src/components/fieldJournal/FieldJournalRe
 import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
 import { colors } from "@/src/constants/theme";
 import { clearSpreadImageCache } from "@/src/features/fieldJournal/spreadImageCache";
+import { releaseAllForScope } from "@/src/features/journal/useSharedSkiaImage";
 import { useFieldJournalSounds } from "@/src/features/fieldJournal/useFieldJournalSounds";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
-import { routes } from "@/src/navigation/routes";
+import { closeSceneScreen } from "@/src/navigation/closeSceneScreen";
+import { setFieldJournalView } from "@/src/state/fieldJournalView";
 
 type JournalPhase = "cover" | "reader";
 
@@ -18,6 +19,20 @@ export function FieldJournalScreen() {
   const [isAnimating, setIsAnimating] = useState(false);
   const { width: frameWidth, height: frameHeight } = usePortrait916Layout("contain");
   const sounds = useFieldJournalSounds();
+
+  useEffect(() => {
+    setFieldJournalView(phase);
+    return () => {
+      setFieldJournalView("cover");
+      releaseAllForScope("journal:");
+    };
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "cover") {
+      releaseAllForScope("journal:");
+    }
+  }, [phase]);
 
   const handleOpenStart = useCallback(() => {
     setIsAnimating(true);
@@ -37,40 +52,35 @@ export function FieldJournalScreen() {
     setIsAnimating(false);
   }, [sounds]);
 
-  const handleBackToSanctuary = useCallback(() => {
+  const handleCloseCover = useCallback(() => {
     void sounds.stopAll();
+    releaseAllForScope("journal:");
     clearSpreadImageCache();
-    router.replace(routes.sanctuary);
+    closeSceneScreen("journal_cover");
   }, [sounds]);
-
-  const hasFrame = frameWidth > 0 && frameHeight > 0;
 
   return (
     <View style={styles.root}>
       <StatusBar barStyle="dark-content" />
-      <Portrait916Frame>
-        {hasFrame ? (
-          phase === "cover" ? (
-            <FieldJournalCover
-              width={frameWidth}
-              height={frameHeight}
-              isAnimating={isAnimating}
-              onOpenStart={handleOpenStart}
-              onOpenComplete={handleOpenComplete}
-              onBackToSanctuary={handleBackToSanctuary}
-            />
-          ) : (
-            <FieldJournalReader
-              width={frameWidth}
-              height={frameHeight}
-              isAnimating={isAnimating}
-              onAnimatingChange={setIsAnimating}
-              onPageTurn={() => {
-                void sounds.playPageTurn();
-              }}
-              onClose={handleCloseReader}
-            />
-          )
+      <Portrait916Frame mode="contain" backgroundColor={colors.bg}>
+        {phase === "cover" ? (
+          <FieldJournalCover
+            isAnimating={isAnimating}
+            onOpenStart={handleOpenStart}
+            onOpenComplete={handleOpenComplete}
+            onClose={handleCloseCover}
+          />
+        ) : frameWidth > 0 && frameHeight > 0 ? (
+          <FieldJournalReader
+            width={frameWidth}
+            height={frameHeight}
+            isAnimating={isAnimating}
+            onAnimatingChange={setIsAnimating}
+            onPageTurn={() => {
+              void sounds.playPageTurn();
+            }}
+            onClose={handleCloseReader}
+          />
         ) : null}
       </Portrait916Frame>
     </View>

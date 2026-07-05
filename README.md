@@ -22,13 +22,56 @@ If **`npm`** prints **`Unknown env config "devdir"`**, run **`npm config delete 
 - **`ios/` and `android/`** are listed in `.gitignore`. Commit app sources only; **EAS Build** generates native projects on Expo servers for CI and store builds.
 - **Local native debugging:** run `npm run prebuild` (or `npm run prebuild:clean`), then `npx expo run:ios` / `npx expo run:android`.
 - **Link EAS:** run **`eas build:configure`** once so Expo can write **`extra.eas.projectId`** into your config (typically **`app.json`**). [`app.config.js`](app.config.js) loads **`app.json`** and overlays **`expo.extra`** from environment variables when present (see **Environment variables** below).
-- **`eas.json`** defines **development** (internal distribution, development client via **`expo-dev-client`**) and **production** (auto-increment build numbers, **`production`** update channel). Internal dev-client binaries from **`eas build --profile development`** pair with **`npx expo start --dev-client`** for Metro-connected debugging (not Expo Go).
+- **`eas.json`** defines **development** (internal distribution, development client via **`expo-dev-client`**, channel **`development`**), **preview** (internal TestFlight / Play internal track, channel **`preview`**, `NODE_ENV=production`), and **production** (auto-increment build numbers, channel **`production`**, `NODE_ENV=production`). See [`RELEASE.md`](RELEASE.md) for the full build and device-validation checklist.
+- Internal dev-client binaries from **`eas build --profile development`** pair with **`npx expo start --dev-client`** for Metro-connected debugging (not Expo Go).
 
 ### Firebase: JS config vs native files
 
 - **Runtime (Firebase JS SDK)** uses **`app.json` → `expo.extra`** values consumed by [`src/config/env.ts`](src/config/env.ts). Missing keys surface as app/API errors; **`GoogleService-Info.plist`** / **`google-services.json`** are **not** read by `initializeApp` in [`src/services/firebase/client.ts`](src/services/firebase/client.ts).
-- **Native configs:** keep **`assets/GoogleService-Info.plist`** for iOS; optional **`assets/google-services.json`** for Android (download from Firebase Console for package **`com.intothepond.app.v3`**). Config plugin [**`plugins/withFirebaseNativeFiles.js`**](plugins/withFirebaseNativeFiles.js) copies those files into the generated native trees during **`expo prebuild`**. Android copy runs only if **`google-services.json`** exists. Full native Firebase Gradle/Xcode integration (for example **`com.google.gms.google-services`**) requires additional setup if you adopt React Native Firebase or native-only features later.
-- **Android native stacks (FCM, Analytics, RN Firebase):** use the **Checklist** under _Firebase native vs JS_ in [`TECH_DEBT.md`](TECH_DEBT.md) before expecting Gradle/Xcode native Firebase wiring.
+- **Native configs (not committed):** place **`assets/GoogleService-Info.plist`** (iOS) and **`assets/google-services.json`** (Android) locally — download from Firebase Console for package **`com.intothepond.app.v3`**. These paths are **gitignored**.
+- **EAS Build:** upload native files as secrets once: **`npm run setup:eas-firebase-files`** (after **`npm run eas:login`**). Each build profile runs **`scripts/write-firebase-native-files.mjs`** before prebuild to decode secrets into **`assets/`**.
+- Config plugin [**`plugins/withFirebaseNativeFiles.js`**](plugins/withFirebaseNativeFiles.js) runs during **`expo prebuild`** when those files exist on disk:
+  - **iOS** (when plist exists): copies **`GoogleService-Info.plist`**, adds **`firebase-ios-sdk`** via **Swift Package Manager** (products **`FirebaseAnalytics`**, **`FirebaseAuth`**, **`FirebaseFirestore`**, **`FirebaseCore`**, **`FirebaseDatabase`**), and calls **`FirebaseApp.configure()`** in **AppDelegate**. React Native / Expo still use CocoaPods — from the **repo root**, run **`cd ios && pod install`** after prebuild (if your shell is already in **`ios/`**, run **`pod install`** only).
+  - **Android** (when **`google-services.json`** exists): copies the JSON, applies the **`google-services`** Gradle plugin, and adds Firebase BoM + **`firebase-analytics`** + **`firebase-database`** (main library; versions pinned by BoM — do not add deprecated **`-ktx`** artifacts).
+- Native SDKs are **optional** for Auth/Firestore/Functions today (those use the JS SDK). Use native wiring for native-only features (native Analytics, future FCM/push). See the **Checklist** under _Firebase native vs JS_ in [`TECH_DEBT.md`](TECH_DEBT.md).
+
+#### Firebase XCFramework zip (optional local reference)
+
+If you downloaded Firebase’s **manual** Apple SDK zip into **`Firebase/`** at the repo root (~1.4GB, SDK **12.15.0** per [`Firebase/METADATA.md`](Firebase/METADATA.md)):
+
+- **Do not** drag those xcframeworks into Xcode for this project — **`expo prebuild`** already links the same products via **SPM** (`FirebaseAnalytics`, `FirebaseAuth`, `FirebaseFirestore`, `FirebaseCore`, `FirebaseDatabase`).
+- Use [`Firebase/README.md`](Firebase/README.md) and [`Firebase/METADATA.md`](Firebase/METADATA.md) only as offline reference (full xcframework dependency lists, manual **-ObjC** / **-lc++** steps) if you ever migrate off SPM.
+- **`Firebase/`** is gitignored; re-download from [Firebase Console](https://console.firebase.google.com/) or Firebase release tooling if you need it on a new machine.
+- **Workflow:** from repo root, `npm run prebuild`; then `cd ios && pod install` (or `pod install` only if your shell is already in **`ios/`**).
+
+#### Firebase Console startup code
+
+Firebase Console may show a **SwiftUI** snippet (`@main struct YourApp` + `@UIApplicationDelegateAdaptor` + `FirebaseApp.configure()`). **Do not paste that into this repo** — this app is **Expo / React Native**, not a pure SwiftUI app.
+
+- **Equivalent:** [`plugins/withFirebaseNativeFiles.js`](plugins/withFirebaseNativeFiles.js) injects `import FirebaseCore` and `FirebaseApp.configure()` at the start of **`didFinishLaunchingWithOptions`** in the generated **AppDelegate** (via Expo’s `withAppDelegate` mod).
+- Re-run **`npm run prebuild`** (or **`prebuild:clean`**) after plugin changes.
+- Verify native wiring: **`npm run verify:firebase-ios-native`** (checks AppDelegate, SPM products including **`FirebaseDatabase`**, Android **`firebase-database`** when present, and no Firebase CocoaPods in the Podfile).
+
+#### Firebase Realtime Database (native + JS)
+
+Realtime Database is **not** Firestore — create it separately in Firebase Console (**Build → Realtime Database → Create database**).
+
+1. Copy the **database URL** (e.g. `https://YOUR_PROJECT-default-rtdb.<region>.firebasedatabase.app`) into root **`.env`** as **`EXPO_PUBLIC_FIREBASE_DATABASE_URL`** (see [`.env.example`](.env.example)).
+2. Re-download **`google-services.json`** / **`GoogleService-Info.plist`** after enabling RTDB if you rely on native config keys (optional for JS-only usage).
+3. From repo root: **`npm run prebuild`** (or **`prebuild:clean`**), then **`cd ios && pod install`**, then **`npm run verify:firebase-ios-native`**.
+
+**JS runtime:** [`src/services/firebase/client.ts`](src/services/firebase/client.ts) exports **`realtimeDb`** via `firebase/database` when **`databaseURL`** is set. **`assertRequiredEnv()`** does not require the URL — the app runs without RTDB until you set it. Helpers live in [`src/services/firebase/realtimeDb.ts`](src/services/firebase/realtimeDb.ts) (`pingRealtimeDb`, future `setPresenceOnline`).
+
+**Native (optional):** iOS SPM product **`FirebaseDatabase`**; Android **`implementation("com.google.firebase:firebase-database")`** under the existing BoM — both applied by [`plugins/withFirebaseNativeFiles.js`](plugins/withFirebaseNativeFiles.js) during prebuild.
+
+**After `.env` is set:**
+
+1. Restart Metro: `npx expo start --dev-client`
+2. Verify env mapping: `npm run verify:firebase-rtdb-env` (add `--smoke` to probe RTDB; permission denied = rules OK)
+3. Deploy rules: `npm run deploy:database-rules` (uses [`database.rules.json`](database.rules.json); run `npx firebase-tools login` first)
+4. EAS builds: `npm run setup:eas-rtdb-env` and `npm run setup:eas-firebase-files` (login first with `npm run eas:login`)
+
+Use-case decision: [`docs/rtdb-use-case.md`](docs/rtdb-use-case.md) — Firestore stays canonical for current features.
 
 ## Version control
 
@@ -40,7 +83,7 @@ This repo uses Git with milestone tag **`foundations-v1`** on the initial founda
 git checkout foundations-v1
 ```
 
-**Push to GitHub** (private repo recommended for Firebase plist / keys in config). Install Apple Git / Xcode CLI tools first so `git` works, then either:
+**Push to GitHub** (private repo recommended). Firebase native plists/json are gitignored — use EAS secrets for cloud builds. Install Apple Git / Xcode CLI tools first so `git` works, then either:
 
 ```bash
 gh repo create into-the-pond-v3 --private --source=. --remote=origin --push
@@ -91,6 +134,7 @@ Expo resolves **[`app.config.js`](app.config.js)** (reads **`app.json`** and mer
 | `app.json` key               | Environment variable (optional override)                            |
 | ---------------------------- | ------------------------------------------------------------------- |
 | Firebase `firebaseApiKey`, … | `EXPO_PUBLIC_FIREBASE_*` (see [.env.example](.env.example))         |
+| `firebaseDatabaseUrl`        | `EXPO_PUBLIC_FIREBASE_DATABASE_URL` (Realtime Database; optional)   |
 | `revenueCatApiKeyApple`      | `REVENUECAT_APPLE_API_KEY`                                          |
 | `revenueCatApiKeyGoogle`     | `REVENUECAT_GOOGLE_API_KEY`                                         |
 | Entitlement identifiers      | `REVENUECAT_ENTITLEMENT_PRO`, `_WOODEN`, `_FIBERGLASS`, `_LIFETIME` |
@@ -98,11 +142,26 @@ Expo resolves **[`app.config.js`](app.config.js)** (reads **`app.json`** and mer
 
 **Local:** copy [.env.example](.env.example) to **`.env`** and fill values (`.env` is gitignored).
 
+**CLI shortcuts (no global install):** `firebase` and `eas` are not on your PATH by default. Use project npm scripts:
+
+| Instead of                                      | Use                                                         |
+| ----------------------------------------------- | ----------------------------------------------------------- |
+| `firebase login`                                | `npm run firebase:login`                                    |
+| `eas login`                                     | `npm run eas:login`                                         |
+| `eas whoami`                                    | `npm run eas:whoami`                                        |
+| `eas build --profile production --platform all` | `npm run eas:build:production`                              |
+| `eas build --profile preview --platform ios`    | `npm run eas:build:preview -- --platform ios`               |
+| `eas build …` (any flags)                       | `npm run eas:build -- --profile development --platform ios` |
+
+Avoid `npm install -g eas-cli` unless you fix npm global permissions — the project already includes `eas-cli` and `firebase-tools` as devDependencies.
+
 **EAS Build:** create secrets so cloud builds receive the same names (example):
 
 ```bash
 eas secret:create --scope project --name REVENUECAT_APPLE_API_KEY --value your_apple_sdk_key --type string
 eas secret:create --scope project --name REVENUECAT_GOOGLE_API_KEY --value your_google_sdk_key --type string
+eas env:create --name EXPO_PUBLIC_FIREBASE_DATABASE_URL --value 'https://YOUR_PROJECT-default-rtdb.REGION.firebasedatabase.app' --environment production --visibility plaintext
+eas env:create --name EXPO_PUBLIC_FIREBASE_DATABASE_URL --value 'https://YOUR_PROJECT-default-rtdb.REGION.firebasedatabase.app' --environment development --visibility plaintext
 ```
 
 See [EAS secrets](https://docs.expo.dev/build-reference/variables/). Do not commit production SDK keys in **`app.json`**.
@@ -173,7 +232,6 @@ into-the-pond-v3/
 │  └─ services/
 │     ├─ firebase/
 │     │  ├─ auth.ts
-│     │  ├─ castClaim.ts
 │     │  ├─ client.ts
 │     │  ├─ entitlements.ts
 │     │  ├─ serverActions.ts
@@ -222,7 +280,7 @@ into-the-pond-v3/
 - `functions/src/index.ts` includes:
   - `verifyPurchase` callable (idempotent purchase sync)
   - `syncSubscriptionStatus` scheduler (every 6 hours)
-  - `castClaim` callable protected by entitlement guard
+  - `claimCast` callable (authoritative fishing rewards; entitlement guard via active rod)
 - Additional server-required write callables:
   - `submitDiaryEntry`
   - `createWellQuestion`

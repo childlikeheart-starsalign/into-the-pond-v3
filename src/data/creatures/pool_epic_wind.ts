@@ -1,0 +1,199 @@
+import type { Creature } from "./types";
+
+export const pool_epic_wind: Creature[] = [
+  {
+    creatureTypeId: "gale-witness",
+    displayName: "Gale Witness",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "4.6",
+    moduleId: 4,
+    visualMetaphor:
+      "A fish that holds perfectly still facing the strongest current — not fighting, witnessing",
+    masteryTip:
+      "Building reflection loops: the gale witness does not run from difficulty. It turns toward it, witnesses it, and stays.",
+    illustrationAssetKey: "epic_wind_gale_witness",
+    netSlotIndex: 126,
+  },
+  {
+    creatureTypeId: "storm-anchor",
+    displayName: "Storm Anchor",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "5.3",
+    moduleId: 5,
+    visualMetaphor: "A deep, dense fish that holds the pond in place when everything else moves",
+    masteryTip:
+      "Independent thinking at depth: the child anchored in their own values does not move when the storm insists they should. You built the anchor.",
+    partnerEcho: "The anchor doesn't stop the storm. It keeps what matters still.",
+    illustrationAssetKey: "epic_wind_storm_anchor",
+    netSlotIndex: 127,
+  },
+  {
+    creatureTypeId: "sky-sovereign",
+    displayName: "Sky Sovereign",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "5.6",
+    moduleId: 5,
+    visualMetaphor: "A vast, ethereal creature whose breathing is the pond's breathing",
+    masteryTip:
+      "Meaning-driven motivation fully integrated: the sky sovereign doesn't pursue meaning. It is the medium through which meaning moves.",
+    partnerEcho: "To move everything, be still at the centre.",
+    illustrationAssetKey: "epic_wind_sky_sovereign",
+    netSlotIndex: 128,
+  },
+  {
+    creatureTypeId: "elder-breath",
+    displayName: "Elder Breath",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "1.2",
+    moduleId: 1,
+    visualMetaphor:
+      "The first breath that was ever breathed into a child — now a creature of vast, gentle power",
+    masteryTip:
+      "The infant brain at depth: the parent who truly understands early development holds a different kind of patience. Not tolerance. Genuine understanding.",
+    illustrationAssetKey: "epic_wind_elder_breath",
+    netSlotIndex: 129,
+  },
+  {
+    creatureTypeId: "word-root",
+    displayName: "Word Root",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "3.5",
+    moduleId: 3,
+    visualMetaphor: "A fish shaped like a tree root, language and growth made aquatic",
+    masteryTip:
+      "Language that builds agency at depth: the words you have given your child are the roots. They hold even when the visible parts sway.",
+    illustrationAssetKey: "epic_wind_word_root",
+    netSlotIndex: 130,
+  },
+  {
+    creatureTypeId: "voice-elder",
+    displayName: "Voice Elder",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "5.2",
+    moduleId: 5,
+    visualMetaphor:
+      "A fish of great age whose passage makes the water carry voices across impossible distances",
+    masteryTip:
+      "The language that shapes identity at depth: the voice elder's words travel further than it knows. So do yours.",
+    partnerEcho: "Your voice is still travelling. Somewhere, it's arriving right now.",
+    illustrationAssetKey: "epic_wind_voice_elder",
+    netSlotIndex: 131,
+  },
+  {
+    creatureTypeId: "fracture-calm",
+    displayName: "Fracture Calm",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "4.1",
+    moduleId: 4,
+    visualMetaphor:
+      "A fish that exists in the fractured silence after a storm — the specific calm after pressure releases",
+    masteryTip:
+      "The hidden cost of praise at depth: the fracture calm shows what remains after the pressure finally lifts. Not damage. Possibility.",
+    illustrationAssetKey: "epic_wind_fracture_calm",
+    netSlotIndex: 132,
+  },
+  {
+    creatureTypeId: "resonance-elder",
+    displayName: "Resonance Elder",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "4.4",
+    moduleId: 4,
+    visualMetaphor:
+      "A creature whose resonance has deepened through years until it now vibrates at the frequency of the pond itself",
+    masteryTip:
+      "Reflection loops at depth: the parent who has sustained them long enough notices the child beginning to maintain their own. The resonance has transferred.",
+    illustrationAssetKey: "epic_wind_resonance_elder",
+    netSlotIndex: 133,
+  },
+  {
+    creatureTypeId: "canopy-sovereign",
+    displayName: "Canopy Sovereign",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "3.9",
+    moduleId: 3,
+    visualMetaphor:
+      "The oldest canopy creature — wide as the whole surface, a living roof for everything below",
+    masteryTip:
+      "Real-life scenarios mastered: the canopy sovereign has learned every weather. It shelters not by avoiding but by covering.",
+    illustrationAssetKey: "epic_wind_canopy_sovereign",
+    netSlotIndex: 134,
+  },
+  {
+    creatureTypeId: "breath-sovereign",
+    displayName: "Breath Sovereign",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "5.7",
+    moduleId: 5,
+    visualMetaphor:
+      "The creature that holds all breath — first breath, last breath, everything between",
+    masteryTip:
+      "Long-term integration of wind: language has become care. Agency has become the air the child breathes. You breathed it first.",
+    illustrationAssetKey: "epic_wind_breath_sovereign",
+    netSlotIndex: 135,
+  },
+  {
+    creatureTypeId: "gust-sovereign",
+    displayName: "Gust Sovereign",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "5.4",
+    moduleId: 5,
+    visualMetaphor:
+      "A vast wind creature that moves the entire depth of the pond with one slow turn",
+    masteryTip:
+      "Emotional stability under uncertainty mastered: the gust sovereign moves the whole pond. Not violently. Completely.",
+    illustrationAssetKey: "epic_wind_gust_sovereign",
+    netSlotIndex: 136,
+  },
+  {
+    creatureTypeId: "deepwind-elder",
+    displayName: "Deepwind Elder",
+    poolTier: "epic",
+    elementType: "wind",
+    rodRequired: "epic3",
+    peakWonderGate: 90,
+    lessonId: "5.1",
+    moduleId: 5,
+    visualMetaphor:
+      "An ancient wind creature at the deepest point — wind that has never touched the surface",
+    masteryTip:
+      "Identity at depth: the child whose identity has been formed with care has wind in their deepest places — untouched by what the surface thinks of them.",
+    partnerEcho: "What is at the deepest place is the realest place.",
+    illustrationAssetKey: "epic_wind_deepwind_elder",
+    netSlotIndex: 137,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+];

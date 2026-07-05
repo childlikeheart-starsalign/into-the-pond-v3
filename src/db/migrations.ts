@@ -1,0 +1,175 @@
+import { createTable, schemaMigrations } from "@nozbe/watermelondb/Schema/migrations";
+
+/**
+ * Incremental local DB upgrades (v1 → v5).
+ * Fresh installs run all steps; Firestore remains source of truth on reset.
+ */
+export const migrations = schemaMigrations({
+  migrations: [
+    {
+      toVersion: 2,
+      steps: [
+        createTable({
+          name: "local_notes",
+          columns: [
+            { name: "title", type: "string" },
+            { name: "body", type: "string" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+        createTable({
+          name: "local_user_profile",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "email", type: "string", isOptional: true },
+            { name: "total_wonder", type: "number" },
+            { name: "current_wonder", type: "number", isOptional: true },
+            { name: "stored_wonder", type: "number", isOptional: true },
+            { name: "lifetime_wonder_earned", type: "number", isOptional: true },
+            { name: "last_reflection_at", type: "number", isOptional: true },
+            { name: "daily_question_count", type: "number" },
+            { name: "fishing_wonder_today", type: "number" },
+            { name: "active_rod", type: "string" },
+            { name: "rod_dullness_count", type: "number" },
+            { name: "is_rod_dull", type: "boolean" },
+            { name: "subscription_product_id", type: "string", isOptional: true },
+            { name: "subscription_expiry_ts", type: "number", isOptional: true },
+            { name: "subscription_is_lifetime", type: "boolean" },
+            { name: "subscription_status", type: "string" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 3,
+      steps: [
+        createTable({
+          name: "local_completed_lessons",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "lesson_id", type: "string", isIndexed: true },
+            { name: "is_completed", type: "boolean" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+        createTable({
+          name: "local_inventory",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "parts", type: "number" },
+            { name: "feather_bait", type: "number" },
+            { name: "scale_bait", type: "number" },
+            { name: "glimmerdust_bait", type: "number" },
+            { name: "random_bait", type: "number" },
+            { name: "feather", type: "number" },
+            { name: "scale", type: "number" },
+            { name: "glimmerdust", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 4,
+      steps: [
+        createTable({
+          name: "local_well_questions",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "question_id", type: "string", isIndexed: true },
+            { name: "question_text", type: "string" },
+            { name: "answer_text", type: "string", isOptional: true },
+            { name: "created_at", type: "number" },
+            { name: "answered_at", type: "number", isOptional: true },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+        createTable({
+          name: "local_lessons",
+          columns: [
+            { name: "lesson_id", type: "string", isIndexed: true },
+            { name: "lesson_order", type: "number" },
+            { name: "module", type: "number" },
+            { name: "title", type: "string" },
+            { name: "content", type: "string" },
+            { name: "video_url", type: "string", isOptional: true },
+            { name: "commitment_message", type: "string", isOptional: true },
+            { name: "diary_prompts_json", type: "string" },
+            { name: "is_placeholder", type: "boolean" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 5,
+      steps: [
+        createTable({
+          name: "local_diary_entries",
+          columns: [
+            { name: "entry_id", type: "string", isIndexed: true },
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "lesson_id", type: "string", isOptional: true },
+            { name: "source", type: "string" },
+            { name: "prompts_json", type: "string" },
+            { name: "answers_json", type: "string" },
+            { name: "status", type: "string" },
+            { name: "wonder_awarded", type: "number" },
+            { name: "plant_stage", type: "number" },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+            { name: "sync_status", type: "string", isIndexed: true },
+          ],
+        }),
+        createTable({
+          name: "local_creatures",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "creature_id", type: "string", isIndexed: true },
+            { name: "name", type: "string" },
+            { name: "rarity", type: "string" },
+            { name: "caught_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+        createTable({
+          name: "local_wonder_transactions",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "transaction_id", type: "string", isIndexed: true },
+            { name: "source", type: "string" },
+            { name: "amount", type: "number" },
+            { name: "metadata_json", type: "string" },
+            { name: "timestamp", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+        createTable({
+          name: "local_practice_completions",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "completion_id", type: "string", isIndexed: true },
+            { name: "kind", type: "string" },
+            { name: "note", type: "string", isOptional: true },
+            { name: "wonder_awarded", type: "number" },
+            { name: "completed_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+        createTable({
+          name: "lesson_access",
+          columns: [
+            { name: "uid", type: "string", isIndexed: true },
+            { name: "lesson_id", type: "string", isIndexed: true },
+            { name: "is_unlocked", type: "boolean" },
+            { name: "is_completed", type: "boolean" },
+            { name: "is_placeholder", type: "boolean" },
+            { name: "requires_paywall", type: "boolean" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
+  ],
+});

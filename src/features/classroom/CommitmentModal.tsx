@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { colors, layout, spacing } from "@/src/constants/theme";
 
 type CommitmentModalProps = {
@@ -33,13 +34,11 @@ export function CommitmentModal({
             This is a placeholder—copy and pacing will match your full commitment gate later.
           </Text>
           <View style={{ gap: spacing.tapGap, marginTop: spacing.inner }}>
-            <Pressable
-              style={layout.btnPrimary}
+            <PrimaryButton
+              label="I am ready"
+              accessibilityLabel="Confirm commitment and start lesson"
               onPress={onConfirm}
-              accessibilityLabel="Confirm and continue"
-            >
-              <Text style={layout.btnPrimaryText}>I am ready</Text>
-            </Pressable>
+            />
             <Pressable style={layout.btnSecondary} onPress={onDismiss} accessibilityLabel="Not now">
               <Text style={layout.btnSecondaryText}>Not now</Text>
             </Pressable>

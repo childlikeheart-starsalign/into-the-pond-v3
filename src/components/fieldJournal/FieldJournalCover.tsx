@@ -1,37 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
-import { AccessibilityInfo, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AccessibilityInfo, Image, Pressable, StyleSheet, View } from "react-native";
 
 import { fieldJournalMedia } from "@/src/features/fieldJournal/fieldJournalMedia";
-import { colors, fontFamilies } from "@/src/constants/theme";
-
-const OPEN_MS = 600;
+import { fieldJournalCoverCroppedImageStyle } from "@/src/features/fieldJournal/fieldJournalLayout";
+import { WellTopBar } from "@/src/features/well/WellTopBar";
 
 type FieldJournalCoverProps = {
-  width: number;
-  height: number;
   isAnimating: boolean;
   onOpenStart: () => void;
   onOpenComplete: () => void;
-  onBackToSanctuary: () => void;
+  onClose: () => void;
 };
 
+/** Cover scene inside the shared 9:16 Portrait916Frame (matches reader phase). */
 export function FieldJournalCover({
-  width,
-  height,
   isAnimating,
   onOpenStart,
   onOpenComplete,
-  onBackToSanctuary,
+  onClose,
 }: FieldJournalCoverProps) {
-  const insets = useSafeAreaInsets();
-  const scale = useSharedValue(1);
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -40,78 +27,54 @@ export function FieldJournalCover({
     return () => sub.remove();
   }, []);
 
-  const finishOpen = useCallback(() => {
-    onOpenComplete();
-  }, [onOpenComplete]);
-
   const handleOpen = useCallback(() => {
     if (isAnimating) return;
     onOpenStart();
-
     if (reduceMotion) {
-      finishOpen();
+      onOpenComplete();
       return;
     }
-
-    scale.value = withTiming(1.02, { duration: OPEN_MS }, (finished) => {
-      if (finished) {
-        runOnJS(finishOpen)();
-      }
-    });
-  }, [finishOpen, isAnimating, onOpenStart, reduceMotion, scale]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+    onOpenComplete();
+  }, [isAnimating, onOpenComplete, onOpenStart, reduceMotion]);
 
   return (
-    <View style={[styles.root, { width, height }]}>
+    <View style={styles.root} collapsable={false}>
+      <Image
+        source={fieldJournalMedia.cover}
+        style={[styles.coverImage, fieldJournalCoverCroppedImageStyle()]}
+        resizeMode="cover"
+        accessibilityIgnoresInvertColors
+      />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Open Sanctuary Field Journal"
         disabled={isAnimating}
         onPress={handleOpen}
-        style={styles.tapArea}
-      >
-        <Animated.View style={[styles.coverWrap, { width, height }, animatedStyle]}>
-          <Image source={fieldJournalMedia.cover} style={{ width, height }} resizeMode="cover" />
-        </Animated.View>
-      </Pressable>
+        style={StyleSheet.absoluteFillObject}
+      />
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Back to Sanctuary"
-        onPress={onBackToSanctuary}
-        disabled={isAnimating}
-        style={[styles.backButton, { top: insets.top + 8 }]}
-      >
-        <Text style={styles.backLabel}>Sanctuary</Text>
-      </Pressable>
+      <View style={styles.topBarWrap} pointerEvents="box-none">
+        <WellTopBar onClose={onClose} closeAccessibilityLabel="Close Journal" />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    backgroundColor: colors.bg,
-  },
-  tapArea: {
     flex: 1,
-  },
-  coverWrap: {
     overflow: "hidden",
   },
-  backButton: {
+  coverImage: {
     position: "absolute",
-    left: 16,
-    minHeight: 48,
-    minWidth: 48,
-    justifyContent: "center",
-    paddingHorizontal: 8,
+    left: 0,
+    right: 0,
   },
-  backLabel: {
-    fontFamily: fontFamilies.bodySemi,
-    fontSize: 14,
-    color: colors.primary,
+  topBarWrap: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
 });

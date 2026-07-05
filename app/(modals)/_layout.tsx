@@ -2,7 +2,7 @@ import { Redirect, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 
 import { routes } from "@/src/navigation/routes";
-import { subscribeToAuthState } from "@/src/services/firebase/auth";
+import { isAnonymousAuthUser, subscribeToAuthState } from "@/src/services/firebase/auth";
 
 export default function ModalsLayout() {
   const [session, setSession] = useState<{ uid: string | null; ready: boolean }>(() => ({
@@ -12,7 +12,8 @@ export default function ModalsLayout() {
 
   useEffect(() => {
     const unsub = subscribeToAuthState((user) => {
-      setSession({ uid: user?.uid ?? null, ready: true });
+      const signedIn = user != null && !isAnonymousAuthUser(user);
+      setSession({ uid: signedIn ? user.uid : null, ready: true });
     });
     return unsub;
   }, []);
@@ -27,8 +28,9 @@ export default function ModalsLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="well" />
+      <Stack.Screen name="child-atlas" />
       <Stack.Screen name="craft" />
+      <Stack.Screen name="practice-moment" />
       <Stack.Screen name="customer-center" />
     </Stack>
   );

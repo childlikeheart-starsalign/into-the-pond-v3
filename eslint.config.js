@@ -4,6 +4,10 @@ const reactPlugin = require("eslint-plugin-react");
 const reactHooksPlugin = require("eslint-plugin-react-hooks");
 const reactNativePlugin = require("eslint-plugin-react-native");
 const prettierConfig = require("eslint-config-prettier");
+const noClientEconomyWrites = require("./eslint-rules/no-client-economy-writes");
+const noClientClaimFormulas = require("./eslint-rules/no-client-claim-formulas");
+const noClientRewardComputation = require("./eslint-rules/no-client-reward-computation");
+const noLegacyCastClaim = require("./eslint-rules/no-legacy-cast-claim");
 
 module.exports = tseslint.config(
   // Base JS recommended rules
@@ -17,6 +21,14 @@ module.exports = tseslint.config(
       react: reactPlugin,
       "react-hooks": reactHooksPlugin,
       "react-native": reactNativePlugin,
+      local: {
+        rules: {
+          "no-client-economy-writes": noClientEconomyWrites,
+          "no-client-claim-formulas": noClientClaimFormulas,
+          "no-client-reward-computation": noClientRewardComputation,
+          "no-legacy-cast-claim": noLegacyCastClaim,
+        },
+      },
     },
 
     languageOptions: {
@@ -58,6 +70,10 @@ module.exports = tseslint.config(
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-require-imports": "off", // Config files use require()
+      "local/no-client-economy-writes": "error",
+      "local/no-client-claim-formulas": "error",
+      "local/no-client-reward-computation": "error",
+      "local/no-legacy-cast-claim": "error",
     },
   },
 
@@ -91,7 +107,9 @@ module.exports = tseslint.config(
       "functions/**",
       "scripts/**",
       "plugins/**",
+      "tests/**",
       "Into-the-pond-v3-save/**",
+      "docs/handoff/**/reference/**",
     ],
   },
 );

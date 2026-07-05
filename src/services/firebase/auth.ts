@@ -1,12 +1,12 @@
 import {
   applyActionCode,
+  checkActionCode,
   confirmPasswordReset,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   reload,
   sendEmailVerification,
   sendPasswordResetEmail,
-  signInAnonymously,
   signInWithEmailAndPassword,
   signOut,
   User,
@@ -14,6 +14,12 @@ import {
 
 import { firebaseAuth } from "@/src/services/firebase/client";
 import { buildAuthActionCodeSettings } from "@/src/services/firebase/authLinks";
+
+function invalidActionCodeError(): Error {
+  const err = new Error("Invalid action code");
+  (err as { code?: string }).code = "auth/invalid-action-code";
+  return err;
+}
 
 export async function signUpWithEmail(email: string, password: string) {
   return createUserWithEmailAndPassword(firebaseAuth, email, password);
@@ -27,8 +33,8 @@ export async function signOutCurrentUser() {
   return signOut(firebaseAuth);
 }
 
-export async function signInAnonymouslyUser() {
-  return signInAnonymously(firebaseAuth);
+export function isAnonymousAuthUser(user: User | null): boolean {
+  return user?.isAnonymous === true;
 }
 
 export function subscribeToAuthState(listener: (user: User | null) => void) {
@@ -41,6 +47,10 @@ export async function sendPasswordReset(email: string) {
 }
 
 export async function confirmNewPassword(oobCode: string, newPassword: string) {
+  const info = await checkActionCode(firebaseAuth, oobCode);
+  if (info.operation !== "PASSWORD_RESET") {
+    throw invalidActionCodeError();
+  }
   await confirmPasswordReset(firebaseAuth, oobCode, newPassword);
 }
 
@@ -57,5 +67,9 @@ export async function reloadCurrentUser() {
 }
 
 export async function applyEmailActionCode(oobCode: string) {
+  const info = await checkActionCode(firebaseAuth, oobCode);
+  if (info.operation !== "VERIFY_EMAIL") {
+    throw invalidActionCodeError();
+  }
   await applyActionCode(firebaseAuth, oobCode);
 }

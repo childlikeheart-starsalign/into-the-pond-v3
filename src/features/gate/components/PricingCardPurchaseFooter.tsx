@@ -5,13 +5,16 @@ import { gateCardText, GATE_CARD_LINE_LIMITS } from "@/src/features/gate/gateCar
 import { translateGateCopy } from "@/src/features/gate/gateCopy";
 import {
   PRICING_CARD_CTA_DOWN_OFFSET,
+  PRICING_CARD_CTA_RIGHT_SHIFT_RATIO,
+  PRICING_CARD_CTA_TEXT_LEFT_SHIFT_RATIO,
   PRICING_CARD_HEIGHT_SPLIT,
   PRICING_CARD_MAX_FONT_SCALE,
   PRICING_CARD_PRICE_LABEL_DOWN_OFFSET,
+  PRICING_CARD_PRICE_TO_CTA_GAP,
   PRICING_CARD_SPACING,
 } from "@/src/features/gate/pricingCardFlexLayout";
 import type { PricingCardViewModel } from "@/src/features/gate/types";
-import { colors, spacing } from "@/src/constants/theme";
+import { spacing } from "@/src/constants/theme";
 import type { LogicalProductId } from "@/src/services/iap/catalog";
 
 type PricingCardPurchaseFooterProps = {
@@ -43,7 +46,6 @@ export function PricingCardPurchaseFooter({
 
   return (
     <View style={styles.footer}>
-      <View style={styles.divider} accessibilityElementsHidden importantForAccessibility="no" />
       <View style={styles.stack}>
         {showUnavailable ? (
           <Text style={gateCardText.body} maxFontSizeMultiplier={PRICING_CARD_MAX_FONT_SCALE}>
@@ -141,7 +143,7 @@ function GateCtaButton({ label, source, busy, accessibilityLabel, onPress }: Gat
     >
       <ImageBackground source={source} style={styles.ctaBackground} resizeMode="stretch">
         <Text
-          style={gateCardText.cta}
+          style={[gateCardText.cta, styles.ctaTextShiftLeft]}
           numberOfLines={1}
           ellipsizeMode="tail"
           maxFontSizeMultiplier={PRICING_CARD_MAX_FONT_SCALE}
@@ -160,12 +162,6 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingTop: PRICING_CARD_SPACING.featuresToFooter,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginBottom: spacing.inner,
-    opacity: 0.85,
-  },
   stack: {
     flex: 1,
     gap: PRICING_CARD_SPACING.monthlyToLifetime,
@@ -173,7 +169,7 @@ const styles = StyleSheet.create({
   },
   option: {
     width: "100%",
-    gap: 4,
+    gap: PRICING_CARD_PRICE_TO_CTA_GAP,
   },
   priceLabelDown: {
     transform: [{ translateY: PRICING_CARD_PRICE_LABEL_DOWN_OFFSET }],
@@ -182,7 +178,8 @@ const styles = StyleSheet.create({
     transform: [{ translateY: PRICING_CARD_CTA_DOWN_OFFSET }],
   },
   ctaPressable: {
-    width: "100%",
+    marginLeft: `${PRICING_CARD_CTA_RIGHT_SHIFT_RATIO * 100}%`,
+    width: `${(1 - PRICING_CARD_CTA_RIGHT_SHIFT_RATIO) * 100}%`,
     minHeight: 48,
   },
   ctaBackground: {
@@ -191,6 +188,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: spacing.inner,
+  },
+  ctaTextShiftLeft: {
+    marginLeft: `${-PRICING_CARD_CTA_TEXT_LEFT_SHIFT_RATIO * 100}%`,
   },
   pressed: {
     opacity: 0.88,

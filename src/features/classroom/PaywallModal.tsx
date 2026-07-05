@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { colors, layout, spacing } from "@/src/constants/theme";
 
 type PaywallModalProps = {
@@ -21,16 +22,14 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             This lesson is part of the full curriculum. Upgrade to unlock every module and lesson.
           </Text>
           <View style={{ gap: spacing.tapGap, marginTop: spacing.inner }}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Upgrade to premium"
-              style={layout.btnPrimary}
+            <PrimaryButton
+              label="Upgrade to Premium"
+              accessibilityLabel="Upgrade to premium to unlock this lesson"
+              variant="recommended"
               onPress={() => {
                 /* ADD PURCHASE LOGIC HERE */
               }}
-            >
-              <Text style={layout.btnPrimaryText}>Upgrade to Premium</Text>
-            </Pressable>
+            />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Close"

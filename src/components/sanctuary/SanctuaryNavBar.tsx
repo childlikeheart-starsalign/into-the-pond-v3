@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { Image, Pressable, StyleSheet, View, type ImageSourcePropType } from "react-native";
 
 import { SANCTUARY_NAV_TABS, type SanctuaryNavTab } from "@/src/constants/sanctuaryAssets";
+import { NAV_ICON_LAYOUT } from "@/src/constants/sanctuaryNavLayout";
 import { routes } from "@/src/navigation/routes";
 
 const TAB_ROUTES = {
@@ -12,17 +13,6 @@ const TAB_ROUTES = {
   store: routes.store,
   gate: routes.gate,
 } as const;
-
-const NAV_ICON_LAYOUT: Record<
-  SanctuaryNavTab["id"],
-  { centerX: `${number}%`; centerBottom: `${number}%` }
-> = {
-  net: { centerX: "21.3%", centerBottom: "4.65%" },
-  classroom: { centerX: "35.3%", centerBottom: "4.65%" },
-  sanctuary: { centerX: "49.9%", centerBottom: "4.65%" },
-  gate: { centerX: "64.7%", centerBottom: "4.65%" },
-  store: { centerX: "77.8%", centerBottom: "4.65%" },
-};
 
 function activeTabFromPath(pathname: string): SanctuaryNavTab["id"] | null {
   if (pathname.includes("/net")) return "net";

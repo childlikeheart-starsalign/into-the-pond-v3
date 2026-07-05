@@ -16,6 +16,8 @@ export default function AuthLayout() {
       <Stack.Screen name="reset-password" />
       <Stack.Screen name="finish-email" />
       <Stack.Screen name="verify-required" />
+      <Stack.Screen name="email-verified" />
+      <Stack.Screen name="deletion-pending" />
     </Stack>
   );
 }

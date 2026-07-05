@@ -1,0 +1,216 @@
+import type { Creature } from "./types";
+
+export const pool_epic_fire: Creature[] = [
+  {
+    creatureTypeId: "magma-elder",
+    displayName: "Magma Elder",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "4.3",
+    moduleId: 4,
+    visualMetaphor:
+      "A vast fish with cracked obsidian scales and deep orange light beneath, slow as continental drift",
+    masteryTip:
+      "How children interpret failure shapes their identity for decades. Your response in the hard moment is the lesson that outlasts the curriculum.",
+    partnerEcho: "Deep things move slowly, but they move surely.",
+    illustrationAssetKey: "epic_fire_magma_elder",
+    netSlotIndex: 100,
+  },
+  {
+    creatureTypeId: "pyrefish",
+    displayName: "Pyrefish",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "4.4",
+    moduleId: 4,
+    visualMetaphor:
+      "A fish that burns from within, leaving the water measurably warmer where it passes",
+    masteryTip:
+      'Building reflection loops changes the temperature of your household. Small, consistent questions: "what did we learn?" "what would we do differently?"',
+    illustrationAssetKey: "epic_fire_pyrefish",
+    netSlotIndex: 101,
+  },
+  {
+    creatureTypeId: "solarfin-sovereign",
+    displayName: "Solarfin Sovereign",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "5.2",
+    moduleId: 5,
+    visualMetaphor:
+      "An enormous creature ringed by orbiting light fragments, older than the garden",
+    masteryTip:
+      "The language that shapes identity is not dramatic. It's the ten thousand ordinary sentences spoken at ordinary moments. These are the rings.",
+    partnerEcho: "The oldest light is the steadiest.",
+    illustrationAssetKey: "epic_fire_solarfin_sovereign",
+    netSlotIndex: 102,
+  },
+  {
+    creatureTypeId: "crucible-fish",
+    displayName: "Crucible Fish",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "3.4",
+    moduleId: 3,
+    visualMetaphor:
+      "A fish shaped exactly like a crucible — a container for intense heat that transforms what is held inside",
+    masteryTip:
+      "The motivation shift happens inside the crucible of genuine challenge. A child who has never struggled has never had the chance to discover what they are made of.",
+    illustrationAssetKey: "epic_fire_crucible_fish",
+    netSlotIndex: 103,
+  },
+  {
+    creatureTypeId: "phoenix-ray",
+    displayName: "Phoenix Ray",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "4.1",
+    moduleId: 4,
+    visualMetaphor: "A flat, manta-shaped fire creature that rises from darkness at the pond floor",
+    masteryTip:
+      "The hidden cost of pressure reveals itself in the teenager who cannot tolerate being wrong. The phoenix ray shows what is possible after the pressure lifts: full emergence.",
+    illustrationAssetKey: "epic_fire_phoenix_ray",
+    netSlotIndex: 104,
+  },
+  {
+    creatureTypeId: "deep-ember",
+    displayName: "Deep Ember",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "3.1",
+    moduleId: 3,
+    visualMetaphor:
+      "An ember that has sunk to the deepest point and still glows, cold water unable to extinguish it",
+    masteryTip:
+      "The cost of praise and pressure: the deep ember is what survives. A child whose inner motivation has been carefully tended cannot be extinguished by outcomes.",
+    illustrationAssetKey: "epic_fire_deep_ember",
+    netSlotIndex: 105,
+  },
+  {
+    creatureTypeId: "furnace-elder",
+    displayName: "Furnace Elder",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "4.2",
+    moduleId: 4,
+    visualMetaphor:
+      "An ancient furnace-shaped fish that creates heat through stillness rather than movement",
+    masteryTip:
+      "How children interpret failure: the furnace elder creates heat by holding, not by burning. Sometimes the most powerful response is simply staying present.",
+    illustrationAssetKey: "epic_fire_furnace_elder",
+    netSlotIndex: 106,
+  },
+  {
+    creatureTypeId: "corona-wraith",
+    displayName: "Corona Wraith",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "5.1",
+    moduleId: 5,
+    visualMetaphor:
+      "A fish surrounded by a permanent corona, like a total solar eclipse made animate",
+    masteryTip:
+      "Identity formation at depth: a child with a secure sense of self has an inner corona. External events cannot eclipse what is established at the centre.",
+    partnerEcho: "What is at the centre holds, even when the light changes.",
+    illustrationAssetKey: "epic_fire_corona_wraith",
+    netSlotIndex: 107,
+  },
+  {
+    creatureTypeId: "inferno-calm",
+    displayName: "Inferno Calm",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "1.6",
+    moduleId: 1,
+    visualMetaphor:
+      "A creature of immense fire energy that moves with absolute, paradoxical stillness",
+    masteryTip:
+      "High-stress scenarios mastered: the parent who has worked through their own regulation carries the paradox — full capacity for intensity, full choice about how to move.",
+    illustrationAssetKey: "epic_fire_inferno_calm",
+    netSlotIndex: 108,
+  },
+  {
+    creatureTypeId: "forge-sovereign",
+    displayName: "Forge Sovereign",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "5.5",
+    moduleId: 5,
+    visualMetaphor:
+      "The master of the forge — a fish that creates, rather than reflects, its environment",
+    masteryTip:
+      "Meaning-driven motivation at its fullest: the child who has found their forge shapes their world rather than being shaped by it.",
+    illustrationAssetKey: "epic_fire_forge_sovereign",
+    netSlotIndex: 109,
+  },
+  {
+    creatureTypeId: "stellar-drifter",
+    displayName: "Stellar Drifter",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "3.9",
+    moduleId: 3,
+    visualMetaphor:
+      "A vast, slow fire creature that drifts with the gravity of stars, leaving warmth everywhere",
+    masteryTip:
+      "Real-life scenarios at depth: you have rehearsed enough now that the warmth is automatic. The stellar drifter doesn't try to be warm. It just is.",
+    illustrationAssetKey: "epic_fire_stellar_drifter",
+    netSlotIndex: 110,
+  },
+  {
+    creatureTypeId: "radiance-keeper",
+    displayName: "Radiance Keeper",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "5.3",
+    moduleId: 5,
+    visualMetaphor: "A fish that stores light from the surface and releases it slowly in darkness",
+    masteryTip:
+      "Emotional stability under uncertainty: the radiance keeper stores light in good times and releases it when darkness comes. The practice builds the reservoir.",
+    illustrationAssetKey: "epic_fire_radiance_keeper",
+    netSlotIndex: 111,
+  },
+  {
+    creatureTypeId: "prime-flame",
+    displayName: "Prime Flame",
+    poolTier: "epic",
+    elementType: "fire",
+    rodRequired: "epic1",
+    peakWonderGate: 90,
+    lessonId: "5.7",
+    moduleId: 5,
+    visualMetaphor:
+      "The oldest fire creature in the pond — a flame so old it has become cool light",
+    masteryTip:
+      "Long-term integration of fire: the parent who has fully integrated regulation no longer has to manage their emotions. They have become them.",
+    partnerEcho: "Old enough to be cool. Steady enough to be trusted.",
+    illustrationAssetKey: "epic_fire_prime_flame",
+    netSlotIndex: 112,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+];

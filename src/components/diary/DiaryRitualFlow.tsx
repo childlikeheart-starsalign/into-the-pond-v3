@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ArrivalPondRipple } from "@/src/components/diary/ArrivalPondRipple";
+import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { DiaryPromptMultiselect } from "@/src/components/diary/DiaryPromptMultiselect";
 import { DiaryPromptSlider } from "@/src/components/diary/DiaryPromptSlider";
 import { DiaryShortText } from "@/src/components/diary/DiaryShortText";
@@ -36,6 +37,7 @@ import type {
   SelfCheckRitualStep,
 } from "@/src/features/diary/types";
 import { useRitualAmbientSound } from "@/src/hooks/useRitualAmbientSound";
+import { Sentry } from "@/src/services/sentry/init";
 
 const DEFAULT_STEP_ORDER: SelfCheckRitualStep[] = [
   "arrival",
@@ -467,6 +469,9 @@ export function DiaryRitualFlow({
         await onComplete(responses);
       } catch (error) {
         console.warn("[DiaryRitualFlow] completion failed", error);
+        Sentry.captureException(error, {
+          tags: { area: "diary", flow: "ritual_completion" },
+        });
       }
       return;
     }
@@ -1103,26 +1108,16 @@ export function DiaryRitualFlow({
 
       {showFooter ? (
         <View style={[styles.footer, { paddingBottom: Math.max(spacing.inner, insets.bottom) }]}>
-          <Pressable
-            accessibilityRole="button"
+          <PrimaryButton
+            label={continueLabel}
             accessibilityLabel={continueLabel}
-            accessibilityState={{ disabled: !canContinue || isPlanting }}
-            style={[
-              layout.btnPrimary,
-              styles.continueButton,
-              (!canContinue || isPlanting) && styles.disabled,
-            ]}
             disabled={!canContinue || isPlanting}
+            busy={isPlanting}
+            style={styles.continueButton}
             onPress={() => {
               void handleContinue();
             }}
-          >
-            {isPlanting ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={layout.btnPrimaryText}>{continueLabel}</Text>
-            )}
-          </Pressable>
+          />
         </View>
       ) : null}
     </View>

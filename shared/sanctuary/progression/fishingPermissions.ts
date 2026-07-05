@@ -1,0 +1,30 @@
+import type { ElementType, FishingRodId, PoolTier } from "../types";
+
+export type RodFishingPermission = {
+  elements: readonly ElementType[];
+  maxTier: PoolTier;
+};
+
+/**
+ * Which creature pools a domain rod may access at claim time.
+ * Wonder gate at claim is unchanged — this layer filters eligible creatures only.
+ */
+export const ROD_FISHING_PERMISSIONS: Record<FishingRodId, RodFishingPermission> = {
+  basic: { elements: ["any"], maxTier: "common" },
+  rare_fire: { elements: ["fire"], maxTier: "rare" },
+  rare_water: { elements: ["water"], maxTier: "rare" },
+  rare_wind: { elements: ["wind"], maxTier: "rare" },
+  rare_electric: { elements: ["electric"], maxTier: "rare" },
+  rare_wildcard: {
+    elements: ["water", "wind", "fire", "electric"],
+    maxTier: "rare",
+  },
+  epic_fire: { elements: ["fire"], maxTier: "epic" },
+  epic_water: { elements: ["water"], maxTier: "epic" },
+  epic_wind: { elements: ["wind"], maxTier: "epic" },
+  epic_electric: { elements: ["electric"], maxTier: "epic" },
+};
+
+export function fishingPermissionForRod(rodId: FishingRodId): RodFishingPermission {
+  return ROD_FISHING_PERMISSIONS[rodId];
+}

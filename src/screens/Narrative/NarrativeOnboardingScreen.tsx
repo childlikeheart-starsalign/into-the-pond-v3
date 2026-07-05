@@ -3,6 +3,7 @@ import { View } from "react-native";
 
 import { useNarrativeOnboarding } from "@/src/hooks/useNarrativeOnboarding";
 import { ArchetypeSelector } from "./ArchetypeSelector";
+import { ChildBirthDateStep } from "./ChildBirthDateStep";
 import { OnboardingFlowCoordinator } from "./OnboardingFlowCoordinator";
 
 type NarrativeOnboardingScreenProps = {
@@ -15,11 +16,20 @@ type NarrativeOnboardingScreenProps = {
  *
  * Render order:
  *   1. ArchetypeSelector — if no archetype has been chosen yet
- *   2. OnboardingFlowCoordinator — routes through Scenes 1–6
+ *   2. ChildBirthDateStep — if archetype set but birth date missing
+ *   3. OnboardingFlowCoordinator — routes through Scenes 1–6
  */
 export function NarrativeOnboardingScreen({ onComplete }: NarrativeOnboardingScreenProps) {
-  const { ready, needsArchetype, state, selectArchetype, setCurrentScene, completeNarrative } =
-    useNarrativeOnboarding();
+  const {
+    ready,
+    needsArchetype,
+    needsBirthDate,
+    state,
+    selectArchetype,
+    setChildBirthDate,
+    setCurrentScene,
+    completeNarrative,
+  } = useNarrativeOnboarding();
 
   const handleComplete = useCallback(async () => {
     await completeNarrative();
@@ -27,8 +37,6 @@ export function NarrativeOnboardingScreen({ onComplete }: NarrativeOnboardingScr
   }, [completeNarrative, onComplete]);
 
   if (!ready) {
-    // The route-level guard in _layout.tsx already gates on auth; here we just
-    // return nothing while the async load resolves (usually < 50 ms).
     return <View style={{ flex: 1 }} />;
   }
 
@@ -36,6 +44,14 @@ export function NarrativeOnboardingScreen({ onComplete }: NarrativeOnboardingScr
     return (
       <View style={{ flex: 1 }}>
         <ArchetypeSelector onSelect={selectArchetype} />
+      </View>
+    );
+  }
+
+  if (needsBirthDate) {
+    return (
+      <View style={{ flex: 1 }}>
+        <ChildBirthDateStep onSubmit={setChildBirthDate} />
       </View>
     );
   }

@@ -5,6 +5,7 @@ import {
   NarrativeOnboardingState,
   SceneNumber,
 } from "@/src/constants/narrative/types";
+import { persistChildBirthMonthYear } from "@/src/hooks/useChildBirthDate";
 import {
   clearNarrativeStateOverride,
   getNarrativeOnboardingState,
@@ -13,6 +14,7 @@ import {
   markNarrativeComplete,
   resetNarrativeOnboarding,
   setChildArchetype,
+  setChildBirthDate as setChildBirthDateStorage,
   setNarrativeCurrentScene,
   subscribeNarrativeOnboardingReset,
   syncNarrativeFromFirestore,
@@ -22,6 +24,7 @@ import { firebaseAuth } from "@/src/services/firebase/client";
 
 const DEFAULT_STATE: NarrativeOnboardingState = {
   childArchetype: null,
+  childBirthDate: null,
   hasCompletedDay1Narrative: false,
   currentScene: 1,
   startedAtIso: null,
@@ -29,33 +32,24 @@ const DEFAULT_STATE: NarrativeOnboardingState = {
 };
 
 type UseNarrativeOnboardingReturn = {
-  /** True once the initial async load is done. */
   ready: boolean;
-  /** Authenticated user has no archetype stored — show the picker first. */
   needsArchetype: boolean;
-  /** Archetype is set but Day 1 narrative not yet completed. */
+  needsBirthDate: boolean;
   needsNarrative: boolean;
   state: NarrativeOnboardingState;
   selectArchetype: (archetype: ChildArchetype) => Promise<void>;
+  setChildBirthDate: (month: number, year: number) => Promise<void>;
   setCurrentScene: (scene: SceneNumber) => Promise<void>;
   completeNarrative: () => Promise<void>;
   resetNarrative: () => Promise<void>;
-  /** Hydrate from a remote user profile snapshot (Firestore). */
   hydrateFromRemote: (data: {
     childArchetype?: ChildArchetype | null;
+    childBirthDate?: string | null;
     hasCompletedDay1Narrative?: boolean;
     narrativeProgress?: { currentScene?: number; completedAt?: string };
   }) => void;
 };
 
-/**
- * Orchestrates loading, gating, and persisting the Day 1 narrative onboarding.
- *
- * Mount-time sequence:
- * 1. Check AsyncStorage fast-path cache (avoids Firestore hit for returning users).
- * 2. If not cached, cross-check Firestore (handles device switching).
- * 3. Load full local state for in-progress users.
- */
 export function useNarrativeOnboarding(): UseNarrativeOnboardingReturn {
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<NarrativeOnboardingState>(DEFAULT_STATE);
@@ -71,35 +65,35 @@ export function useNarrativeOnboarding(): UseNarrativeOnboardingReturn {
           return;
         }
 
-        // 1. Fast path: already marked complete locally
         const cached = await isNarrativeCompleteCached();
         if (cached) {
           if (alive) setState((prev) => ({ ...prev, hasCompletedDay1Narrative: true }));
           return;
         }
 
-        // 2. Cross-device: Firestore check
         const uid = firebaseAuth.currentUser?.uid;
         if (uid) {
-          const { hasCompleted, childArchetype: remoteArchetype } =
-            await syncNarrativeFromFirestore(uid);
+          const {
+            hasCompleted,
+            childArchetype: remoteArchetype,
+            childBirthDate: remoteBirthDate,
+          } = await syncNarrativeFromFirestore(uid);
           if (hasCompleted) {
-            // Cache the result so we skip this check on subsequent launches
             await markNarrativeComplete();
             if (alive) setState((prev) => ({ ...prev, hasCompletedDay1Narrative: true }));
             return;
           }
-          // If Firestore has an archetype but local doesn't, pick it up
           if (remoteArchetype) {
             await setChildArchetype(remoteArchetype);
           }
+          if (remoteBirthDate) {
+            await setChildBirthDateStorage(remoteBirthDate);
+          }
         }
 
-        // 3. Load full local state
         const localState = await getNarrativeOnboardingState();
         if (alive) setState(localState);
       } catch {
-        // On any error, keep defaults — user will see the picker/flow from scratch
         const localState = await getNarrativeOnboardingState().catch(() => DEFAULT_STATE);
         if (alive) setState(localState);
       } finally {
@@ -130,6 +124,15 @@ export function useNarrativeOnboarding(): UseNarrativeOnboardingReturn {
     if (uid) {
       await syncNarrativeToFirestore(uid, { childArchetype: archetype });
     }
+  }, []);
+
+  const setChildBirthDate = useCallback(async (month: number, year: number) => {
+    clearNarrativeStateOverride();
+    const result = await persistChildBirthMonthYear(month, year);
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
+    setState((prev) => ({ ...prev, childBirthDate: result.isoDate }));
   }, []);
 
   const handleSetCurrentScene = useCallback(async (scene: SceneNumber) => {
@@ -176,6 +179,7 @@ export function useNarrativeOnboarding(): UseNarrativeOnboardingReturn {
   const hydrateFromRemote = useCallback(
     (data: {
       childArchetype?: ChildArchetype | null;
+      childBirthDate?: string | null;
       hasCompletedDay1Narrative?: boolean;
       narrativeProgress?: { currentScene?: number; completedAt?: string };
     }) => {
@@ -183,6 +187,9 @@ export function useNarrativeOnboarding(): UseNarrativeOnboardingReturn {
         const next: NarrativeOnboardingState = { ...prev };
         if (data.childArchetype != null) {
           next.childArchetype = data.childArchetype;
+        }
+        if (data.childBirthDate != null) {
+          next.childBirthDate = data.childBirthDate;
         }
         if (data.hasCompletedDay1Narrative === true) {
           next.hasCompletedDay1Narrative = true;
@@ -195,23 +202,36 @@ export function useNarrativeOnboarding(): UseNarrativeOnboardingReturn {
         }
         return next;
       });
+
+      void (async () => {
+        if (data.childBirthDate) {
+          const local = await getNarrativeOnboardingState();
+          if (!local.childBirthDate) {
+            await setChildBirthDateStorage(data.childBirthDate);
+          }
+        }
+      })();
     },
     [],
   );
 
   const effectiveState = getNarrativeStateOverride() ?? state;
+  const completed = effectiveState.hasCompletedDay1Narrative;
 
-  const needsArchetype =
-    ready && !effectiveState.hasCompletedDay1Narrative && !effectiveState.childArchetype;
+  const needsArchetype = ready && !completed && !effectiveState.childArchetype;
+  const needsBirthDate =
+    ready && !completed && !!effectiveState.childArchetype && !effectiveState.childBirthDate;
   const needsNarrative =
-    ready && !effectiveState.hasCompletedDay1Narrative && !!effectiveState.childArchetype;
+    ready && !completed && !!effectiveState.childArchetype && !!effectiveState.childBirthDate;
 
   return {
     ready,
     needsArchetype,
+    needsBirthDate,
     needsNarrative,
-    state,
+    state: effectiveState,
     selectArchetype,
+    setChildBirthDate,
     setCurrentScene: handleSetCurrentScene,
     completeNarrative,
     resetNarrative,

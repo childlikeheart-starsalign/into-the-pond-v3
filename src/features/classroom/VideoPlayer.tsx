@@ -1,13 +1,13 @@
 import { ResizeMode, Video } from "expo-av";
 import type { AVPlaybackStatus, Video as VideoType } from "expo-av";
 import { StatusBar } from "expo-status-bar";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { colors, fontFamilies, layout, spacing } from "@/src/constants/theme";
 import type { VideoPlayerPayload } from "@/src/features/classroom/types";
-import { firebaseAuth, firestore } from "@/src/services/firebase/client";
+import { firebaseAuth } from "@/src/services/firebase/client";
 
 type VideoPlayerProps = {
   video: VideoPlayerPayload;
@@ -23,12 +23,6 @@ function formatTime(millis: number) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
-function timeout(ms: number) {
-  return new Promise<"timeout">((resolve) => {
-    setTimeout(() => resolve("timeout"), ms);
-  });
 }
 
 /** Full-screen lesson video player. Completion is based on playback progress, not didJustFinish. */
@@ -146,35 +140,7 @@ export function VideoPlayerModal({ video, onClose, onContinueToReflection }: Vid
     setIsSavingCompletion(true);
     setSaveError(null);
 
-    const saveProgress = Promise.all([
-      setDoc(
-        doc(firestore, "users", uid, "lessonProgress", lesson.id),
-        {
-          watchedAt: serverTimestamp(),
-          diaryEntryId: null,
-        },
-        { merge: true },
-      ),
-      setDoc(
-        doc(firestore, "users", uid),
-        {
-          completedLessons: {
-            [lesson.id]: true,
-          },
-        },
-        { merge: true },
-      ),
-    ]);
-
-    saveProgress.catch((error) => {
-      console.warn("[VideoPlayer] failed to save lesson progress", error);
-    });
-
-    const result = await Promise.race([saveProgress.then(() => "saved" as const), timeout(1200)]);
-    if (result === "timeout") {
-      console.warn("[VideoPlayer] progress save is still pending; continuing to diary");
-    }
-
+    // Lesson progress is written server-side via completeLessonReflection.
     setIsSavingCompletion(false);
     onClose();
     setTimeout(() => {
@@ -240,17 +206,14 @@ export function VideoPlayerModal({ video, onClose, onContinueToReflection }: Vid
 
         {continueVisible ? (
           <Animated.View style={[styles.continueWrap, { opacity: continueOpacity }]}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Continue to reflection"
-              style={[layout.btnPrimary, styles.continueButton]}
-              onPress={handleContinue}
+            <PrimaryButton
+              label={isSavingCompletion ? "Saving..." : "Continue to reflection"}
+              accessibilityLabel="Continue to lesson reflection"
               disabled={isSavingCompletion}
-            >
-              <Text style={layout.btnPrimaryText}>
-                {isSavingCompletion ? "Saving..." : "Continue to reflection"}
-              </Text>
-            </Pressable>
+              busy={isSavingCompletion}
+              style={styles.continueButton}
+              onPress={handleContinue}
+            />
             {saveError ? <Text style={styles.saveError}>{saveError}</Text> : null}
           </Animated.View>
         ) : null}
@@ -271,14 +234,11 @@ export function VideoPlayerModal({ video, onClose, onContinueToReflection }: Vid
                 >
                   <Text style={layout.btnSecondaryText}>Stay</Text>
                 </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Leave lesson"
-                  style={layout.btnPrimary}
+                <PrimaryButton
+                  label="Leave"
+                  accessibilityLabel="Leave lesson without completing"
                   onPress={handleLeave}
-                >
-                  <Text style={layout.btnPrimaryText}>Leave</Text>
-                </Pressable>
+                />
               </View>
             </View>
           </View>

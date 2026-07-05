@@ -10,10 +10,27 @@ import { LocalLesson } from "@/src/db/models/LocalLesson";
 import { LocalNote } from "@/src/db/models/LocalNote";
 import { LocalUserProfile } from "@/src/db/models/LocalUserProfile";
 import { LocalWellQuestion } from "@/src/db/models/LocalWellQuestion";
+import { migrations } from "@/src/db/migrations";
 import { schema } from "@/src/db/schema";
+import { Sentry } from "@/src/services/sentry/init";
 
 const adapter = new SQLiteAdapter({
   schema,
+  migrations,
+  onSetUpError: (error) => {
+    console.warn("[db] setup failed, resetting local cache", error);
+    Sentry.captureException(error, {
+      tags: { area: "db_sync", flow: "setup" },
+    });
+    adapter.unsafeResetDatabase((result) => {
+      if ("error" in result && result.error) {
+        console.warn("[db] reset failed", result.error);
+        Sentry.captureException(result.error, {
+          tags: { area: "db_sync", flow: "reset" },
+        });
+      }
+    });
+  },
 });
 
 /**

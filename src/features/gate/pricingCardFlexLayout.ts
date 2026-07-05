@@ -4,12 +4,12 @@
  * Hierarchy:
  * PricingCard
  * ├─ BadgeRow (ribbon / wax seal — decorative, flex-aligned)
- * ├─ ContentArea (~72% height)
+ * ├─ ContentArea (~45% height)
  * │  ├─ TopSection (row)
  * │  │  ├─ Illustration
  * │  │  └─ HeaderBlock (title + description + lesson range)
  * │  └─ FeaturesSection (full card width)
- * └─ PurchaseFooter (~28% height)
+ * └─ PurchaseFooter (~55% height)
  *    ├─ Divider
  *    └─ PurchaseStack
  *       ├─ Monthly Price → Monthly CTA
@@ -18,8 +18,8 @@
 
 /** Content vs purchase footer height split (flex weights). */
 export const PRICING_CARD_HEIGHT_SPLIT = {
-  content: 72,
-  footer: 28,
+  content: 45,
+  footer: 55,
 } as const;
 
 /** Horizontal inset to keep copy off deckled card edges. */
@@ -62,7 +62,16 @@ export const FIBERGLASS_ROD_TEXT_UP_OFFSET = 12;
 export const LIFETIME_ACCESS_TITLE_DOWN_OFFSET = 6;
 
 /** All pricing cards — purchase footer price label nudge downward (px). */
-export const PRICING_CARD_PRICE_LABEL_DOWN_OFFSET = 50;
+export const PRICING_CARD_PRICE_LABEL_DOWN_OFFSET = 85;
 
 /** All pricing cards — purchase CTA button nudge downward (px). */
-export const PRICING_CARD_CTA_DOWN_OFFSET = 40;
+export const PRICING_CARD_CTA_DOWN_OFFSET = 24;
+
+/** Vertical gap between HKD price line and Choose button (px). */
+export const PRICING_CARD_PRICE_TO_CTA_GAP = 10;
+
+/** All pricing cards — purchase CTA button shift right (fraction of footer width). */
+export const PRICING_CARD_CTA_RIGHT_SHIFT_RATIO = 0.08;
+
+/** All pricing cards — "Choose" label shift left within the CTA (fraction of button width). */
+export const PRICING_CARD_CTA_TEXT_LEFT_SHIFT_RATIO = 0.1;

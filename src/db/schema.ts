@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 4,
+  version: 5,
   tables: [
     tableSchema({
       name: "local_notes",
@@ -17,6 +17,10 @@ export const schema = appSchema({
         { name: "uid", type: "string", isIndexed: true },
         { name: "email", type: "string", isOptional: true },
         { name: "total_wonder", type: "number" },
+        { name: "current_wonder", type: "number", isOptional: true },
+        { name: "stored_wonder", type: "number", isOptional: true },
+        { name: "lifetime_wonder_earned", type: "number", isOptional: true },
+        { name: "last_reflection_at", type: "number", isOptional: true },
         { name: "daily_question_count", type: "number" },
         { name: "fishing_wonder_today", type: "number" },
         { name: "active_rod", type: "string" },
@@ -105,6 +109,30 @@ export const schema = appSchema({
         { name: "name", type: "string" },
         { name: "rarity", type: "string" },
         { name: "caught_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "local_wonder_transactions",
+      columns: [
+        { name: "uid", type: "string", isIndexed: true },
+        { name: "transaction_id", type: "string", isIndexed: true },
+        { name: "source", type: "string" },
+        { name: "amount", type: "number" },
+        { name: "metadata_json", type: "string" },
+        { name: "timestamp", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "local_practice_completions",
+      columns: [
+        { name: "uid", type: "string", isIndexed: true },
+        { name: "completion_id", type: "string", isIndexed: true },
+        { name: "kind", type: "string" },
+        { name: "note", type: "string", isOptional: true },
+        { name: "wonder_awarded", type: "number" },
+        { name: "completed_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],
     }),

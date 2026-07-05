@@ -1,14 +1,14 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 
-const LOCK_ASSET = require("@/assets/Fishing/lock_heart.png");
+const LOCK_ASSET = require("@/assets/Fishing/fishing_lock.png");
 
 type LockOverlayProps = {
   size?: number;
   opacity?: number;
 };
 
-export function LockOverlay({ size = 52, opacity = 0.72 }: LockOverlayProps) {
-  const imageSize = size * 0.62;
+export function LockOverlay({ size = 52, opacity = 0.85 }: LockOverlayProps) {
+  const imageSize = size * 0.75;
 
   return (
     <View style={styles.overlay} pointerEvents="none">

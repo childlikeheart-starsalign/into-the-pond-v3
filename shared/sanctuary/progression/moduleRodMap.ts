@@ -1,0 +1,91 @@
+import type { FishingRodId } from "../types";
+import type { ModuleRodAssignment } from "./types";
+
+/** Lesson IDs aligned with `src/features/classroom/lessonCatalog.ts`. */
+export const MODULE_LESSON_IDS: Record<number, readonly string[]> = {
+  1: ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6"],
+  2: ["2.1", "2.2", "2.3", "2.4", "2.5", "2.6"],
+  3: ["3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7"],
+  4: ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6"],
+  5: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6"],
+} as const;
+
+export const ALL_LESSON_IDS: readonly string[] = Object.values(MODULE_LESSON_IDS).flat();
+
+export const TOTAL_LESSON_COUNT = ALL_LESSON_IDS.length;
+
+export const MODULE_ROD_ASSIGNMENTS: readonly ModuleRodAssignment[] = [
+  {
+    moduleId: 1,
+    rodId: "rare_fire",
+    element: "fire",
+    theme: "Regulate emotions together",
+    clusterLessonIds: MODULE_LESSON_IDS[1],
+  },
+  {
+    moduleId: 2,
+    rodId: "rare_water",
+    element: "water",
+    theme: "Cooperate and set limits with connection",
+    clusterLessonIds: MODULE_LESSON_IDS[2],
+  },
+  {
+    moduleId: 3,
+    rodId: "rare_wind",
+    element: "wind",
+    theme: "Support intrinsic motivation",
+    clusterLessonIds: MODULE_LESSON_IDS[3],
+  },
+  {
+    moduleId: 4,
+    rodId: "rare_electric",
+    element: "electric",
+    theme: "Grow through failure and discomfort",
+    clusterLessonIds: MODULE_LESSON_IDS[4],
+  },
+] as const;
+
+export const RARE_ELEMENT_ROD_IDS: readonly FishingRodId[] = [
+  "rare_fire",
+  "rare_water",
+  "rare_wind",
+  "rare_electric",
+];
+
+export const EPIC_ELEMENT_ROD_IDS: readonly FishingRodId[] = [
+  "epic_fire",
+  "epic_water",
+  "epic_wind",
+  "epic_electric",
+];
+
+export const WILDCARD_ROD_ID = "rare_wildcard" as const;
+
+const ROD_TO_MODULE = new Map<FishingRodId, number>(
+  MODULE_ROD_ASSIGNMENTS.map((assignment) => [assignment.rodId, assignment.moduleId]),
+);
+
+const EPIC_TO_RARE: Record<string, FishingRodId> = {
+  epic_fire: "rare_fire",
+  epic_water: "rare_water",
+  epic_wind: "rare_wind",
+  epic_electric: "rare_electric",
+};
+
+export function moduleIdForRareRod(rodId: FishingRodId): number | null {
+  return ROD_TO_MODULE.get(rodId) ?? null;
+}
+
+export function rareRodForEpic(rodId: FishingRodId): FishingRodId | null {
+  return EPIC_TO_RARE[rodId] ?? null;
+}
+
+export function clusterLessonIdsForRod(rodId: FishingRodId): readonly string[] {
+  const moduleId = moduleIdForRareRod(rodId);
+  if (moduleId == null) return [];
+  return MODULE_LESSON_IDS[moduleId] ?? [];
+}
+
+export function assignmentForRareRod(rodId: FishingRodId): ModuleRodAssignment | null {
+  return MODULE_ROD_ASSIGNMENTS.find((row) => row.rodId === rodId) ?? null;
+}

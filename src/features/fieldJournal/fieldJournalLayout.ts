@@ -1,8 +1,42 @@
 import type { BreathingHotspot } from "@/src/features/fieldJournal/types";
+import { SANCTUARY_TAB_BAR_STRIP_HEIGHT_RATIO } from "@/src/constants/sanctuaryNavLayout";
+import type { ImageStyle } from "react-native";
 
 /** Canonical journal spread artboard — all reader PNGs target this size. */
 export const FIELD_JOURNAL_REFERENCE_WIDTH = 576;
 export const FIELD_JOURNAL_REFERENCE_HEIGHT = 1024;
+
+/**
+ * Vertical crop on journal-landing.png — hides bottom parchment tab strip when
+ * the cover is framed in Portrait916Frame (matches Classroom open crop pattern).
+ */
+export const FIELD_JOURNAL_COVER_CONTENT_CROP = {
+  top: 0,
+  bottom: SANCTUARY_TAB_BAR_STRIP_HEIGHT_RATIO,
+} as const;
+
+/** Nudge cover art upward inside the 9:16 frame (fraction of frame height). */
+export const FIELD_JOURNAL_COVER_VERTICAL_SHIFT = 0.2;
+
+export function fieldJournalCoverVisibleHeightFraction(
+  crop: typeof FIELD_JOURNAL_COVER_CONTENT_CROP = FIELD_JOURNAL_COVER_CONTENT_CROP,
+): number {
+  return 1 - crop.top - crop.bottom;
+}
+
+/** Percent-based layout for vertically cropping journal-landing.png at runtime. */
+export function fieldJournalCoverCroppedImageStyle(
+  crop: typeof FIELD_JOURNAL_COVER_CONTENT_CROP = FIELD_JOURNAL_COVER_CONTENT_CROP,
+  verticalShift: number = FIELD_JOURNAL_COVER_VERTICAL_SHIFT,
+): Pick<ImageStyle, "width" | "height" | "top"> {
+  const visibleH = fieldJournalCoverVisibleHeightFraction(crop);
+  const baseTopPct = (-crop.top / visibleH) * 100;
+  return {
+    width: "100%",
+    height: `${(100 / visibleH).toFixed(4)}%`,
+    top: `${(baseTopPct - verticalShift * 100).toFixed(4)}%`,
+  };
+}
 
 /** Default journal spread layout — cover fit within Portrait916Frame (see fitContainRect). */
 export const JOURNAL_SPREAD_LAYOUT = {

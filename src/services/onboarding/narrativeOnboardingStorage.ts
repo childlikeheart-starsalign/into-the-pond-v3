@@ -13,6 +13,7 @@ const COMPLETE_CACHE_KEY = "@itp/narrative-onboarding-complete-v1";
 
 const DEFAULT_STATE: NarrativeOnboardingState = {
   childArchetype: null,
+  childBirthDate: null,
   hasCompletedDay1Narrative: false,
   currentScene: 1,
   startedAtIso: null,
@@ -35,14 +36,21 @@ export function clearNarrativeStateOverride(): void {
 
 export function getSyncNarrativeNeeds(): {
   needsArchetype: boolean;
+  needsBirthDate: boolean;
   needsNarrative: boolean;
 } | null {
   if (!narrativeStateOverride) return null;
+  const completed = narrativeStateOverride.hasCompletedDay1Narrative;
   return {
-    needsArchetype:
-      !narrativeStateOverride.hasCompletedDay1Narrative && !narrativeStateOverride.childArchetype,
+    needsArchetype: !completed && !narrativeStateOverride.childArchetype,
+    needsBirthDate:
+      !completed &&
+      !!narrativeStateOverride.childArchetype &&
+      !narrativeStateOverride.childBirthDate,
     needsNarrative:
-      !narrativeStateOverride.hasCompletedDay1Narrative && !!narrativeStateOverride.childArchetype,
+      !completed &&
+      !!narrativeStateOverride.childArchetype &&
+      !!narrativeStateOverride.childBirthDate,
   };
 }
 
@@ -65,6 +73,7 @@ export async function getNarrativeOnboardingState(): Promise<NarrativeOnboarding
     const parsed = JSON.parse(raw) as Partial<NarrativeOnboardingState>;
     return {
       childArchetype: parsed.childArchetype ?? null,
+      childBirthDate: parsed.childBirthDate ?? null,
       hasCompletedDay1Narrative: Boolean(parsed.hasCompletedDay1Narrative),
       currentScene: (parsed.currentScene as SceneNumber) ?? 1,
       startedAtIso: parsed.startedAtIso ?? null,
@@ -95,6 +104,16 @@ export async function setChildArchetype(archetype: ChildArchetype): Promise<void
   const next: NarrativeOnboardingState = {
     ...current,
     childArchetype: archetype,
+    startedAtIso: current.startedAtIso ?? new Date().toISOString(),
+  };
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+}
+
+export async function setChildBirthDate(isoDate: string): Promise<void> {
+  const current = await getNarrativeOnboardingState();
+  const next: NarrativeOnboardingState = {
+    ...current,
+    childBirthDate: isoDate,
     startedAtIso: current.startedAtIso ?? new Date().toISOString(),
   };
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -132,6 +151,7 @@ export async function resetNarrativeOnboarding(uid?: string | null): Promise<voi
         uid,
         {
           childArchetype: null,
+          childBirthDate: null,
           hasCompletedDay1Narrative: false,
           narrativeProgress: {
             currentScene: 1,
@@ -153,6 +173,7 @@ export async function resetNarrativeOnboarding(uid?: string | null): Promise<voi
 
 type FirestoreNarrativePatch = {
   childArchetype?: ChildArchetype | null;
+  childBirthDate?: string | null;
   hasCompletedDay1Narrative?: boolean;
   narrativeProgress?: {
     currentScene: number;
@@ -162,20 +183,24 @@ type FirestoreNarrativePatch = {
   };
 };
 
-export async function syncNarrativeFromFirestore(
-  uid: string,
-): Promise<{ hasCompleted: boolean; childArchetype: ChildArchetype | null }> {
+export async function syncNarrativeFromFirestore(uid: string): Promise<{
+  hasCompleted: boolean;
+  childArchetype: ChildArchetype | null;
+  childBirthDate: string | null;
+}> {
   try {
     const doc = await getDocument<{
       hasCompletedDay1Narrative?: boolean;
       childArchetype?: ChildArchetype;
+      childBirthDate?: string;
     }>("users", uid);
     return {
       hasCompleted: doc?.hasCompletedDay1Narrative === true,
       childArchetype: doc?.childArchetype ?? null,
+      childBirthDate: doc?.childBirthDate ?? null,
     };
   } catch {
-    return { hasCompleted: false, childArchetype: null };
+    return { hasCompleted: false, childArchetype: null, childBirthDate: null };
   }
 }
 

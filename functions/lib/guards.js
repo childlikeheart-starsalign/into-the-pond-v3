@@ -1,8 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.assertAccountActive = assertAccountActive;
 exports.assertActiveRodOrThrow = assertActiveRodOrThrow;
 const https_1 = require("firebase-functions/v2/https");
 const init_1 = require("./init");
+async function assertAccountActive(uid) {
+  const snapshot = await init_1.db.collection("users").doc(uid).get();
+  const data = snapshot.data() ?? {};
+  const deletionStatus = data.deletionStatus ?? "active";
+  if (deletionStatus !== "active") {
+    throw new https_1.HttpsError("failed-precondition", "account/pending-deletion");
+  }
+  return {
+    deletionStatus,
+    deletionPurgeAt: data.deletionPurgeAt ?? null,
+    deletionRequestedAt: data.deletionRequestedAt ?? null,
+  };
+}
 const rank = {
   basic: 0,
   wooden: 1,

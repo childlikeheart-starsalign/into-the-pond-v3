@@ -1,6 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
-import { evictSpreadImagesExcept } from "@/src/features/fieldJournal/spreadImageCache";
 import type { FieldJournalSpread } from "@/src/features/fieldJournal/types";
 
 export type SpreadWindowEntry = {
@@ -9,9 +8,7 @@ export type SpreadWindowEntry = {
   isActive: boolean;
 };
 
-/**
- * Returns current spread ± 1 for rendering; evicts GPU cache outside the window.
- */
+/** Returns current spread ± 1 for optional preloading or windowed rendering. */
 export function useSpreadWindow(
   spreads: FieldJournalSpread[],
   currentIndex: number,
@@ -29,11 +26,6 @@ export function useSpreadWindow(
         isActive: index === currentIndex,
       }));
   }, [spreads, currentIndex]);
-
-  useEffect(() => {
-    const keepIds = new Set(windowEntries.map((entry) => entry.spread.id));
-    evictSpreadImagesExcept(keepIds);
-  }, [windowEntries]);
 
   return windowEntries;
 }

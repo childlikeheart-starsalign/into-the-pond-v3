@@ -1,0 +1,106 @@
+# EAS Build — trigger Expo Application Services builds from GitHub Actions.
+#
+# Required repository secret: EXPO_TOKEN
+#   1. Create a personal access token at https://expo.dev/settings/access-tokens
+#   2. GitHub → Settings → Secrets and variables → Actions → New repository secret
+#   3. Name: EXPO_TOKEN — paste the Expo token as the value
+#
+# EAS project secrets (Firebase native files, Sentry token, env vars) are separate:
+#   npm run setup:eas-firebase-files and npm run setup:eas-rtdb-env — see RELEASE.md
+#
+# Triggers:
+#   - push to main → preview profile, ios
+#   - push tag v* → production profile, all platforms
+#   - workflow_dispatch → choose profile (development | preview | production) and platform
+#
+# Local equivalents: npm run eas:build:preview, npm run eas:build:production (see package.json)
+
+name: EAS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile
+        required: true
+        default: preview
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+      platform:
+        description: Target platform
+        required: true
+        default: ios
+        type: choice
+        options:
+          - ios
+          - android
+          - all
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+jobs:
+  build:
+    name: EAS Build
+    runs-on: ubuntu-latest
+    concurrency:
+      group: eas-build-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Check EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "::error::EXPO_TOKEN secret is required. See RELEASE.md → CI / EAS builds."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          packager: npm
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve build profile and platform
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_PROFILE: ${{ github.event.inputs.profile }}
+          INPUT_PLATFORM: ${{ github.event.inputs.platform }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "profile=$INPUT_PROFILE" >> "$GITHUB_OUTPUT"
+            echo "platform=$INPUT_PLATFORM" >> "$GITHUB_OUTPUT"
+          elif [ "$REF_TYPE" = "tag" ]; then
+            echo "profile=production" >> "$GITHUB_OUTPUT"
+            echo "platform=all" >> "$GITHUB_OUTPUT"
+          else
+            echo "profile=preview" >> "$GITHUB_OUTPUT"
+            echo "platform=ios" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build on EAS
+        run: |
+          npm run eas:build -- \
+            --profile "${{ steps.resolve.outputs.profile }}" \
+            --platform "${{ steps.resolve.outputs.platform }}" \
+            --non-interactive \
+            --no-wait

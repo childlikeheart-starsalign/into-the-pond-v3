@@ -1,5 +1,7 @@
 # Release checklist
 
+**Launch tracker:** [`docs/launch-preview-checklist.md`](docs/launch-preview-checklist.md) (security → preview QA)
+
 Mandatory steps before each App Store / Google Play submission.
 
 ## Pre-build (one-time or when Firebase native configs change)
@@ -35,7 +37,10 @@ Run automated checks before device QA:
 npm run verify:no-firebase-secrets
 npm run test:auth-links
 npm run test:firestore-rules
+npm run test:rtdb-rules
 ```
+
+See [`docs/security-rules-audit.md`](docs/security-rules-audit.md) for pre-TestFlight rules audit findings and test matrix.
 
 ### Firestore user profile policy (intentional)
 

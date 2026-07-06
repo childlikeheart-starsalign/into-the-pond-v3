@@ -9,9 +9,9 @@ Short ledger for **into-the-pond-v3** (native workflow, EAS, Firebase Auth email
 
 ### Checklist
 
-- [ ] **`eas build --profile development`** — needs Expo login and Apple/Google credentials. Run **`npm run setup:eas-firebase-files`** first. See [`RELEASE.md`](RELEASE.md).
-- [ ] **`eas build --profile preview`** — TestFlight / internal Play gate before production submit.
-- [ ] **`eas build --profile production`** — store release; validate on physical device per [`RELEASE.md`](RELEASE.md).
+- [ ] **`eas build --profile development`** — needs Expo login and Apple/Google credentials. Run **`npm run setup:eas-firebase-files`** first. See [`RELEASE.md`](RELEASE.md) and [`docs/launch-preview-checklist.md`](docs/launch-preview-checklist.md).
+- [ ] **`eas build --profile preview`** — TestFlight / internal Play gate before production submit. Run **`npm run verify:eas-preview-prerequisites`** first.
+- [ ] **`eas build --profile production`** — store release; validate on physical device per [`RELEASE.md`](RELEASE.md). See [`docs/launch-production-deferred.md`](docs/launch-production-deferred.md).
 
 ## Config and secrets
 
@@ -36,7 +36,7 @@ Short ledger for **into-the-pond-v3** (native workflow, EAS, Firebase Auth email
 
 - [x] **Firebase native iOS (SPM):** when **`assets/GoogleService-Info.plist`** exists, prebuild adds **`firebase-ios-sdk`** SPM products (**`FirebaseAnalytics`**, **`FirebaseAuth`**, **`FirebaseFirestore`**, **`FirebaseCore`**, **`FirebaseDatabase`**), copies the plist, and patches **AppDelegate** with **`FirebaseApp.configure()`**. Run **`cd ios && pod install`** after prebuild for RN/Expo pods only.
 - [ ] **Firebase native Android parity:** plugin applies **`google-services`** Gradle + BoM + **`firebase-analytics`** + **`firebase-database`** when **`google-services.json`** exists; add **`firebase-auth`** / **`firestore`** Gradle deps only if you need native Android parity beyond Analytics + RTDB.
-- [x] **Realtime Database ops:** Console instance + **`EXPO_PUBLIC_FIREBASE_DATABASE_URL`** in `.env`; verify with **`npm run verify:firebase-rtdb-env`**; deploy **[`database.rules.json`](./database.rules.json)** via **`npm run deploy:database-rules`**; set same env var on EAS development/production. **No product feature uses RTDB yet** — see **[`docs/rtdb-use-case.md`](./docs/rtdb-use-case.md)** (Firestore remains canonical).
+- [x] **Realtime Database ops:** Console instance + **`EXPO_PUBLIC_FIREBASE_DATABASE_URL`** in `.env`; verify with **`npm run verify:firebase-rtdb-env`**; deploy **[`database.rules.json`](./database.rules.json)** via **`npm run deploy:database-rules`**; set same env var on EAS development/production. **Sessions rules hardened** (members-map model) — see **[`docs/rtdb-use-case.md`](./docs/rtdb-use-case.md)**. **No Well co-session UI yet**; Firestore remains canonical for profile/economy.
 - [ ] **Firebase manual XCFramework migration (optional):** only if SPM + Expo becomes unstable — replace SPM in the plugin with prebuild-time xcframework linking per **`Firebase/METADATA.md`** (not needed today).
 
 ## Auth email links and deep links

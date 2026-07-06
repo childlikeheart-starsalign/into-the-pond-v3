@@ -5,6 +5,10 @@ set -e
 cd "$(dirname "$0")/.."
 
 ORIGIN_REPO="childlikeheart-starsalign/into-the-pond-v3"
+
+echo "Fetching origin/main..."
+git fetch origin main 2>/dev/null || true
+
 LOCAL_SHA=$(git rev-parse main)
 ORIGIN_SHA=$(git rev-parse origin/main 2>/dev/null || echo "")
 
@@ -15,8 +19,17 @@ echo "origin/main: ${ORIGIN_SHA:-<missing — run: git fetch origin main>}"
 
 if [ -n "$ORIGIN_SHA" ] && [ "$LOCAL_SHA" = "$ORIGIN_SHA" ]; then
   echo "  ✓ local and origin/main match"
+elif [ -n "$ORIGIN_SHA" ] && git merge-base --is-ancestor "$ORIGIN_SHA" "$LOCAL_SHA" 2>/dev/null; then
+  AHEAD=$(git rev-list --count "${ORIGIN_SHA}..${LOCAL_SHA}" 2>/dev/null || echo "?")
+  echo "  ⚠ local is ${AHEAD} commit(s) ahead of origin/main (unpushed)"
+  echo "    Run: git push origin main"
+  echo "    Then re-run: npm run verify:leak-remediation-closeout"
+  exit 1
+elif [ -n "$ORIGIN_SHA" ] && git merge-base --is-ancestor "$LOCAL_SHA" "$ORIGIN_SHA" 2>/dev/null; then
+  echo "  ✗ origin/main is ahead of local — run: git pull origin main"
+  exit 1
 else
-  echo "  ✗ local and origin/main differ or origin/main missing"
+  echo "  ✗ local and origin/main have diverged — resolve before close-out"
   exit 1
 fi
 

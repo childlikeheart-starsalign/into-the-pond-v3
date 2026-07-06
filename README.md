@@ -100,6 +100,14 @@ chmod +x scripts/push-to-github.sh
 **Branch protection (optional)**  
 On GitHub: **Settings → Branches → Add branch protection rule** for `main` (require pull request before merging, disallow force-push). Reduces accidental history loss when collaborating.
 
+**History rewrite (July 2026)** — `main` was force-pushed after removing leaked Firebase native configs from git history. If you cloned before that push, reset to remote:
+
+```bash
+git fetch --all && git reset --hard origin/main
+```
+
+Details: [`docs/security-firebase-key-leak.md`](docs/security-firebase-key-leak.md). Verify sync: `./scripts/verify-leak-remediation-closeout.sh`.
+
 ## Integrated services
 
 - **Firebase** (`firebase`) for auth + Firestore

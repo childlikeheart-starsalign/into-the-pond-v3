@@ -95,12 +95,44 @@ Re-run verification after push:
 - `npm run verify:no-firebase-secrets` → ok
 - Raw GitHub URLs for both `assets/` paths on `main` → 404
 
+### Close-out verification (2026-07-05)
+
+Automated checks (run anytime):
+
+```bash
+chmod +x scripts/verify-leak-remediation-closeout.sh
+./scripts/verify-leak-remediation-closeout.sh
+```
+
+Or re-run [`scripts/finish-leak-remediation-push.sh`](../scripts/finish-leak-remediation-push.sh) (idempotent when synced).
+
+| Check                                        | Status                    |
+| -------------------------------------------- | ------------------------- |
+| Force-push `main` @ `a8d4fee`                | Done                      |
+| Raw URLs 404 (3 paths)                       | Verified                  |
+| CI: auth-links, firestore-rules, secret-scan | Success on `a8d4fee`      |
+| Local history purge                          | 0 commits on leaked paths |
+
 ## 4. Resolve GitHub secret scanning
 
-- [ ] Old repo: [alert #1](https://github.com/childlikeheart-starsalign/childlike-heart-parenting-course-index.html/security/secret-scanning/1) → **Revoked** (rotated) or **Resolved** (restricted + branch/history removed)
-- [ ] `into-the-pond-v3`: check **Security → Secret scanning** after force-push; resolve any new alerts the same way
+**Requires GitHub login** — cannot be automated from CI.
 
-## 5. Ongoing prevention
+- [ ] **into-the-pond-v3:** [Security → Secret scanning](https://github.com/childlikeheart-starsalign/into-the-pond-v3/security/secret-scanning) — resolve open alerts as **Revoked** (rotated) or **Resolved** (restricted + history removed)
+- [ ] **Old repo:** [alert #1](https://github.com/childlikeheart-starsalign/childlike-heart-parenting-course-index.html/security/secret-scanning/1) → same resolution if still open
+
+After resolving, re-run `./scripts/verify-leak-remediation-closeout.sh` — automated section should still pass; alerts are cleared in GitHub UI only.
+
+## 5. Collaborators — reset after history rewrite
+
+`main` history was rewritten (`git filter-repo`). Anyone who cloned **before** the force-push must reset or re-clone:
+
+```bash
+git fetch --all && git reset --hard origin/main
+```
+
+Local branches based on pre-rewrite commits will not fast-forward. Delete stale local branches or re-clone the repo.
+
+## 6. Ongoing prevention
 
 - Run `npm run verify:no-firebase-secrets` before release (see [`RELEASE.md`](../RELEASE.md))
 - Pre-commit hook blocks staging native config files or Google API key patterns
@@ -108,9 +140,10 @@ Re-run verification after push:
 
 ## Related scripts
 
-| Script                                    | Purpose                                  |
-| ----------------------------------------- | ---------------------------------------- |
-| `scripts/setup-eas-firebase-files.mjs`    | Upload local assets to EAS               |
-| `scripts/write-firebase-native-files.mjs` | Write EAS secrets to assets locally      |
-| `scripts/finish-leak-remediation-push.sh` | Post-purge force-push + URL verification |
-| `scripts/verify-no-firebase-secrets.mjs`  | Guard against re-commit                  |
+| Script                                        | Purpose                                  |
+| --------------------------------------------- | ---------------------------------------- |
+| `scripts/setup-eas-firebase-files.mjs`        | Upload local assets to EAS               |
+| `scripts/write-firebase-native-files.mjs`     | Write EAS secrets to assets locally      |
+| `scripts/finish-leak-remediation-push.sh`     | Post-purge force-push + URL verification |
+| `scripts/verify-no-firebase-secrets.mjs`      | Guard against re-commit                  |
+| `scripts/verify-leak-remediation-closeout.sh` | Post-push sync + CI + 404 verification   |

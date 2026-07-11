@@ -98,6 +98,38 @@ Until assets are regenerated, sighted users will still see old PNG copy; VoiceOv
 - [ ] **Legal sign-off:** Privacy policy + compliance drafts explicitly cover declared APIs and data types.
 - [ ] **RELEASE.md:** Check privacy manifest box on production sign-off.
 
+## Fishing / craft economy (content package)
+
+Working decisions from `00-open-items-followups.md` (locked until on9 overrides):
+
+- [x] **1.3** — Sheet C target frequencies are **per catch** (not per cast).
+- [x] **1.1** — `bait_mid` must **not** zero rare-element Wonder gates (40W → 0W). Phase 2 gate-tier removal needs a revised Sheet D.
+- [x] **1.2** — `bait_premium` epic gate 90W → 40W treated as **intentional** for Phase 2 design (still blocked until Sheet D is revised for 1.1).
+- [x] **4.1** — Journeys 4–5 with 2–3 checkpoints are acceptable for QA.
+
+### Checklist
+
+- [x] **Cast duration:** client `FISHING_CAST_DURATION_MS` + server `CAST_DURATION_MS` set to **2 hours** (was 2-minute dev timer). `functions/lib` rebuilt to `2 * 60 * 60 * 1000`. **Live Cloud Functions redeploy blocked** — project `into-the-pond` must be on Blaze before `firebase deploy --only functions` / live `createCast` smoke (`readyAt ≈ now + 2h`). Upgrade: https://console.firebase.google.com/project/into-the-pond/usage/details
+- [x] **Firestore listener error handlers:** entitlements, root `_layout` user doc, `useWellCardStatus`, offline `db/sync` subscribers, deletion-pending — error callbacks + Sentry.
+- [x] **Unmount-safe async:** `useWellQuestion`, `useWellCardStatus`, gate fade timeout in `app/index.tsx`.
+- [x] **Wooden lesson marketing:** gate copy updated to `1.4–3.7` (runtime access already included 3.7 via `module <= 3`).
+- [x] **TARGET fishing Phase 1:** creature `sub_tier`, `fishingPity`, weighted creature pick (Sheet C), outcome messages, pity tests (`npm run test:fishing`). Audio SFX wiring still open.
+- [x] **Craft journey QA notes:** [`docs/craft-journey-assumptions.md`](docs/craft-journey-assumptions.md) — 3.1/3.2 confirmed; 3.3 diary deep vs surface still unclear.
+- [ ] **TARGET fishing Phase 2:** Sheet D bait catch% + gate-tier removal — blocked on revised 1.1 design (`bait_mid` must not zero rare gates).
+- [ ] **Fishing/craft audio:** wire `01-audio-manifest` SFX into cast/claim/craft UX.
+
+## Preview readiness (manual)
+
+- [ ] `npm run eas:login` then `npm run verify:eas-preview-prerequisites`
+- [ ] Device auth deep-link QA per [`RELEASE.md`](RELEASE.md)
+- [ ] Replace `YOUR_*` in `app.json` / EAS secrets before meaningful preview builds
+
+## Dead code / cleanup
+
+- [x] Purge unused: `PageCurlOverlay`, `PremiumTooltip`, `BreathingGlowOverlay`, `useNarrativeStep`, `ensureUserProfile`, `FieldJournalSpreadView`, `GateBackgroundLayer`, `INTEGRATION_GUIDE.ts`.
+- [x] Legacy `app/onboarding/archetype-selector.tsx` redirects to narrative onboarding.
+- [x] Unify `minTapTargetRect` (well re-exports fishing helper).
+
 ---
 
 For setup commands and Firebase Auth email-action notes, see **[README.md](./README.md)** (Configuration and Native projects / Firebase sections).

@@ -45,6 +45,10 @@ scripts/__pycache__/
 .env
 .env*.local
 
+# Local scratch / dry-run / pilot outputs (may contain real account data)
+/tmp/
+/tmp/**
+
 # Firebase Admin service account JSON (local only; use FIREBASE_SERVICE_ACCOUNT_PATH)
 **/serviceAccountKey.json
 functions/**/serviceAccount*.json

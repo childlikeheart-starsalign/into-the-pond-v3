@@ -272,7 +272,11 @@ test("denies client read of deletion_requests", async () => {
 test("denies client write of deletion_requests", async () => {
   await assertFails(
     setDoc(doc(ownerDb(), "deletion_requests", OWNER_UID), {
-      encryptedPayload: "test",
+      // Multi-child restore payloads may include children[] — still write-denied to clients.
+      encryptedPayload: JSON.stringify({
+        children: [{ childId: "c1", data: { name: "x", childOrder: 1 } }],
+      }),
+      payloadVersion: 1,
     }),
   );
 });
@@ -296,6 +300,252 @@ test("allows authenticated owner reading deletionStatus on user doc", async () =
     });
   });
   await assertSucceeds(getDoc(doc(ownerDb(), "users", OWNER_UID)));
+});
+
+test("denies authenticated owner updating deletionStatus", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "users", OWNER_UID), {
+      email: "owner@example.com",
+      hasSeenTutorial: false,
+      deletionStatus: "pending",
+    });
+  });
+  await assertFails(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      deletionStatus: "active",
+    }),
+  );
+});
+
+/**
+ * Admin / Cloud Functions use the Admin SDK (`db` from functions/src/init.ts), which
+ * bypasses security rules. Rules-unit-testing `withSecurityRulesDisabled` is the
+ * documented stand-in — confirm deletionStatus / deletionPurgeAt remain writable
+ * in that context so Track A client-deny does not break requestAccountDeletion /
+ * cancelAccountDeletion / purgeExpiredAccountDeletions.
+ */
+test("admin-context (rules disabled) can write deletionStatus and deletionPurgeAt", async () => {
+  await seedOwnerProfile();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await assertSucceeds(
+      updateDoc(doc(context.firestore(), "users", OWNER_UID), {
+        deletionStatus: "pending",
+        deletionPurgeAt: new Date(),
+      }),
+    );
+  });
+});
+
+test("denies authenticated owner updating deletionPurgeAt", async () => {
+  await seedOwnerProfile();
+  await assertFails(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      deletionPurgeAt: new Date(),
+    }),
+  );
+});
+
+test("denies authenticated owner updating authFunnel", async () => {
+  await seedOwnerProfile();
+  await assertFails(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      authFunnel: { sanctuaryInitialized: true },
+    }),
+  );
+});
+
+test("allows authenticated owner updating childBirthDate", async () => {
+  await seedOwnerProfile();
+  await assertSucceeds(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      childBirthDate: "2018-06-01",
+    }),
+  );
+});
+
+test("allows authenticated owner updating narrativeProgress", async () => {
+  await seedOwnerProfile();
+  await assertSucceeds(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      narrativeProgress: { currentScene: 2, lastUpdated: "2026-01-01T00:00:00.000Z" },
+    }),
+  );
+});
+
+test("allows authenticated owner updating analyticsOptOut", async () => {
+  await seedOwnerProfile();
+  await assertSucceeds(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      analyticsOptOut: true,
+    }),
+  );
+});
+
+test("allows authenticated owner updating hasCompletedEmailVerifiedCelebration", async () => {
+  await seedOwnerProfile();
+  await assertSucceeds(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      hasCompletedEmailVerifiedCelebration: true,
+    }),
+  );
+});
+
+test("activeChildId remains client-writable under Track A + children rules", async () => {
+  await seedOwnerProfile();
+  await assertSucceeds(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      activeChildId: "child_switcher_1",
+    }),
+  );
+});
+
+test("denies authenticated owner mixed safe and forbidden profile update", async () => {
+  await seedOwnerProfile();
+  await assertFails(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      hasSeenTutorial: true,
+      deletionStatus: "active",
+    }),
+  );
+});
+
+test("allows owner reading childOrder 1 under free subscription", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "users", OWNER_UID), {
+      email: "owner@example.com",
+      subscription: { subscriptionStatus: "free", isLifetime: false },
+    });
+    await setDoc(doc(context.firestore(), "users", OWNER_UID, "children", "child_1"), {
+      childOrder: 1,
+      name: "One",
+      profileLocked: true,
+    });
+  });
+  await assertSucceeds(getDoc(doc(ownerDb(), "users", OWNER_UID, "children", "child_1")));
+});
+
+test("denies free owner reading childOrder 2", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "users", OWNER_UID), {
+      email: "owner@example.com",
+      subscription: { subscriptionStatus: "free", isLifetime: false },
+    });
+    await setDoc(doc(context.firestore(), "users", OWNER_UID, "children", "child_2"), {
+      childOrder: 2,
+      name: "Two",
+      profileLocked: true,
+    });
+  });
+  await assertFails(getDoc(doc(ownerDb(), "users", OWNER_UID, "children", "child_2")));
+});
+
+/**
+ * REGRESSION — catch-all owner-read OR semantics.
+ * Free tier owner owns users/{uid} but must NOT read an over-limit child via the
+ * catch-all `/{subcollection}/{document=**}` rule. If someone "simplifies" rules
+ * by restoring unconditional owner read on the catch-all, this test must fail.
+ */
+test("free tier owner cannot read a locked/over-limit child doc even though they own the parent user doc", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "users", OWNER_UID), {
+      email: "owner@example.com",
+      subscription: { subscriptionStatus: "free", isLifetime: false },
+      currentWonder: 10,
+    });
+    await setDoc(doc(context.firestore(), "users", OWNER_UID, "children", "over_limit_child"), {
+      childOrder: 2,
+      name: "ShouldBeOpaque",
+      profileLocked: true,
+      dob: "2019-01-01",
+    });
+  });
+
+  // Parent user doc is readable (ownership).
+  await assertSucceeds(getDoc(doc(ownerDb(), "users", OWNER_UID)));
+  // Over-limit child must still be denied — catch-all must not OR this open.
+  await assertFails(getDoc(doc(ownerDb(), "users", OWNER_UID, "children", "over_limit_child")));
+});
+
+test("denies client write to children doc even when unlocked", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "users", OWNER_UID), {
+      email: "owner@example.com",
+      subscription: { subscriptionStatus: "wooden", isLifetime: false },
+    });
+    await setDoc(doc(context.firestore(), "users", OWNER_UID, "children", "child_1"), {
+      childOrder: 1,
+      name: "One",
+      profileLocked: false,
+    });
+  });
+  await assertFails(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID, "children", "child_1"), {
+      name: "Hacked",
+    }),
+  );
+});
+
+test("denies client write to locked child profile fields", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "users", OWNER_UID), {
+      email: "owner@example.com",
+      subscription: { subscriptionStatus: "wooden", isLifetime: false },
+    });
+    await setDoc(doc(context.firestore(), "users", OWNER_UID, "children", "child_1"), {
+      childOrder: 1,
+      name: "One",
+      profileLocked: true,
+      dob: "2018-01-01",
+    });
+  });
+  await assertFails(
+    setDoc(doc(ownerDb(), "users", OWNER_UID, "children", "child_1"), {
+      childOrder: 1,
+      name: "Changed",
+      profileLocked: true,
+      dob: "2019-01-01",
+    }),
+  );
+});
+
+test("allows authenticated read of featureFlags doc", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "featureFlags", "childMigrationDualRead"), {
+      rolloutState: "off",
+      allowlistUids: [],
+    });
+  });
+  await assertSucceeds(getDoc(doc(ownerDb(), "featureFlags", "childMigrationDualRead")));
+});
+
+test("denies unauthenticated read of featureFlags doc", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "featureFlags", "createChildProfileUi"), {
+      rolloutState: "all",
+      allowlistUids: [],
+    });
+  });
+  await assertFails(getDoc(doc(unauthenticatedDb(), "featureFlags", "createChildProfileUi")));
+});
+
+test("denies client write to featureFlags doc", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "featureFlags", "childMigrationDualRead"), {
+      rolloutState: "off",
+      allowlistUids: [],
+    });
+  });
+  await assertFails(
+    setDoc(doc(ownerDb(), "featureFlags", "childMigrationDualRead"), {
+      rolloutState: "allowlist",
+      allowlistUids: [OWNER_UID],
+    }),
+  );
+  await assertFails(
+    updateDoc(doc(ownerDb(), "featureFlags", "childMigrationDualRead"), {
+      allowlistUids: [OWNER_UID],
+    }),
+  );
 });
 
 assert.ok(RULES_PATH);

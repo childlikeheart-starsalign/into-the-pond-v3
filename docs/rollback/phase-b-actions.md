@@ -62,6 +62,12 @@ Format per entry:
 - **scope:** local workspace hygiene (no prod mutation)
 - **result:** real-user temp files deleted; `tmp/` now gitignored; this log created
 
+### 2026-07-13T11:45Z | Well live callables (uid1) — resumed
+
+- **command:** `node --import tsx` (inline): mint custom token for uid1 → Identity Toolkit exchange → POST `https://asia-east2-into-the-pond.cloudfunctions.net/ensureWellState` with `{ data: { childId: "4IUe7INmMzItxsk7MfjY" } }` → POST `…/getOrAssignTodaysQuestion` with `{ data: { localDate: "2026-07-13", childId: "4IUe7INmMzItxsk7MfjY" } }` → Admin get() of child vs root `wellState/current`
+- **scope:** uid1=`8rvdWY8Z4OZUwdQTrUIytgfwJyk2`, childId=`4IUe7INmMzItxsk7MfjY` only; no uid2; no other callables
+- **result:** both HTTP **404**. `firebase functions:list --json`: `ensureWellState` and `getOrAssignTodaysQuestion` are **state=FAILED** (not ACTIVE); `createChildProfile` is ACTIVE. No Well writes: child `wellState/current` absent, root `wellState/current` absent. Path confirmation via child dual-read **not achieved**. Did not deploy or Admin-bypass (would expand scope).
+
 ---
 
 ## Explicitly still blocked (do not self-authorize)
@@ -71,3 +77,4 @@ Format per entry:
 - Setting `rolloutState` beyond `allowlist`
 - Retiring legacy root writers
 - Full-scale migration (~100 users)
+- Redeploy of FAILED Well callables (needs explicit go-ahead)

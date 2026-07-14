@@ -113,6 +113,16 @@ Format per entry:
   - **uid1 Atlas:** PASS path wiring — expected `users/{uid}/children/{childId}/childAtlas`; sample count 0 (empty, not fabricated)
   - **uid2:** NOT SEALED — `activeChildId` null, child count 0, summary count 0. Flag B Create Child Profile UI + curtain QA remain **user on-device** before uid2 Flag A paths can be confirmed.
 
+### 2026-07-14T04:10Z | Security refinement plan verification (children migration audit)
+
+- **command:** `bash scripts/migration-audit-step0-guard.sh` (expect fail); `npm run test:migration-audit`; fixture planner dry-run; export + rollback scripts without CR flags
+- **scope:** local tooling only — no prod export, no rollback generation, no commit migration
+- **result:** plan already implemented and verified:
+  - Step 0 fail-closed (exit 1 without TTY/`CONFIRM_MIGRATION_AUDIT`; also exit 1 with env but no TTY)
+  - Steps 1–2 discrete shell wrappers exist; console-only dry-run by default
+  - CR gate blocks export + rollback without `--change-request-id` + `--approved-by`
+  - `test:migration-audit` **7/7 pass**; fixture planner scanned 2 / would-migrate 1 / no durable file
+
 ---
 
 ## Explicitly still blocked (do not self-authorize)

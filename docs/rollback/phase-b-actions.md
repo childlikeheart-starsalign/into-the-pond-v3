@@ -84,6 +84,24 @@ Format per entry:
 - **scope:** uid1=`8rvdWY8Z4OZUwdQTrUIytgfwJyk2`, childId=`4IUe7INmMzItxsk7MfjY` only; no uid2; no other callables
 - **result:** both HTTP **404**. `firebase functions:list --json`: `ensureWellState` and `getOrAssignTodaysQuestion` are **state=FAILED** (not ACTIVE); `createChildProfile` is ACTIVE. No Well writes: child `wellState/current` absent, root `wellState/current` absent. Path confirmation via child dual-read **not achieved**. Did not deploy or Admin-bypass (would expand scope).
 
+### 2026-07-14T03:44Z | Well callable recovery deploy
+
+- **command:** `cd functions && npm run build && cd .. && npx firebase-tools deploy --only functions:ensureWellState,functions:getOrAssignTodaysQuestion --project into-the-pond`
+- **scope:** `ensureWellState` and `getOrAssignTodaysQuestion` in asia-east2 only
+- **result:** both update operations succeeded at 256MiB. Firebase CLI could not set the Artifact Registry cleanup policy; no `--force` was used.
+
+### 2026-07-14T03:53Z | Well callable public-invoker correction
+
+- **command:** `cd functions && npm run build && cd .. && npx firebase-tools deploy --only functions:ensureWellState,functions:getOrAssignTodaysQuestion --project into-the-pond`
+- **scope:** same two asia-east2 callables only
+- **result:** added `invoker: "public"` only because both handlers require `request.auth` and use its UID. Both update operations succeeded at 256MiB. The cleanup-policy warning recurred; no `--force` was used.
+
+### 2026-07-14T04:00Z | uid1 Well child-path probe
+
+- **command:** `node --import tsx` (inline sanitized probe): custom-token auth for uid1 → POST `ensureWellState` with the explicit childId → stop on non-2xx → otherwise POST `getOrAssignTodaysQuestion` and read child/root Well paths
+- **scope:** uid1=`8rvdWY8Z4OZUwdQTrUIytgfwJyk2`, childId=`4IUe7INmMzItxsk7MfjY` only; no uid2 and no unrelated callable probes
+- **result:** `ensureWellState` returned HTTP **401**. Per the live-verification guardrail, the probe stopped before `getOrAssignTodaysQuestion`; no child/root Well state was read or written in this retry, and child-path confirmation remains incomplete. No Admin-write fallback was used.
+
 ---
 
 ## Explicitly still blocked (do not self-authorize)

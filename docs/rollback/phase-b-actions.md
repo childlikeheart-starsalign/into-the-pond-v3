@@ -5,6 +5,22 @@ prod-impacting work: secrets redaction, PII minimum exposure, no CR-gate bypass,
 no allowlist/scope expansion beyond the active prompt, no `--force`/`-y` unless
 explicitly required, default to the more restrictive interpretation when unsure.
 
+## Live Firebase verification guardrails
+
+- Use only the explicitly named UID and callable names. Set `invoker: "public"`
+  only when the handler requires `request.auth` and derives the target UID
+  exclusively from `request.auth.uid`.
+- Never print, persist, or report service-account material, API keys, custom or
+  ID tokens, Authorization headers, raw HTTP bodies/errors, environment dumps,
+  or stack traces. Emit only an allowlisted schema: HTTP status, callable
+  success/error code, document existence, field names, and counts. Redact
+  unexpected output.
+- Store verification output only in gitignored `tmp/`, then delete it after the
+  verification. Do not probe unrelated functions to compare authentication.
+- On a non-2xx response, stop after recording the HTTP status and a sanitized
+  error category. Do not broaden endpoint probes or Admin-write data to
+  simulate the callable.
+
 Format per entry:
 `### YYYY-MM-DDTHH:MMZ | <short label>`
 

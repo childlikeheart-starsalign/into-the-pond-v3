@@ -102,6 +102,17 @@ Format per entry:
 - **scope:** uid1=`8rvdWY8Z4OZUwdQTrUIytgfwJyk2`, childId=`4IUe7INmMzItxsk7MfjY` only; no uid2 and no unrelated callable probes
 - **result:** `ensureWellState` returned HTTP **401**. Per the live-verification guardrail, the probe stopped before `getOrAssignTodaysQuestion`; no child/root Well state was read or written in this retry, and child-path confirmation remains incomplete. No Admin-write fallback was used.
 
+### 2026-07-14T04:05Z | Flag A path spot-check (read-only; allowlist UI waiting on device)
+
+- **command:** Admin `get()` only for uid1 + uid2 + `featureFlags/{childMigrationDualRead,createChildProfileUi}`
+- **scope:** exactly uid1=`8rvdWY8Z4OZUwdQTrUIytgfwJyk2`, uid2=`hIy34QTkVfcLNcdIQ1DW40Ws7to1`; no deploy, no migration, no callables
+- **result (masked):**
+  - flags: both still `rolloutState=allowlist`, allowlist length 2, both UIDs present
+  - **uid1 narrative:** PASS — `activeChildId` set; child doc exists; child has DOB; archetype absent; day1 narrative not completed on child
+  - **uid1 header:** PASS — `childrenSummary` count 1 includes active child; header resolves from summary
+  - **uid1 Atlas:** PASS path wiring — expected `users/{uid}/children/{childId}/childAtlas`; sample count 0 (empty, not fabricated)
+  - **uid2:** NOT SEALED — `activeChildId` null, child count 0, summary count 0. Flag B Create Child Profile UI + curtain QA remain **user on-device** before uid2 Flag A paths can be confirmed.
+
 ---
 
 ## Explicitly still blocked (do not self-authorize)
@@ -112,3 +123,4 @@ Format per entry:
 - Retiring legacy root writers
 - Full-scale migration (~100 users)
 - Redeploy of FAILED Well callables (needs explicit go-ahead)
+- Completing Flag A for uid2 / curtain QA without on-device seal results from the account owner

@@ -123,6 +123,12 @@ Format per entry:
   - CR gate blocks export + rollback without `--change-request-id` + `--approved-by`
   - `test:migration-audit` **7/7 pass**; fixture planner scanned 2 / would-migrate 1 / no durable file
 
+### 2026-07-14T04:15Z | Multi-child Create Child Profile plan — gap close (no flag flip)
+
+- **command:** `npm run test:child-profile` (19/19); dualRead RN-import fix; add `docs/create-child-profile-curtain-qa.md`; TECH_DEBT compatibility-window checklist
+- **scope:** codebase only — no allowlist expand, no `rolloutState` change, no legacy writer retirement, no full migration
+- **result:** Plan todos verified present (tier helpers, callable, rules, migration/dual-read, Well/Atlas `childId`, sealed UI + Gate + switcher, deletion backup, analytics/Sentry). Narrative **writes stay on root** until a server child sync exists (children docs deny client update). Curtain QA remains manual for the account owner. Flags remain `allowlist`.
+
 ---
 
 ## Explicitly still blocked (do not self-authorize)

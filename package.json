@@ -14,6 +14,8 @@
     "verify:firebase-ios-native": "node scripts/verify-firebase-ios-native.mjs",
     "verify:firebase-rtdb-env": "node scripts/verify-firebase-rtdb-env.mjs",
     "verify:no-firebase-secrets": "node scripts/verify-no-firebase-secrets.mjs",
+    "verify:no-map-in-switcher": "node scripts/verify-no-map-import-in-switcher.mjs",
+    "verify:visual-qa-signoff": "node scripts/verify-visual-qa-signoff.mjs",
     "verify:leak-remediation-closeout": "sh scripts/verify-leak-remediation-closeout.sh",
     "verify:firebase-assets-ready": "node scripts/verify-firebase-assets-ready.mjs",
     "verify:eas-preview-prerequisites": "node scripts/verify-eas-preview-prerequisites.mjs",

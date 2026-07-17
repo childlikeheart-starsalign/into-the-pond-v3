@@ -74,3 +74,27 @@ jobs:
 
       - name: Run secret scan
         run: npm run verify:no-firebase-secrets
+
+  map-bleed-and-visual-qa:
+    name: Map bleed + visual QA sign-off
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify no ArchetypeResultMap imports outside allowlist
+        run: npm run verify:no-map-in-switcher
+
+      - name: Verify visual QA sign-off when archetype map changes
+        env:
+          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'origin/main' }}
+        run: |
+          git fetch origin "${{ github.event_name == 'pull_request' && github.base_ref || 'main' }}" --depth=1 || true
+          npm run verify:visual-qa-signoff

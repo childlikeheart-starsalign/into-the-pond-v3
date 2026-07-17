@@ -76,6 +76,10 @@ export function resolveAuthenticatedDestination(input: AuthDestinationInput): Hr
     deletionStatus = "active",
   } = input;
 
+  if (__DEV__ && pathname === "/archetype-map-fixture") {
+    return null;
+  }
+
   if (uid && emailVerified && !sanctuaryInitialized) {
     if (getAuthInitPhase() === "initializing") {
       return null;

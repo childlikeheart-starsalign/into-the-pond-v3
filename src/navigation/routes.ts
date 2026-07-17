@@ -31,4 +31,6 @@ export const routes = {
   practiceMoment: href("/practice-moment"),
   customerCenter: href("/customer-center"),
   casting: href("/casting"),
+  /** Dev-only ArchetypeResultMap visual QA (see app/archetype-map-fixture.tsx) */
+  archetypeMapFixture: href("/archetype-map-fixture"),
 };

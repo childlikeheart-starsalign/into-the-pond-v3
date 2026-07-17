@@ -27,6 +27,9 @@ Copy from [`assets/google-services.json.example`](../assets/google-services.json
 
 ## 1. Restrict keys in Google Cloud (minimum)
 
+**Rotation runbook:** [`docs/gcp-key-rotation-runbook.md`](gcp-key-rotation-runbook.md)  
+**Verify local assets:** `npm run verify:firebase-assets-ready`
+
 Project: **into-the-pond** → [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
 
 ### Android API key

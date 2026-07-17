@@ -1,0 +1,14 @@
+# Production launch — deferred until preview sign-off
+
+Do **not** block TestFlight / preview QA on these items. Complete after [`launch-preview-checklist.md`](launch-preview-checklist.md) Phase 5 passes.
+
+| Item                                                 | Owner               | Reference                                                       |
+| ---------------------------------------------------- | ------------------- | --------------------------------------------------------------- |
+| iOS Privacy Manifest Phase 2                         | Engineering + legal | [`TECH_DEBT.md`](../TECH_DEBT.md) → iOS Privacy Manifest        |
+| Google Sign-In console (SHA-1, OAuth, web client ID) | You                 | [`TECH_DEBT.md`](../TECH_DEBT.md) → Sign in with Google         |
+| Auth PNG microcopy (designer)                        | Design              | [`TECH_DEBT.md`](../TECH_DEBT.md) → Auth UI PNG-baked microcopy |
+| `npm run verify` TypeScript errors                   | Engineering         | Optional dedicated PR; not CI-gated                             |
+| Account deletion web form                            | Web                 | `https://intothepond.app/delete-account`                        |
+| `eas:build:production` + store submission            | You                 | [`RELEASE.md`](../RELEASE.md) full checklist                    |
+
+**Trigger:** Preview sign-off recorded in [`launch-device-qa.md`](launch-device-qa.md).

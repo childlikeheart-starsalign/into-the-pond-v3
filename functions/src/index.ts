@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { logger } from "firebase-functions";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onDocumentCreatedWithAuthContext } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { setGlobalOptions } from "firebase-functions/v2";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
@@ -15,6 +16,7 @@ import { runCreateCastInTransaction } from "./sanctuary/createCastTransaction";
 import type { DiaryReflectionDepth } from "./sanctuary/types";
 import { ensureWellStateCallable } from "./sanctuary/well/ensureWellState";
 import { initializeSanctuaryCallable } from "./auth/initializeSanctuary";
+import { createChildProfileCallable } from "./auth/createChildProfile";
 import { getOrAssignTodaysQuestionCallable } from "./sanctuary/well/getOrAssignTodaysQuestion";
 import { rerollWellQuestionCallable } from "./sanctuary/well/rerollWellQuestion";
 import { submitWellReflectionCallable } from "./sanctuary/well/submitWellReflection";
@@ -343,12 +345,20 @@ export const submitDiaryEntry = onCall(async (request) => {
 const LEGACY_WELL_MESSAGE =
   "This version of the app is out of date. Please update to continue using the Well.";
 
-export const ensureWellState = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "Authentication required");
-  await assertAccountActive(uid);
-  return ensureWellStateCallable(uid);
-});
+export const ensureWellState = onCall(
+  {
+    // Match createCast / createChildProfile — under-provisioned cold starts fail healthchecks.
+    memory: "256MiB",
+    timeoutSeconds: 60,
+    invoker: "public",
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError("unauthenticated", "Authentication required");
+    await assertAccountActive(uid);
+    return ensureWellStateCallable(uid, (request.data ?? {}) as { childId?: unknown });
+  },
+);
 
 export const initializeSanctuary = onCall(async (request) => {
   const uid = request.auth?.uid;
@@ -362,12 +372,45 @@ export const initializeSanctuary = onCall(async (request) => {
   return initializeSanctuaryCallable(uid, rawRequestId.trim(), request.auth?.token?.email ?? null);
 });
 
-export const getOrAssignTodaysQuestion = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "Authentication required");
-  await assertAccountActive(uid);
-  return getOrAssignTodaysQuestionCallable(uid, request.data ?? {});
-});
+/** Sealed multi-child profile create/append — does not touch economy paths. */
+export const createChildProfile = onCall(
+  {
+    // Match createCast / initializeSanctuary — this project has seen Cloud Run
+    // healthcheck failures on under-provisioned callable cold starts.
+    memory: "256MiB",
+    timeoutSeconds: 60,
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError("unauthenticated", "Authentication required");
+    await assertAccountActive(uid);
+    return createChildProfileCallable(
+      uid,
+      (request.data ?? {}) as {
+        draftId?: string;
+        name?: string;
+        dob?: string;
+        companionId?: string;
+        interests?: unknown;
+      },
+    );
+  },
+);
+
+export const getOrAssignTodaysQuestion = onCall(
+  {
+    // Match createCast / createChildProfile — under-provisioned cold starts fail healthchecks.
+    memory: "256MiB",
+    timeoutSeconds: 60,
+    invoker: "public",
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError("unauthenticated", "Authentication required");
+    await assertAccountActive(uid);
+    return getOrAssignTodaysQuestionCallable(uid, request.data ?? {});
+  },
+);
 
 export const submitWellReflection = onCall(async (request) => {
   const uid = request.auth?.uid;
@@ -754,6 +797,74 @@ export const createCast = onCall(async (request) => {
     }),
   );
 });
+
+export const processCastCreateRequest = onDocumentCreatedWithAuthContext(
+  "users/{uid}/castCreateRequests/{requestId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const { uid, requestId } = event.params;
+    const requestRef = snap.ref;
+    const payload = snap.data() as {
+      status?: string;
+      rodType?: string;
+      baitUsed?: string;
+      requestId?: string;
+    };
+
+    if (event.authId && event.authId !== uid) {
+      await requestRef.set(
+        {
+          status: "failed",
+          errorCode: "permission-denied",
+          errorMessage: "Cast request user mismatch",
+          processedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return;
+    }
+
+    try {
+      await assertAccountActive(uid);
+      await assertActiveRodOrThrow(uid, { minRod: "basic" });
+
+      const result = await db.runTransaction((tx) =>
+        runCreateCastInTransaction({
+          tx,
+          userRef: db.collection("users").doc(uid),
+          uid,
+          requestId,
+          rodType: payload.rodType ?? "basic",
+          baitUsed: payload.baitUsed ?? "random_bait",
+        }),
+      );
+
+      await requestRef.set(
+        {
+          status: "succeeded",
+          result,
+          processedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    } catch (error) {
+      const code = error instanceof HttpsError ? error.code : "internal";
+      const message = error instanceof Error ? error.message : "Cast could not be started";
+      logger.warn("processCastCreateRequest failed", { uid, requestId, code, message });
+      await requestRef.set(
+        {
+          status: "failed",
+          errorCode: code,
+          errorMessage: message,
+          processedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+  },
+);
 
 export const claimCast = onCall(async (request) => {
   const uid = request.auth?.uid;

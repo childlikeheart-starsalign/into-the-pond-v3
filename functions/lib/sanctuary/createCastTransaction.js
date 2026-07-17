@@ -12,7 +12,8 @@ const resolveCallableIdempotency_1 = require("./economy/resolveCallableIdempoten
 const playerRodHelpers_1 = require("./progression/playerRodHelpers");
 const fishingPermissionService_1 = require("./progression/fishingPermissionService");
 const rodCatalog_1 = require("./rodCatalog");
-exports.CAST_DURATION_MS = 2 * 60 * 1000;
+/** Production cast duration (2 hours). Keep in sync with client FISHING_CAST_DURATION_MS. */
+exports.CAST_DURATION_MS = 2 * 60 * 60 * 1000;
 const CONSUMABLE_BAIT_IDS = new Set(["feather_bait", "scale_bait", "glimmerdust_bait"]);
 function resolveBaitInventoryPatch(baitUsed, inventory) {
   const normalized = (baitUsed ?? "").trim();

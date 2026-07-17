@@ -136,7 +136,7 @@
     "@types/react": "^19.2.14",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "dotenv": "^16.4.5",
-    "eas-cli": "^20.4.0",
+    "eas-cli": "^21.0.1",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",

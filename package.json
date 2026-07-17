@@ -51,6 +51,7 @@
     "test:sanctuary-readiness": "npx tsx scripts/run-sanctuary-readiness-self-test.ts",
     "test:curtain-lift-prefetch": "npx tsx scripts/run-curtain-lift-prefetch-self-test.ts",
     "test:firestore-rules": "node scripts/run-firestore-rules-test.mjs",
+    "test:archetype-map": "node --import tsx --test src/components/archetype/archetypeMap.test.ts",
     "test:rtdb-rules": "node scripts/run-rtdb-rules-test.mjs",
     "test:auth-links": "npx tsx --test tests/authLinks.test.ts",
     "auth:transparent-black": "node scripts/auth-black-to-transparent.mjs",

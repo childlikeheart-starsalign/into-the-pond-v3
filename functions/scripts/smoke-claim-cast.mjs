@@ -108,7 +108,7 @@ async function callCallable(name, idToken, data = {}) {
 
 const snap = await userRef.get();
 if (!snap.exists) {
-  console.error("user missing", uid);
+  console.error("user missing");
   process.exit(1);
 }
 

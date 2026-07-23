@@ -8,6 +8,8 @@ GitHub reported **38 Dependabot alerts** on push to `main`. Local `npm audit --a
 npm audit
 npm audit --audit-level=high
 npm ls @xmldom/xmldom
+npm ls protobufjs
+cd functions && npm ls protobufjs
 ```
 
 Safe fixes (review lockfile diff before merging):
@@ -19,12 +21,13 @@ npm audit fix          # semver-compatible only
 
 ## Findings (local audit snapshot)
 
-| Package                                           | Severity     | Exposure                              | Recommendation                               |
-| ------------------------------------------------- | ------------ | ------------------------------------- | -------------------------------------------- |
-| `@babel/core`                                     | low/advisory | Dev/build only                        | `npm audit fix` when convenient              |
-| `@xmldom/xmldom` (via `eas-cli` / `expo-updates`) | high         | Transitive tooling/plist; not app API | See **GHSA-f6ww-3ggp-fr8h** below — accepted |
-| `@opentelemetry/core` (via `firebase-tools`)      | moderate     | CLI deploy tooling only               | Defer or pin firebase-tools separately       |
-| `ajv`                                             | moderate     | Transitive dev tooling                | Defer unless fix is non-breaking             |
+| Package                                           | Severity     | Exposure                              | Recommendation                                |
+| ------------------------------------------------- | ------------ | ------------------------------------- | --------------------------------------------- |
+| `@babel/core`                                     | low/advisory | Dev/build only                        | `npm audit fix` when convenient               |
+| `@xmldom/xmldom` (via `eas-cli` / `expo-updates`) | high         | Transitive tooling/plist; not app API | See **GHSA-f6ww-3ggp-fr8h** below — accepted  |
+| `protobufjs` (via `firebase` / Admin / tools)     | high         | Transitive gRPC; trusted schemas only | See **protobufjs** below — patched + accepted |
+| `@opentelemetry/core` (via `firebase-tools`)      | moderate     | CLI deploy tooling only               | Defer or pin firebase-tools separately        |
+| `ajv`                                             | moderate     | Transitive dev tooling                | Defer unless fix is non-breaking              |
 
 ## GHSA-f6ww-3ggp-fr8h / CVE-2026-41674 (`@xmldom/xmldom`)
 
@@ -65,6 +68,41 @@ After any future Expo/EAS bump that claims xmldom hardening, re-run `npm ls @xml
 ### Residual risk (accepted)
 
 A developer machine running `eas-cli` / prebuild that constructed DocumentTypes from **untrusted** strings and serialized them could still hit the default serialize path. That is not an end-user app attack surface for this product.
+
+## protobufjs schema-name collision (DoS)
+
+**Advisory:** Certain schema-derived names (`hasOwnProperty`, field/oneof `$type` via JSON/reflection descriptors, service helper name `rpcCall`) can collide with protobufjs runtime helpers. Affected decode post-checks, `verify`, `toObject`, reflected JSON serialization, or RPC helper invocation may throw or recurse → **denial of service**. **Not known to allow code execution.**
+
+**Affected:** `protobufjs` **≤ 7.6.2**. **Patched:** **≥ 7.6.3** (this repo pins **7.6.5**).
+
+### Reachability in this repo
+
+| Consumer                                                   | How protobufjs is used                                                       | App-reachable?                                       |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------- |
+| App / Functions source                                     | No direct `protobufjs` imports; no custom `.proto` / reflection JSON loading | No                                                   |
+| `firebase` / `@firebase/firestore`                         | Transitive via `@grpc/proto-loader` (Google trusted protos)                  | Only if vendor schemas used reserved names (trusted) |
+| `firebase-tools` / `firebase-admin` / `firebase-functions` | Same — gRPC/Firestore client stack                                           | Same                                                 |
+
+Exploit path needs an **untrusted** schema or protobufjs JSON descriptor containing the problematic names **and** hitting the affected APIs. This product does not load attacker-supplied descriptors.
+
+### Decision
+
+**Patched + accepted** residual risk for transitive Firebase/gRPC use. Not a launch blocker.
+
+- Root [`package.json`](../package.json) `overrides.protobufjs` = **`7.6.5`**
+- [`functions/package.json`](../functions/package.json) `overrides.protobufjs` = **`7.6.5`**
+- Keep the override; do not drop it if Dependabot proposes older `^7.2` / `^7.4` ranges from upstream
+- No app workarounds or schema renames required
+
+### Installed tree (verified 2026-07-24)
+
+```text
+npm ls protobufjs
+# → protobufjs@7.6.5 (firebase / firebase-tools)
+
+cd functions && npm ls protobufjs
+# → protobufjs@7.6.5 (firebase-admin / firebase-functions)
+```
 
 ## Expo SDK majors (policy)
 

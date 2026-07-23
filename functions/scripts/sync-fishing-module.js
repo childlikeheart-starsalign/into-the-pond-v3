@@ -24,7 +24,10 @@ function rewriteFishingImports(content) {
     .replace(/from "\.\.\/economy\/callableResponses"/g, 'from "./economy/callableResponses"')
     .replace(/from "\.\.\/random"/g, 'from "./random"')
     .replace(/from "\.\.\/rods\/catalog"/g, 'from "./rodCatalog"')
-    .replace(/from "\.\.\/progression\/rodFishingAccess"/g, 'from "./progression/rodFishingAccess"');
+    .replace(
+      /from "\.\.\/progression\/rodFishingAccess"/g,
+      'from "./progression/rodFishingAccess"',
+    );
 }
 
 function syncFile(srcName, destName, rewriter = rewriteFishingImports) {

@@ -25,8 +25,7 @@ function rewriteFishingImports(content) {
     .replace(/from "\.\.\/random"/g, 'from "./random"')
     .replace(/from "\.\.\/rods\/catalog"/g, 'from "./rodCatalog"')
     .replace(/from "\.\.\/progression\/rodFishingAccess"/g, 'from "./progression/rodFishingAccess"')
-    .replace(/from "\.\/castMapping"/g, 'from "./castMapping"')
-    .replace(/from "\.\/encounterEngine"/g, 'from "./encounterEngine"');
+    .replace(/from "\.\/castMapping"/g, 'from "./castMapping"');
 }
 
 function syncFile(srcName, destName, rewriter = rewriteFishingImports) {

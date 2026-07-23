@@ -1,11 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { CAST_DURATION_MS } from "@/shared/sanctuary/fishing/castTiming";
 import { DEFAULT_BAIT_ID, DEFAULT_ROD_ID } from "@/src/features/fishing/fishingData";
 
 const STORAGE_KEY = "fishing:active-cast";
 
-// Short dev timer. Replace with 2 * 60 * 60 * 1000 when ready for production.
-export const FISHING_CAST_DURATION_MS = 2 * 60 * 1000;
+/** Production cast duration — re-export of shared castTiming.CAST_DURATION_MS. */
+export const FISHING_CAST_DURATION_MS = CAST_DURATION_MS;
 
 export type ActiveFishingCast = {
   castStartTime: number;

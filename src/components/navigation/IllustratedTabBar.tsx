@@ -1,8 +1,9 @@
 import { usePathname } from "expo-router";
-import { useSyncExternalStore } from "react";
-import { StyleSheet, View } from "react-native";
+import { useCallback, useSyncExternalStore } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
 import { SanctuaryTabBarOverlay } from "@/src/components/sanctuary/SanctuaryTabBarOverlay";
+import { useCurtainLiftOptional } from "@/src/contexts/CurtainLiftContext";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { getClassroomView, subscribeClassroomView } from "@/src/state/classroomView";
 
@@ -16,21 +17,25 @@ function activeTabFromPath(pathname: string): string | null {
 }
 
 /**
- * Frame-aligned sanctuary tab bar for off-sanctuary tab screens.
- * Sanctuary embeds nav in its artboard; all other tabs use this overlay.
+ * Persistent frame-aligned tab bar for all main tabs — single mount avoids
+ * strip/icon flicker when switching Sanctuary ↔ Journal and other tabs.
  */
 export function IllustratedTabBar() {
   const pathname = usePathname();
   const frame = usePortrait916Layout("contain");
   const activeTab = activeTabFromPath(pathname);
+  const curtain = useCurtainLiftOptional();
   const classroomView = useSyncExternalStore(
     subscribeClassroomView,
     getClassroomView,
     getClassroomView,
   );
-  const onSanctuary = activeTab === "sanctuary";
 
-  if (onSanctuary) {
+  const handleStripLoad = useCallback(() => {
+    curtain?.reportLayerLoad("tabStrip");
+  }, [curtain]);
+
+  if (!activeTab) {
     return null;
   }
 
@@ -42,20 +47,36 @@ export function IllustratedTabBar() {
     return null;
   }
 
+  const frameStyle = {
+    left: frame.left,
+    top: frame.top,
+    width: frame.width,
+    height: frame.height,
+  };
+
+  const overlay = (
+    <SanctuaryTabBarOverlay
+      frameHeight={frame.height}
+      onStripLoad={curtain?.active ? handleStripLoad : undefined}
+    />
+  );
+
+  const useCurtainFade = curtain?.active && activeTab === "sanctuary";
+
+  if (useCurtainFade) {
+    return (
+      <Animated.View
+        style={[styles.frameHost, frameStyle, { opacity: curtain.sanctuaryRevealOpacity }]}
+        pointerEvents="box-none"
+      >
+        {overlay}
+      </Animated.View>
+    );
+  }
+
   return (
-    <View
-      style={[
-        styles.frameHost,
-        {
-          left: frame.left,
-          top: frame.top,
-          width: frame.width,
-          height: frame.height,
-        },
-      ]}
-      pointerEvents="box-none"
-    >
-      <SanctuaryTabBarOverlay frameHeight={frame.height} />
+    <View style={[styles.frameHost, frameStyle]} pointerEvents="box-none">
+      {overlay}
     </View>
   );
 }

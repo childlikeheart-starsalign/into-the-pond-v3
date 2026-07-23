@@ -21,6 +21,7 @@ import {
 } from "@/src/navigation/resolveSignInArrivalDestination";
 import { routes } from "@/src/navigation/routes";
 import { playGateChime } from "@/src/services/audio/playGateChime";
+import { playAuthWelcome } from "@/src/services/audio/authSounds";
 import { completeSanctuaryInitWithLegacyFallback } from "@/src/services/auth/completeSanctuaryInit";
 import { maybeMarkCelebrationForReturningUser } from "@/src/services/onboarding/maybeMarkCelebrationForReturningUser";
 import { isSanctuaryInitialized } from "@/src/state/authInitStore";
@@ -100,6 +101,7 @@ export function SignInArrivalProvider({
 
   const startVideo = useCallback(
     (uid: string, unknownMark: boolean) => {
+      void playAuthWelcome();
       setExpectedUid(uid);
       setMarkUnknown(unknownMark);
       setPhase("video");

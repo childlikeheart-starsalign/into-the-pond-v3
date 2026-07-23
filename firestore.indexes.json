@@ -1,13 +1,6 @@
 {
   "indexes": [
     {
-      "collectionGroup": "economyLedger",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "timestamp", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
@@ -33,6 +26,14 @@
       "fields": [
         { "fieldPath": "deletionStatus", "order": "ASCENDING" },
         { "fieldPath": "deletionPurgeAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "archetypeChecks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     }
   ],

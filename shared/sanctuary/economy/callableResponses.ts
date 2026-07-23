@@ -18,6 +18,13 @@ export type FishingClaimClientSummary = AuthoritativeRewardFields & {
   creatureTypeId?: string;
   creatureDisplayName?: string;
   spiritMessage?: string;
+  /** Epoch ms when the claim was resolved — real field for journal margin date. */
+  claimedAt: number;
+  /**
+   * Narrow miss routing for client SFX — no percentages.
+   * Engine sets `reason: "wonder_gate" | "chance"` on misses.
+   */
+  metadata?: { reason?: string };
 } & PreviewOnlyFlag;
 
 export type CraftBaitResponse = {

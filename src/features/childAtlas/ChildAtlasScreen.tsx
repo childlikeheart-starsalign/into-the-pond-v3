@@ -17,6 +17,7 @@ import { ChildAtlasPileFocus } from "@/src/features/childAtlas/ChildAtlasPileFoc
 import type { PileOriginRect } from "@/src/features/childAtlas/atlasEntryCardLayout";
 import { ChildAtlasPileGrid } from "@/src/features/childAtlas/ChildAtlasPileGrid";
 import { findEntryIndex, useChildAtlas } from "@/src/hooks/useChildAtlas";
+import { useActiveChild } from "@/src/features/childProfile/useActiveChild";
 import type { DiscoveryCategory } from "@/shared/sanctuary/well/types";
 import { firebaseAuth } from "@/src/services/firebase/client";
 
@@ -32,7 +33,8 @@ export function ChildAtlasScreen({
   initialEntryId,
 }: ChildAtlasScreenProps) {
   const uid = firebaseAuth.currentUser?.uid ?? null;
-  const { entries, entriesByCategory, loading, error } = useChildAtlas(uid);
+  const { childAwareId } = useActiveChild();
+  const { entries, entriesByCategory, loading, error } = useChildAtlas(uid, childAwareId);
 
   const [focusCategory, setFocusCategory] = useState<DiscoveryCategory | null>(null);
   const [focusOrigin, setFocusOrigin] = useState<PileOriginRect | null>(null);

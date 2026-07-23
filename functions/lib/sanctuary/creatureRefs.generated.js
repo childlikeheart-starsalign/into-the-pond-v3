@@ -9,6 +9,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "bubble-mote",
@@ -17,6 +18,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "moss-skipper",
@@ -25,6 +27,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "spark-pebble",
@@ -33,6 +36,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "reed-tail",
@@ -41,6 +45,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "cloud-fin",
@@ -49,6 +54,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "hinge-glider",
@@ -57,6 +63,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "amber-ring",
@@ -65,6 +72,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "shore-ghost",
@@ -73,6 +81,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "knot-swimmer",
@@ -81,6 +90,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "petal-dart",
@@ -89,6 +99,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "chalk-line",
@@ -97,6 +108,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "tide-pup",
@@ -105,6 +117,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "mirror-leaf",
@@ -113,6 +126,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "blink-swimmer",
@@ -121,6 +135,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "gilt-minnow",
@@ -129,6 +144,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "rust-belly",
@@ -137,6 +153,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "soft-arch",
@@ -145,6 +162,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "hollow-bell",
@@ -153,6 +171,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "coil-spark",
@@ -161,6 +180,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "fog-glider",
@@ -169,6 +189,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "pool-penny",
@@ -177,6 +198,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "wick-fin",
@@ -185,6 +207,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "loop-drifter",
@@ -193,6 +216,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "bone-float",
@@ -201,6 +225,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "green-bead",
@@ -209,6 +234,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "pine-needle",
@@ -217,6 +243,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "faint-arc",
@@ -225,6 +252,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "river-coin",
@@ -233,6 +261,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "dusk-mote",
@@ -241,6 +270,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "basic",
     peakWonderGate: 0,
+    sub_tier: "uniform",
   },
   {
     creatureTypeId: "lightning-elder",
@@ -249,6 +279,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "aurora-wraith",
@@ -257,6 +288,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "zenith-sovereign",
@@ -265,6 +297,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "network-elder",
@@ -273,6 +306,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "deep-circuit",
@@ -281,6 +315,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "quiet-charge",
@@ -289,6 +324,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "grid-sovereign",
@@ -297,6 +333,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "field-sovereign",
@@ -305,6 +342,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "arc-sovereign",
@@ -313,6 +351,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "coherence-fish",
@@ -321,6 +360,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "resonant-sovereign",
@@ -329,6 +369,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "deep-signal",
@@ -337,6 +378,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "magma-elder",
@@ -345,6 +387,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "pyrefish",
@@ -353,6 +396,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "solarfin-sovereign",
@@ -361,6 +405,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "crucible-fish",
@@ -369,6 +414,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "phoenix-ray",
@@ -377,6 +423,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "deep-ember",
@@ -385,6 +432,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "furnace-elder",
@@ -393,6 +441,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "corona-wraith",
@@ -401,6 +450,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "inferno-calm",
@@ -409,6 +459,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "forge-sovereign",
@@ -417,6 +468,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "stellar-drifter",
@@ -425,6 +477,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "radiance-keeper",
@@ -433,6 +486,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "prime-flame",
@@ -441,6 +495,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "abyssal-calm",
@@ -449,6 +504,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "tidal-elder",
@@ -457,6 +513,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "origin-leviathan",
@@ -465,6 +522,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "deep-tide",
@@ -473,6 +531,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "ancient-mirror",
@@ -481,6 +540,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "source-swimmer",
@@ -489,6 +549,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "bedrock-blue",
@@ -497,6 +558,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "estuary-sage",
@@ -505,6 +567,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "pressure-drifter",
@@ -513,6 +576,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "void-swimmer",
@@ -521,6 +585,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "undertow-sage",
@@ -529,6 +594,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "stillwater-elder",
@@ -537,6 +603,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "first-tide",
@@ -545,6 +612,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "gale-witness",
@@ -553,6 +621,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "storm-anchor",
@@ -561,6 +630,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "sky-sovereign",
@@ -569,6 +639,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "elder-breath",
@@ -577,6 +648,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "word-root",
@@ -585,6 +657,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "voice-elder",
@@ -593,6 +666,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "fracture-calm",
@@ -601,6 +675,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "resonance-elder",
@@ -609,6 +684,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "canopy-sovereign",
@@ -617,6 +693,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "breath-sovereign",
@@ -625,6 +702,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "gust-sovereign",
@@ -633,6 +711,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "deepwind-elder",
@@ -641,6 +720,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "spark-mote",
@@ -649,6 +729,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "signal-dart",
@@ -657,6 +738,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "arc-scout",
@@ -665,6 +747,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "volt-tender",
@@ -673,6 +756,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "resonance-fish",
@@ -681,6 +765,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "charge-keeper",
@@ -689,6 +774,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "field-weaver",
@@ -697,6 +783,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "ground-pulse",
@@ -705,6 +792,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "arc-tender",
@@ -713,6 +801,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "static-keeper",
@@ -721,6 +810,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "fuse-swimmer",
@@ -729,6 +819,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "bright-node",
@@ -737,6 +828,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "current-arrow",
@@ -745,6 +837,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "zenith-mote",
@@ -753,6 +846,7 @@ exports.CREATURE_REFS = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "ember-darter",
@@ -761,6 +855,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "cinder-veil",
@@ -769,6 +864,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "flare-scout",
@@ -777,6 +873,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "hearthfin",
@@ -785,6 +882,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "scorchtail",
@@ -793,6 +891,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "soot-drifter",
@@ -801,6 +900,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "forge-wraith",
@@ -809,6 +909,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "cinderback",
@@ -817,6 +918,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "heatwave-glide",
@@ -825,6 +927,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "tinder-swift",
@@ -833,6 +936,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "ashwing",
@@ -841,6 +945,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "solstice-runner",
@@ -849,6 +954,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "blaze-tender",
@@ -857,6 +963,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "coal-sentinel",
@@ -865,6 +972,7 @@ exports.CREATURE_REFS = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "tide-whisper",
@@ -873,6 +981,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "mirror-minnow",
@@ -881,6 +990,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "current-guide",
@@ -889,6 +999,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "still-pool",
@@ -897,6 +1008,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "flow-keeper",
@@ -905,6 +1017,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "ripple-sage",
@@ -913,6 +1026,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "deep-current",
@@ -921,6 +1035,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "pool-weaver",
@@ -929,6 +1044,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "heron-blue",
@@ -937,6 +1053,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "glassfin",
@@ -945,6 +1062,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "spring-mouth",
@@ -953,6 +1071,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "salt-runner",
@@ -961,6 +1080,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "winter-swimmer",
@@ -969,6 +1089,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "confluence",
@@ -977,6 +1098,7 @@ exports.CREATURE_REFS = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "prism-drifter",
@@ -985,6 +1107,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "threshold-fish",
@@ -993,6 +1116,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "double-current",
@@ -1001,6 +1125,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "compass-glide",
@@ -1009,6 +1134,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "convergence",
@@ -1017,6 +1143,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "deep-mirror",
@@ -1025,6 +1152,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "phase-swimmer",
@@ -1033,6 +1161,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "echo-twin",
@@ -1041,6 +1170,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "origin-spark",
@@ -1049,6 +1179,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "horizon-walker",
@@ -1057,6 +1188,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "memory-fish",
@@ -1065,6 +1197,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "bridge-swimmer",
@@ -1073,6 +1206,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "liminal-glide",
@@ -1081,6 +1215,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "whole-current",
@@ -1089,6 +1224,7 @@ exports.CREATURE_REFS = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "breath-dart",
@@ -1097,6 +1233,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "whisperfin",
@@ -1105,6 +1242,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "drift-leaf",
@@ -1113,6 +1251,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "gust-runner",
@@ -1121,6 +1260,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "language-lilt",
@@ -1129,6 +1269,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "zephyr-counsel",
@@ -1137,6 +1278,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
   },
   {
     creatureTypeId: "echo-bird",
@@ -1145,6 +1287,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "paper-crane-fish",
@@ -1153,6 +1296,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "wind-knot",
@@ -1161,6 +1305,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "canopy-drifter",
@@ -1169,6 +1314,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "feather-wake",
@@ -1177,6 +1323,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
   },
   {
     creatureTypeId: "voice-thread",
@@ -1185,6 +1332,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "gust-elder",
@@ -1193,6 +1341,7 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
   {
     creatureTypeId: "stillpoint-wing",
@@ -1201,5 +1350,6 @@ exports.CREATURE_REFS = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
   },
 ];

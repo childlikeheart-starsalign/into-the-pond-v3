@@ -9,8 +9,8 @@ import { resolveFishingClaimFromContext } from "./buildFishingClaimContext";
 import { toClientClaimSummary } from "./fishingClaimPresentation";
 import { fishingClaimKey, ledgerEntryIdForKey } from "./economy";
 import { readIdempotencyInTransaction } from "./economy/resolveCallableIdempotency";
-import { applyOperationalCounterResetsInTransaction } from "./dailyCounters";
-import type { FishingClaim } from "./types";
+import { buildOperationalCounterResetPatch } from "./dailyCounters";
+import type { FishingClaim, FishingPityState } from "./types";
 
 export type UserClaimEconomyDoc = {
   totalWonder?: number;
@@ -19,6 +19,7 @@ export type UserClaimEconomyDoc = {
   lifetimeWonderEarned?: number;
   lastFishingResetDate?: Timestamp;
   lastClaimedCastId?: string;
+  fishingPity?: FishingPityState;
   activeCast?: {
     castId?: string;
     readyTimestamp?: Timestamp;
@@ -122,7 +123,8 @@ export async function executeClaimCastInTransaction(
   const userSnap = await tx.get(userRef);
   const data = (userSnap.data() ?? {}) as UserClaimEconomyDoc;
 
-  applyOperationalCounterResetsInTransaction(tx, userRef, data as Record<string, unknown>);
+  // Defer counter reset into applyFishingClaim's final user write — more reads follow.
+  const counterResetPatch = buildOperationalCounterResetPatch(data as Record<string, unknown>);
 
   const castId = resolveClaimCastId(data);
   if (!castId) {
@@ -151,7 +153,7 @@ export async function executeClaimCastInTransaction(
   const caughtIds = new Set(creaturesSnap.docs.map((doc) => doc.id));
   const currentWonderAtClaim = data.currentWonder ?? data.totalWonder ?? 0;
 
-  const claim = resolveFishingClaimFromContext({
+  const claimResult = resolveFishingClaimFromContext({
     claimId: fishingClaimDocId(castId),
     encounterId: castId,
     userId: uid,
@@ -161,16 +163,19 @@ export async function executeClaimCastInTransaction(
     currentWonderAtClaim,
     caughtIds,
     creatureCatalog: CREATURE_REFS,
+    fishingPity: data.fishingPity,
   });
 
   const claimSummary = await applyFishingClaimInTransaction(tx, {
     uid,
     userRef,
     data,
-    claim,
+    claim: claimResult.claim,
     rodUiId: cast.rodType ?? "basic",
     castId,
+    nextFishingPity: claimResult.nextFishingPity,
     idempotencyMiss: { hit: false },
+    counterResetPatch,
   });
 
   return { claimSummary };

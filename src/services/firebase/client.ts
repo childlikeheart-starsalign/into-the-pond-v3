@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase, type Database } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
+import { getStorage } from "firebase/storage";
 
 import { env } from "@/src/config/env";
 import { createFirebaseAuth } from "@/src/services/firebase/createFirebaseAuth";
@@ -24,6 +25,7 @@ export const firebaseApp = hadFirebaseAppBeforeInit ? getApp() : initializeApp(f
 export const firebaseAuth = createFirebaseAuth(firebaseApp, hadFirebaseAppBeforeInit);
 
 export const firestore = getFirestore(firebaseApp);
+export const firebaseStorage = getStorage(firebaseApp);
 export const functions = getFunctions(firebaseApp, env.cloudFunctionsRegion);
 export const realtimeDb: Database | null = env.firebase.databaseUrl
   ? getDatabase(firebaseApp)

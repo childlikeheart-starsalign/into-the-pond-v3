@@ -6,6 +6,11 @@ import {
   NarrativeOnboardingState,
   SceneNumber,
 } from "@/src/constants/narrative/types";
+import { childProfileFeatureFlags } from "@/src/features/childProfile/featureFlags";
+import { firestore } from "@/src/services/firebase/client";
+import { doc, getDoc } from "firebase/firestore";
+
+import type { QuickCheckArchetype } from "@/shared/childProfile/archetypeQuickCheck";
 
 const STORAGE_KEY = "@itp/narrative-onboarding-v1";
 /** Fast-path key: set once when narrative is fully complete, so we skip Firestore on every launch. */
@@ -189,15 +194,48 @@ export async function syncNarrativeFromFirestore(uid: string): Promise<{
   childBirthDate: string | null;
 }> {
   try {
-    const doc = await getDocument<{
+    const docData = await getDocument<{
       hasCompletedDay1Narrative?: boolean;
       childArchetype?: ChildArchetype;
       childBirthDate?: string;
+      activeChildId?: string | null;
     }>("users", uid);
+
+    let childArchetype = docData?.childArchetype ?? null;
+    let childBirthDate = docData?.childBirthDate ?? null;
+    let hasCompleted = docData?.hasCompletedDay1Narrative === true;
+
+    // Dual-read (Flag A): prefer children/{activeChildId} narrative fields when present.
+    if (
+      childProfileFeatureFlags.migrationDualRead &&
+      typeof docData?.activeChildId === "string" &&
+      docData.activeChildId.trim()
+    ) {
+      try {
+        const childSnap = await getDoc(
+          doc(firestore, "users", uid, "children", docData.activeChildId),
+        );
+        if (childSnap.exists()) {
+          const child = childSnap.data() as {
+            archetype?: ChildArchetype | null;
+            dob?: string | null;
+            hasCompletedDay1Narrative?: boolean;
+          };
+          if (child.archetype) childArchetype = child.archetype;
+          if (typeof child.dob === "string" && child.dob.trim()) {
+            childBirthDate = child.dob.trim();
+          }
+          if (child.hasCompletedDay1Narrative === true) hasCompleted = true;
+        }
+      } catch {
+        /* fall through to legacy root fields */
+      }
+    }
+
     return {
-      hasCompleted: doc?.hasCompletedDay1Narrative === true,
-      childArchetype: doc?.childArchetype ?? null,
-      childBirthDate: doc?.childBirthDate ?? null,
+      hasCompleted,
+      childArchetype,
+      childBirthDate,
     };
   } catch {
     return { hasCompleted: false, childArchetype: null, childBirthDate: null };
@@ -214,4 +252,97 @@ export async function syncNarrativeToFirestore(
   } catch (error) {
     if (options?.throwOnError) throw error;
   }
+}
+
+// ─── Prologue Part 2 draft (uid-scoped, resumable) ───────────────────────────
+
+export type ProloguePart2Step =
+  | "name"
+  | "nickname"
+  | "birthdate"
+  | "quick_check"
+  | "result"
+  | "prepare"
+  | "sanctuary_intro";
+
+export type ProloguePart2Draft = {
+  draftId: string;
+  currentStep: ProloguePart2Step;
+  keeperName: string | null;
+  childNickname: string | null;
+  childBirthDate: string | null;
+  archetype: QuickCheckArchetype | null;
+  quickCheckTally: QuickCheckArchetype[];
+  displayArchetypeName: string | null;
+  tieOccurred: boolean;
+  updatedAtIso: string;
+};
+
+const PART2_DRAFT_PREFIX = "@itp/prologue-part2-draft-v1:";
+const PRE_AUTH_COMPLETE_KEY = "@itp/prologue-preauth-complete-v1";
+
+function part2DraftKey(uid: string): string {
+  return `${PART2_DRAFT_PREFIX}${uid}`;
+}
+
+function newDraftId(): string {
+  return `p2_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function createEmptyProloguePart2Draft(
+  existing?: Partial<ProloguePart2Draft> | null,
+): ProloguePart2Draft {
+  return {
+    draftId: existing?.draftId ?? newDraftId(),
+    currentStep: existing?.currentStep ?? "name",
+    keeperName: existing?.keeperName ?? null,
+    childNickname: existing?.childNickname ?? null,
+    childBirthDate: existing?.childBirthDate ?? null,
+    archetype: existing?.archetype ?? null,
+    quickCheckTally: existing?.quickCheckTally ?? [],
+    displayArchetypeName: existing?.displayArchetypeName ?? null,
+    tieOccurred: existing?.tieOccurred ?? false,
+    updatedAtIso: new Date().toISOString(),
+  };
+}
+
+export async function getProloguePart2Draft(uid: string): Promise<ProloguePart2Draft | null> {
+  try {
+    const raw = await AsyncStorage.getItem(part2DraftKey(uid));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ProloguePart2Draft>;
+    if (typeof parsed.draftId !== "string" || !parsed.draftId) return null;
+    return createEmptyProloguePart2Draft(parsed);
+  } catch {
+    return null;
+  }
+}
+
+export async function saveProloguePart2Draft(
+  uid: string,
+  patch: Partial<ProloguePart2Draft>,
+): Promise<ProloguePart2Draft> {
+  const current = (await getProloguePart2Draft(uid)) ?? createEmptyProloguePart2Draft();
+  const next: ProloguePart2Draft = {
+    ...current,
+    ...patch,
+    draftId: patch.draftId ?? current.draftId,
+    quickCheckTally: patch.quickCheckTally ?? current.quickCheckTally,
+    updatedAtIso: new Date().toISOString(),
+  };
+  await AsyncStorage.setItem(part2DraftKey(uid), JSON.stringify(next));
+  return next;
+}
+
+export async function clearProloguePart2Draft(uid: string): Promise<void> {
+  await AsyncStorage.removeItem(part2DraftKey(uid));
+}
+
+export async function markPreAuthPrologueComplete(): Promise<void> {
+  await AsyncStorage.setItem(PRE_AUTH_COMPLETE_KEY, "1");
+}
+
+export async function hasCompletedPreAuthPrologue(): Promise<boolean> {
+  const v = await AsyncStorage.getItem(PRE_AUTH_COMPLETE_KEY);
+  return v === "1";
 }

@@ -61,12 +61,13 @@ exports.db = void 0;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const firebase_admin_1 = __importDefault(require("firebase-admin"));
-// Optional `functions/.env` (gitignored) so local emulators pick up FIREBASE_SERVICE_ACCOUNT_PATH without shell exports.
-const functionsEnvPath = path.join(__dirname, "..", ".env");
-if (fs.existsSync(functionsEnvPath)) {
+// Local-only env (gitignored). Prefer `.env.local` — Firebase deploy rejects `FIREBASE_*` keys in `.env`.
+for (const name of [".env.local", ".env"]) {
+  const envPath = path.join(__dirname, "..", name);
+  if (!fs.existsSync(envPath)) continue;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require("dotenv").config({ path: functionsEnvPath });
+    require("dotenv").config({ path: envPath });
   } catch {
     /* dotenv missing — use shell env only */
   }
@@ -74,9 +75,8 @@ if (fs.existsSync(functionsEnvPath)) {
 /**
  * Firebase Admin initialization:
  * - **Deployed Cloud Functions:** `initializeApp()` with no args uses the runtime service account (recommended).
- *   Do not set `FIREBASE_SERVICE_ACCOUNT_PATH` in production deploy.
- * - **Local / emulators:** set `FIREBASE_SERVICE_ACCOUNT_PATH` to your JSON key path (outside git), or copy
- *   [`.env.example`](./.env.example) to `functions/.env` and adjust the path.
+ *   Do not set `FIREBASE_SERVICE_ACCOUNT_PATH` in deployed `.env` / `.env.<project>` files.
+ * - **Local / emulators:** set `FIREBASE_SERVICE_ACCOUNT_PATH` in `functions/.env.local` (see `.env.example`).
  */
 if (firebase_admin_1.default.apps.length === 0) {
   const keyPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH?.trim();

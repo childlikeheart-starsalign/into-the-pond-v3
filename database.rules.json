@@ -5,22 +5,80 @@
 
     "presence": {
       "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid"
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['state', 'lastSeen'])",
+        "state": {
+          ".validate": "newData.isString() && (newData.val() === 'online' || newData.val() === 'offline')"
+        },
+        "lastSeen": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": { ".validate": false }
       }
     },
 
     "sessions": {
       "$sessionId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
+        ".read": "auth != null && root.child('sessions/' + $sessionId + '/members/' + auth.uid).exists()",
+
+        ".write": "auth != null && !data.exists() && newData.child('createdBy').val() === auth.uid && newData.child('members').child(auth.uid).exists()",
+
+        ".validate": "newData.hasChildren(['createdBy', 'members', 'expiresAt'])",
+
+        "createdBy": {
+          ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())"
+        },
+
+        "members": {
+          "$memberUid": {
+            ".write": "auth != null && root.child('sessions/' + $sessionId + '/members/' + auth.uid).exists()",
+            ".validate": "newData.isBoolean() === false && newData.hasChildren(['role', 'addedAt'])",
+            "role": {
+              ".validate": "newData.isString() && (newData.val() === 'parent' || newData.val() === 'child' || newData.val() === 'invited')"
+            },
+            "addedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "expiresAt": {
+          ".validate": "newData.isNumber() && newData.val() > now"
+        },
+
+        "presence": {
+          "$uid": {
+            ".read": "auth != null && root.child('sessions/' + $sessionId + '/members/' + auth.uid).exists()",
+            ".write": "auth != null && auth.uid === $uid && root.child('sessions/' + $sessionId + '/members/' + auth.uid).exists()",
+            ".validate": "newData.hasChildren(['state', 'ts'])",
+            "state": {
+              ".validate": "newData.isString() && (newData.val() === 'joined' || newData.val() === 'left')"
+            },
+            "ts": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "ritual": {
+          "$key": {
+            ".read": "auth != null && root.child('sessions/' + $sessionId + '/members/' + auth.uid).exists()",
+            ".write": "auth != null && root.child('sessions/' + $sessionId + '/members/' + auth.uid).exists()",
+            ".validate": "newData.hasChildren(['type', 'authorUid', 'ts']) && newData.child('authorUid').val() === auth.uid"
+          }
+        },
+
+        "$other": { ".validate": false }
       }
     },
 
     "_dev": {
       "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid"
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
       }
     }
   }

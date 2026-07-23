@@ -70,3 +70,27 @@ test("foldBaitInventoryFromLedger ignores random_bait cast_create", () => {
     random_bait: 0,
   });
 });
+
+test("foldBaitInventoryFromLedger refunds bait on cast_cancel", () => {
+  const folded = foldBaitInventoryFromLedger([
+    entry({
+      id: "ledger_create",
+      actionType: "cast_create",
+      source: "fishing_catch",
+      metadata: { baitUsed: "bait_mid", baitDeducted: true },
+    }),
+    entry({
+      id: "ledger_cancel",
+      actionType: "cast_cancel",
+      source: "fishing_catch",
+      metadata: { baitUsed: "bait_mid", baitRefunded: true, baitKey: "scale_bait" },
+    }),
+  ]);
+
+  assert.deepEqual(folded, {
+    feather_bait: 0,
+    scale_bait: 0,
+    glimmerdust_bait: 0,
+    random_bait: 0,
+  });
+});

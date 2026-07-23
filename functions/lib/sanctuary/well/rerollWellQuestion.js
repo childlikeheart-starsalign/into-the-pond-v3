@@ -8,7 +8,7 @@ const wellHelpers_1 = require("./wellHelpers");
 const init_1 = require("../../init");
 const economy_1 = require("../economy");
 const resolveCallableIdempotency_1 = require("../economy/resolveCallableIdempotency");
-async function handleRerollWellQuestion(uid, localDate, requestId) {
+async function handleRerollWellQuestion(uid, localDate, requestId, childId) {
   const parsedDate = (0, wellHelpers_1.parseLocalDate)(localDate);
   if (!parsedDate) {
     return { success: false, error: "INVALID_LOCAL_DATE" };
@@ -28,16 +28,14 @@ async function handleRerollWellQuestion(uid, localDate, requestId) {
         committed: false,
       };
     }
-    const userSnap = await tx.get((0, wellHelpers_1.userRef)(uid));
-    const wellStateSnap = await tx.get((0, wellHelpers_1.wellStateRef)(uid));
-    const userData = userSnap.data();
+    await tx.get((0, wellHelpers_1.userRef)(uid));
+    const wellStateSnap = await tx.get((0, wellHelpers_1.wellStateRef)(uid, childId));
     const wellState = (0, wellQuestionService_1.mergeWellState)(wellStateSnap.data());
     if (!wellState.currentQuestionId || wellState.currentQuestionDate !== parsedDate) {
       return { success: false, error: "NO_ACTIVE_QUESTION" };
     }
-    const birthDate = userData?.childBirthDate
-      ? (0, computeAgeBand_1.parseBirthDate)(userData.childBirthDate)
-      : null;
+    const birthRaw = await (0, wellHelpers_1.resolveBirthDateForWell)(tx, uid, childId);
+    const birthDate = birthRaw ? (0, computeAgeBand_1.parseBirthDate)(birthRaw) : null;
     if (!birthDate) {
       return { success: false, error: "MISSING_AGE_BAND" };
     }
@@ -48,7 +46,7 @@ async function handleRerollWellQuestion(uid, localDate, requestId) {
     if (!result) {
       return { success: false, error: "REROLL_LIMIT_REACHED" };
     }
-    tx.set((0, wellHelpers_1.wellStateRef)(uid), result.nextState, { merge: true });
+    tx.set((0, wellHelpers_1.wellStateRef)(uid, childId), result.nextState, { merge: true });
     const response = { success: true, question: result.question };
     (0, resolveCallableIdempotency_1.writeIdempotencyInTransaction)(
       tx,
@@ -83,5 +81,10 @@ function rerollWellQuestionCallable(authUid, data) {
   const rawRequestId = data.requestId;
   const requestId =
     typeof rawRequestId === "string" && rawRequestId.trim() !== "" ? rawRequestId.trim() : "";
-  return handleRerollWellQuestion(uid, String(data.localDate ?? ""), requestId);
+  return handleRerollWellQuestion(
+    uid,
+    String(data.localDate ?? ""),
+    requestId,
+    (0, wellHelpers_1.parseOptionalChildId)(data.childId),
+  );
 }

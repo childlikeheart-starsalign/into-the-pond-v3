@@ -311,4 +311,96 @@ export function runResolveAuthenticatedDestinationSelfTest(): void {
     routes.sanctuary,
     "signed in on gate entry → sanctuary",
   );
+
+  expectEqual(
+    resolveAuthenticatedDestination(
+      baseInput({
+        uid: null,
+        pathname: "/prologue",
+        gateUnlockedThisSession: true,
+      }),
+    ),
+    null,
+    "signed-out Part 1 prologue with gate unlocked → stay",
+  );
+
+  expectEqual(
+    resolveAuthenticatedDestination(
+      baseInput({
+        pathname: "/sanctuary",
+        newOnboarding: {
+          flagEnabled: true,
+          ready: true,
+          needsContinuation: true,
+          legacyComplete: false,
+        },
+        childProfile: {
+          flagEnabled: true,
+          ready: true,
+          needsCreate: true,
+        },
+      }),
+    ),
+    routes.prologueContinuation,
+    "new onboarding incomplete routes before needsCreate",
+  );
+
+  expectEqual(
+    resolveAuthenticatedDestination(
+      baseInput({
+        pathname: "/prologue-continuation",
+        newOnboarding: {
+          flagEnabled: true,
+          ready: true,
+          needsContinuation: true,
+          legacyComplete: false,
+        },
+      }),
+    ),
+    null,
+    "stay on Part 2 while incomplete",
+  );
+
+  expectEqual(
+    resolveAuthenticatedDestination(
+      baseInput({
+        pathname: "/login",
+        newOnboarding: {
+          flagEnabled: true,
+          ready: true,
+          needsContinuation: false,
+          legacyComplete: true,
+        },
+        narrative: {
+          ready: true,
+          needsArchetype: true,
+          needsBirthDate: false,
+          needsNarrative: false,
+        },
+      }),
+    ),
+    routes.sanctuary,
+    "legacy Day1 complete skips new Part 2 and skips forced legacy narrative when skip applies",
+  );
+
+  expectEqual(
+    resolveAuthenticatedDestination(
+      baseInput({
+        pathname: "/login",
+        newOnboarding: {
+          flagEnabled: false,
+          ready: true,
+          needsContinuation: false,
+          legacyComplete: false,
+        },
+        childProfile: {
+          flagEnabled: true,
+          ready: true,
+          needsCreate: true,
+        },
+      }),
+    ),
+    routes.createChildProfile,
+    "flag-off preserves Flag B create-child route",
+  );
 }

@@ -4,7 +4,7 @@ exports.getRevenueCatSubscriber = getRevenueCatSubscriber;
 const config_1 = require("./config");
 async function getRevenueCatSubscriber(appUserId) {
   if (!config_1.SETTINGS.revenueCat.apiKey) {
-    throw new Error("Missing revenuecat.secret_key runtime config");
+    throw new Error("Missing REVENUECAT_SECRET_KEY (or REVENUECAT_API_KEY) runtime env");
   }
   const response = await fetch(
     `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`,

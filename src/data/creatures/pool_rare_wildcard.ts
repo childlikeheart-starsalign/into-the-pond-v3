@@ -8,6 +8,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
     lessonId: "1.1",
     moduleId: 1,
     visualMetaphor:
@@ -25,6 +26,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
     lessonId: "1.6",
     moduleId: 1,
     visualMetaphor:
@@ -41,6 +43,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
     lessonId: "2.3",
     moduleId: 2,
     visualMetaphor:
@@ -57,6 +60,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
     lessonId: "2.8",
     moduleId: 2,
     visualMetaphor:
@@ -74,6 +78,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
     lessonId: "3.4",
     moduleId: 3,
     visualMetaphor:
@@ -90,6 +95,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "common-rare",
     lessonId: "3.5",
     moduleId: 3,
     visualMetaphor: "A fish whose scales reflect the entire pond back at you from a single angle",
@@ -105,6 +111,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
     lessonId: "4.1",
     moduleId: 4,
     visualMetaphor:
@@ -122,6 +129,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
     lessonId: "4.3",
     moduleId: 4,
     visualMetaphor: "Two fish that move in perfect synchrony — always together, always distinct",
@@ -137,6 +145,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor:
@@ -154,6 +163,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
     lessonId: "5.3",
     moduleId: 5,
     visualMetaphor: "A fish that swims along the exact line where light stops and depth begins",
@@ -169,6 +179,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "mid-rare",
     lessonId: "5.4",
     moduleId: 5,
     visualMetaphor:
@@ -185,6 +196,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "top-rare",
     lessonId: "5.5",
     moduleId: 5,
     visualMetaphor:
@@ -201,6 +213,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "top-rare",
     lessonId: "5.6",
     moduleId: 5,
     visualMetaphor:
@@ -218,6 +231,7 @@ export const pool_rare_wildcard: Creature[] = [
     elementType: "any",
     rodRequired: "rare5",
     peakWonderGate: 65,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor:

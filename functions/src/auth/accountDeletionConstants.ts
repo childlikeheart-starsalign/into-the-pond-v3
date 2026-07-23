@@ -10,7 +10,7 @@ export const PII_SUBCOLLECTIONS = [
 ] as const;
 
 export function isAccountDeletionEnabled(): boolean {
-  return process.env.ACCOUNT_DELETION_ENABLED !== "false";
+  return process.env.ACCOUNT_DELETION_ENABLED === "true";
 }
 
 export function accountDeletionIdempotencyKey(requestId: string): string {

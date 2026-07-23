@@ -7,6 +7,7 @@ import { narrativeContent } from "@/src/constants/narrative/narrativeContent";
 import { Portrait916Frame } from "@/src/components/layout/Portrait916Frame";
 import { ChildArchetype } from "@/src/constants/narrative/types";
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 
 type ArchetypeSelectorProps = {
   onSelect: (archetype: ChildArchetype) => void;
@@ -33,7 +34,10 @@ export function ArchetypeSelector({ onSelect }: ArchetypeSelectorProps) {
               <Pressable
                 key={option.id}
                 style={({ pressed }) => [styles.choiceBtn, pressed && styles.choiceBtnPressed]}
-                onPress={() => onSelect(option.id)}
+                onPress={() => {
+                  playPaperClick();
+                  onSelect(option.id);
+                }}
                 accessibilityRole="button"
                 accessibilityLabel={option.label}
                 accessibilityHint={option.description}

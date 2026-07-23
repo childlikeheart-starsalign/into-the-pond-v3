@@ -3,8 +3,10 @@ import { applyReroll, mergeWellState } from "./wellQuestionService";
 import type { WellBankQuestion } from "./types";
 import {
   parseLocalDate,
+  parseOptionalChildId,
   recordWellAnalytics,
   requireUid,
+  resolveBirthDateForWell,
   userRef,
   wellStateRef,
 } from "./wellHelpers";
@@ -30,6 +32,7 @@ export async function handleRerollWellQuestion(
   uid: string,
   localDate: string,
   requestId: string,
+  childId?: string | null,
 ): Promise<RerollWellQuestionResponse> {
   const parsedDate = parseLocalDate(localDate);
   if (!parsedDate) {
@@ -52,16 +55,16 @@ export async function handleRerollWellQuestion(
       };
     }
 
-    const userSnap = await tx.get(userRef(uid));
-    const wellStateSnap = await tx.get(wellStateRef(uid));
-    const userData = userSnap.data() as { childBirthDate?: string } | undefined;
+    await tx.get(userRef(uid));
+    const wellStateSnap = await tx.get(wellStateRef(uid, childId));
     const wellState = mergeWellState(wellStateSnap.data());
 
     if (!wellState.currentQuestionId || wellState.currentQuestionDate !== parsedDate) {
       return { success: false as const, error: "NO_ACTIVE_QUESTION" as const };
     }
 
-    const birthDate = userData?.childBirthDate ? parseBirthDate(userData.childBirthDate) : null;
+    const birthRaw = await resolveBirthDateForWell(tx, uid, childId);
+    const birthDate = birthRaw ? parseBirthDate(birthRaw) : null;
     if (!birthDate) {
       return { success: false as const, error: "MISSING_AGE_BAND" as const };
     }
@@ -75,7 +78,7 @@ export async function handleRerollWellQuestion(
       return { success: false as const, error: "REROLL_LIMIT_REACHED" as const };
     }
 
-    tx.set(wellStateRef(uid), result.nextState, { merge: true });
+    tx.set(wellStateRef(uid, childId), result.nextState, { merge: true });
 
     const response = { success: true as const, question: result.question };
     writeIdempotencyInTransaction(tx, userRef(uid), idempotencyKey, "well_reroll", response);
@@ -107,11 +110,16 @@ export async function handleRerollWellQuestion(
 
 export function rerollWellQuestionCallable(
   authUid: string | undefined,
-  data: { localDate?: unknown; requestId?: unknown },
+  data: { localDate?: unknown; requestId?: unknown; childId?: unknown },
 ): Promise<RerollWellQuestionResponse> {
   const uid = requireUid(authUid);
   const rawRequestId = data.requestId;
   const requestId =
     typeof rawRequestId === "string" && rawRequestId.trim() !== "" ? rawRequestId.trim() : "";
-  return handleRerollWellQuestion(uid, String(data.localDate ?? ""), requestId);
+  return handleRerollWellQuestion(
+    uid,
+    String(data.localDate ?? ""),
+    requestId,
+    parseOptionalChildId(data.childId),
+  );
 }

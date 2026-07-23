@@ -18,13 +18,22 @@ export const colors = {
 export const fontFamilies = {
   heading: "PlayfairDisplay_700Bold",
   headingRegular: "PlayfairDisplay_400Regular",
+  headingSemi: "PlayfairDisplay_600SemiBold",
   /** Gate screen + pricing card titles */
   gateTitle: "CormorantGaramond_700Bold",
   gateTitleRegular: "CormorantGaramond_400Regular",
+  gateTitleSemi: "CormorantGaramond_600SemiBold",
+  /** Field-journal italic captions (catch celebration, notes). */
+  gateTitleItalic: "CormorantGaramond_400Regular_Italic",
   handwritten: "CrustaceansSignatureDemo",
   body: "Inter_400Regular",
   bodyMedium: "Inter_500Medium",
   bodySemi: "Inter_600SemiBold",
+  /**
+   * Journal margin marks — spec is 29LT Okaso Bold.
+   * Interim: Inter SemiBold until Okaso Bold is added under assets/fonts/.
+   */
+  journalMargin: "Inter_600SemiBold",
 };
 
 /** Well of Questions card typography */

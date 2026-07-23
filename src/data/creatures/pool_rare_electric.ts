@@ -8,6 +8,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.2",
     moduleId: 2,
     visualMetaphor: "A fish smaller than a fingernail, visible only by its own spark",
@@ -24,6 +25,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.4",
     moduleId: 2,
     visualMetaphor:
@@ -40,6 +42,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.8",
     moduleId: 2,
     visualMetaphor:
@@ -57,6 +60,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.9",
     moduleId: 2,
     visualMetaphor: "A warm yellow fish that hums with gentle charge, only activating when touched",
@@ -72,6 +76,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "3.5",
     moduleId: 3,
     visualMetaphor:
@@ -89,6 +94,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.2",
     moduleId: 4,
     visualMetaphor:
@@ -105,6 +111,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor:
@@ -122,6 +129,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "3.6",
     moduleId: 3,
     visualMetaphor: "A fish that sends slow pulses through the pond floor, felt before it is seen",
@@ -137,6 +145,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.1",
     moduleId: 2,
     visualMetaphor: "A gentle fish that produces contained, elegant arcs of light between its fins",
@@ -152,6 +161,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.6",
     moduleId: 4,
     visualMetaphor: "A fish surrounded by a visible halo of static charge that repels disturbance",
@@ -167,6 +177,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.4",
     moduleId: 5,
     visualMetaphor: "A slow-burning fish that moves with the deliberate patience of a lit fuse",
@@ -182,6 +193,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.5",
     moduleId: 5,
     visualMetaphor:
@@ -198,6 +210,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "3.7",
     moduleId: 3,
     visualMetaphor:
@@ -214,6 +227,7 @@ export const pool_rare_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "rare4",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor:

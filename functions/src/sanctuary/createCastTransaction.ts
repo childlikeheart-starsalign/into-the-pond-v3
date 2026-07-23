@@ -1,7 +1,8 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
-import { applyOperationalCounterResetsInTransaction } from "./dailyCounters";
+import { CAST_DURATION_MS } from "./castTiming";
+import { buildOperationalCounterResetPatch } from "./dailyCounters";
 import { buildAuditOnlyLedgerEntry, castCreateKey, idempotencyDocId } from "./economy";
 import { commitEconomyAction } from "./economy/commitEconomyAction";
 import { readIdempotencyInTransaction } from "./economy/resolveCallableIdempotency";
@@ -10,25 +11,37 @@ import { assertRodOwnedForCast } from "./progression/fishingPermissionService";
 import { uiBaitIdToTier, uiRodIdToDomain } from "./rodCatalog";
 import type { FishingRodId } from "./types";
 
-export const CAST_DURATION_MS = 2 * 60 * 1000;
+/** Re-export for callers / tests — single source is castTiming.ts. */
+export { CAST_DURATION_MS } from "./castTiming";
 
 const CONSUMABLE_BAIT_IDS = new Set(["feather_bait", "scale_bait", "glimmerdust_bait"]);
+
+/** UI bait ids (FishingModal) → inventory keys. Free default bait_basic does not deduct. */
+const UI_BAIT_TO_INVENTORY_KEY: Record<string, string> = {
+  bait_mid: "scale_bait",
+  bait_premium: "glimmerdust_bait",
+  feather_bait: "feather_bait",
+  scale_bait: "scale_bait",
+  glimmerdust_bait: "glimmerdust_bait",
+};
 
 function resolveBaitInventoryPatch(
   baitUsed: string,
   inventory: Record<string, unknown> | undefined,
 ): { patch: Record<string, unknown> | undefined; baitDeducted: boolean } {
   const normalized = (baitUsed ?? "").trim();
-  if (!normalized || normalized === "random_bait") {
+  // Free default UI bait and legacy random_bait — no inventory deduction.
+  if (!normalized || normalized === "random_bait" || normalized === "bait_basic") {
     return { patch: undefined, baitDeducted: false };
   }
 
-  if (!CONSUMABLE_BAIT_IDS.has(normalized)) {
+  const inventoryKey = UI_BAIT_TO_INVENTORY_KEY[normalized];
+  if (!inventoryKey || !CONSUMABLE_BAIT_IDS.has(inventoryKey)) {
     throw new HttpsError("failed-precondition", "Unknown bait type");
   }
 
   const baits = (inventory?.baits as Record<string, number> | undefined) ?? {};
-  const balance = baits[normalized] ?? 0;
+  const balance = baits[inventoryKey] ?? 0;
   if (balance < 1) {
     throw new HttpsError("failed-precondition", "Insufficient bait");
   }
@@ -38,14 +51,19 @@ function resolveBaitInventoryPatch(
       ...inventory,
       baits: {
         ...baits,
-        [normalized]: balance - 1,
+        [inventoryKey]: balance - 1,
       },
     },
     baitDeducted: true,
   };
 }
 
-export type CreateCastResponse = { success: true; castId: string; readyAt: number };
+export type CreateCastResponse = {
+  success: true;
+  castId: string;
+  readyAt: number;
+  createdAt: number;
+};
 
 export type RunCreateCastInput = {
   tx: FirebaseFirestore.Transaction;
@@ -79,7 +97,8 @@ export async function runCreateCastInTransaction(
 
   const userSnap = await tx.get(userRef);
   const data = (userSnap.data() ?? {}) as Record<string, unknown>;
-  applyOperationalCounterResetsInTransaction(tx, userRef, data);
+  // Defer counter reset into the final user write — commitEconomyAction still reads.
+  const counterResetPatch = buildOperationalCounterResetPatch(data);
   const activeCast = data.activeCast as
     | { castId?: string; readyTimestamp?: Timestamp }
     | null
@@ -88,7 +107,13 @@ export async function runCreateCastInTransaction(
   if (activeCast?.castId) {
     if (activeCast.castId === castId) {
       const readyAt = activeCast.readyTimestamp?.toMillis() ?? Date.now() + CAST_DURATION_MS;
-      const response: CreateCastResponse = { success: true, castId, readyAt };
+      const existingCreatedAt = (activeCast as { createdAt?: Timestamp }).createdAt?.toMillis?.();
+      const response: CreateCastResponse = {
+        success: true,
+        castId,
+        readyAt,
+        createdAt: existingCreatedAt ?? Date.now(),
+      };
       await commitEconomyAction({
         tx,
         userRef,
@@ -111,6 +136,7 @@ export async function runCreateCastInTransaction(
               reconciledActiveCast: true,
             },
           }),
+          additionalUserPatch: { ...counterResetPatch },
           response,
         }),
       });
@@ -129,11 +155,12 @@ export async function runCreateCastInTransaction(
   }
 
   const readyAt = Date.now() + CAST_DURATION_MS;
+  const createdAtMs = Date.now();
   const { patch: inventoryPatch, baitDeducted } = resolveBaitInventoryPatch(
     baitUsed,
     data.inventory as Record<string, unknown> | undefined,
   );
-  const response: CreateCastResponse = { success: true, castId, readyAt };
+  const response: CreateCastResponse = { success: true, castId, readyAt, createdAt: createdAtMs };
 
   await commitEconomyAction({
     tx,
@@ -144,13 +171,16 @@ export async function runCreateCastInTransaction(
     idempotencyMiss: { hit: false },
     build: () => {
       const additionalUserPatch: Record<string, unknown> = {
+        ...counterResetPatch,
         activeCast: {
           castId,
           readyTimestamp: Timestamp.fromMillis(readyAt),
+          createdAt: Timestamp.fromMillis(createdAtMs),
           rodType,
           baitUsed,
           baitTier: uiBaitIdToTier(baitUsed),
           domainRodId,
+          baitDeducted,
         },
       };
       if (inventoryPatch) {

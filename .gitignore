@@ -1,4 +1,21 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# Encoded lesson MP4s (upload to Firebase Storage; do not commit binaries)
+curriculum/encoded/
+# Local curriculum / lesson binaries (do not commit)
+/curriculum/
+/lesson*.mp4
+/*.mp4
+
+# Local Android debug keystore (never commit)
+**/*.keystore
+.qa/android-debug.keystore
+
+# Firebase CLI cache
+.firebase/
+database-debug.log
+
+# Scratch audio drops at repo root (canonical: assets/audio/)
+/Click*.mp3
+/CreatureAssets/
 
 # dependencies
 node_modules/
@@ -71,4 +88,6 @@ expo-env.d.ts
 
 # local python venvs (docx generator)
 .venv-handoff/
+# Oscar audio drop folder (canonical copies live in assets/audio/fishing/)
+/01-audio-manifest 2/
 .env.local

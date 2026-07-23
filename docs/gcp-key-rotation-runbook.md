@@ -62,9 +62,11 @@ npm run eas:build:preview -- --platform ios
 
 ## 6. Mark complete
 
-- [ ] New configs in `assets/` (verified by script)
-- [ ] New keys restricted in GCP
-- [ ] Old keys disabled
-- [ ] EAS secrets uploaded
-- [ ] Preview build succeeded
-- [ ] Update checkboxes in [`security-firebase-key-leak.md`](security-firebase-key-leak.md) §1–2
+Phase 1 closed **2026-07-23**. Preview build remains Phase 5.
+
+- [x] New configs in `assets/` (verified by script)
+- [x] New keys restricted in GCP
+- [x] Old keys disabled
+- [x] EAS secrets uploaded
+- [ ] Preview build succeeded _(Phase 5)_
+- [x] Update checkboxes in [`security-firebase-key-leak.md`](security-firebase-key-leak.md) §1–2

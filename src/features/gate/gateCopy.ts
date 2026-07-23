@@ -12,9 +12,9 @@ export const gateCopyEn: Record<string, string> = {
 
   "gate.tiers.wooden.title": "Wooden Rod",
   "gate.tiers.wooden.description": "Steady membership for\ndeepening lessons.",
-  "gate.tiers.wooden.lessonRange": "Lessons 1.4 – 3.6",
+  "gate.tiers.wooden.lessonRange": "Lessons 1.4 – 3.7",
   "gate.tiers.wooden.features.rareRod": "Rare rod",
-  "gate.tiers.wooden.features.lessons": "Lessons 1.4 – 3.6",
+  "gate.tiers.wooden.features.lessons": "Lessons 1.4 – 3.7",
 
   "gate.tiers.fiberglass.title": "Fiberglass Rod",
   "gate.tiers.fiberglass.description": "Full curriculum access\nwith premium tools.",
@@ -69,6 +69,7 @@ export const gateCopyEn: Record<string, string> = {
   "gate.delete.scheduled": "Your account is scheduled for deletion on {date}.",
   "gate.delete.scheduledFallback": "Your account is scheduled for deletion.",
   "gate.delete.error": "Unable to delete account. Please try again.",
+  "gate.delete.errorServer": "Account deletion failed on the server. Try again later.",
 
   "gate.sticky.currentTier": "Current tier",
   "gate.a11y.pricingCard": "Membership tier",

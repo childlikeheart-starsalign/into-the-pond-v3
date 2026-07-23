@@ -1,4 +1,4 @@
-import { get, onDisconnect, ref, remove, serverTimestamp, set } from "firebase/database";
+import { get, onDisconnect, ref, remove, set } from "firebase/database";
 
 import { firebaseAuth, realtimeDb } from "@/src/services/firebase/client";
 
@@ -17,7 +17,7 @@ export function assertRealtimeDb() {
 }
 
 /**
- * Authenticated dev smoke test — writes `users/{uid}/_dev/ping` scoped by RTDB rules.
+ * Authenticated dev smoke test — writes `_dev/{uid}/ping` scoped by RTDB rules.
  * Call after sign-in when verifying Console + rules + env wiring.
  */
 export async function pingRealtimeDb(): Promise<{ ok: true; at: number }> {
@@ -39,7 +39,7 @@ export async function pingRealtimeDb(): Promise<{ ok: true; at: number }> {
 }
 
 /**
- * Future: online presence at `/presence/{uid}` with automatic cleanup on disconnect.
+ * Online presence at `/presence/{uid}` with automatic cleanup on disconnect.
  * Not wired to any screen yet — Firestore remains canonical for profile/game data.
  */
 export async function setPresenceOnline(online: boolean): Promise<void> {
@@ -49,8 +49,9 @@ export async function setPresenceOnline(online: boolean): Promise<void> {
 
   const presenceRef = ref(db, `presence/${uid}`);
   if (online) {
-    await set(presenceRef, { online: true, lastSeen: serverTimestamp() });
-    await onDisconnect(presenceRef).set({ online: false, lastSeen: serverTimestamp() });
+    const lastSeen = Date.now();
+    await set(presenceRef, { state: "online", lastSeen });
+    await onDisconnect(presenceRef).set({ state: "offline", lastSeen: Date.now() });
     return;
   }
   await remove(presenceRef);

@@ -34,7 +34,14 @@ export const confirmAccountDeletionWeb = onCall(async (request) => {
 
 export const requestAccountDeletionByEmail = onCall(async (request) => {
   const email = typeof request.data?.email === "string" ? request.data.email : "";
-  return requestAccountDeletionByEmailCallable(email);
+  const forwarded = request.rawRequest?.headers?.["x-forwarded-for"];
+  const clientIp =
+    typeof forwarded === "string"
+      ? forwarded.split(",")[0]?.trim() || null
+      : Array.isArray(forwarded)
+        ? String(forwarded[0] ?? "").trim() || null
+        : request.rawRequest?.ip || null;
+  return requestAccountDeletionByEmailCallable(email, { clientIp });
 });
 
 export { purgeExpiredAccountDeletions } from "./purgeExpiredAccountDeletions";

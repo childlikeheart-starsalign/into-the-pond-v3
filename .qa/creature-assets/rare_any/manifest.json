@@ -1,0 +1,200 @@
+{
+  "sheet": "rare_any",
+  "source": "rare_any_creatures_86-99-a8d7be2f-9f7d-4bcb-9f32-411589bdec28.png",
+  "paper": [
+    225,
+    198,
+    154
+  ],
+  "count": 14,
+  "exports": [
+    {
+      "name": "prism_drifter",
+      "displayName": "Prism Drifter",
+      "sourceRect": {
+        "left": 19,
+        "top": 51,
+        "width": 224,
+        "height": 154,
+        "cx": 131,
+        "cy": 128
+      },
+      "visiblePixels": 7856
+    },
+    {
+      "name": "threshold_fish",
+      "displayName": "Threshold Fish",
+      "sourceRect": {
+        "left": 153,
+        "top": 45,
+        "width": 238,
+        "height": 166,
+        "cx": 272,
+        "cy": 128
+      },
+      "visiblePixels": 19830
+    },
+    {
+      "name": "double_current",
+      "displayName": "Double Current",
+      "sourceRect": {
+        "left": 319,
+        "top": 42,
+        "width": 230,
+        "height": 180,
+        "cx": 434,
+        "cy": 132
+      },
+      "visiblePixels": 20142
+    },
+    {
+      "name": "compass_glide",
+      "displayName": "Compass Glide",
+      "sourceRect": {
+        "left": 475,
+        "top": 45,
+        "width": 230,
+        "height": 166,
+        "cx": 590,
+        "cy": 128
+      },
+      "visiblePixels": 18702
+    },
+    {
+      "name": "convergence",
+      "displayName": "Convergence",
+      "sourceRect": {
+        "left": 629,
+        "top": 45,
+        "width": 238,
+        "height": 166,
+        "cx": 748,
+        "cy": 128
+      },
+      "visiblePixels": 19277
+    },
+    {
+      "name": "deep_mirror",
+      "displayName": "Deep Mirror",
+      "sourceRect": {
+        "left": 0,
+        "top": 233,
+        "width": 229,
+        "height": 186,
+        "cx": 114.5,
+        "cy": 326
+      },
+      "visiblePixels": 20180
+    },
+    {
+      "name": "phase_swimmer",
+      "displayName": "Phase Swimmer",
+      "sourceRect": {
+        "left": 163,
+        "top": 233,
+        "width": 250,
+        "height": 186,
+        "cx": 288,
+        "cy": 326
+      },
+      "visiblePixels": 19654
+    },
+    {
+      "name": "echo_twin",
+      "displayName": "Echo Twin",
+      "sourceRect": {
+        "left": 350,
+        "top": 233,
+        "width": 256,
+        "height": 186,
+        "cx": 478,
+        "cy": 326
+      },
+      "visiblePixels": 20127
+    },
+    {
+      "name": "origin_spark",
+      "displayName": "Origin Spark",
+      "sourceRect": {
+        "left": 541,
+        "top": 212,
+        "width": 238,
+        "height": 212,
+        "cx": 660,
+        "cy": 318
+      },
+      "visiblePixels": 19798
+    },
+    {
+      "name": "horizon_walker",
+      "displayName": "Horizon Walker",
+      "sourceRect": {
+        "left": 709,
+        "top": 233,
+        "width": 262,
+        "height": 186,
+        "cx": 840,
+        "cy": 326
+      },
+      "visiblePixels": 20266
+    },
+    {
+      "name": "memory_fish",
+      "displayName": "Memory Fish",
+      "sourceRect": {
+        "left": 0,
+        "top": 431,
+        "width": 254,
+        "height": 198,
+        "cx": 127,
+        "cy": 530
+      },
+      "visiblePixels": 24631
+    },
+    {
+      "name": "bridge_swimmer",
+      "displayName": "Bridge Swimmer",
+      "sourceRect": {
+        "left": 172,
+        "top": 436,
+        "width": 268,
+        "height": 192,
+        "cx": 306,
+        "cy": 532
+      },
+      "visiblePixels": 22885
+    },
+    {
+      "name": "liminal_glide",
+      "displayName": "Liminal Glide",
+      "sourceRect": {
+        "left": 367,
+        "top": 436,
+        "width": 250,
+        "height": 192,
+        "cx": 492,
+        "cy": 532
+      },
+      "visiblePixels": 20847
+    },
+    {
+      "name": "whole_current",
+      "displayName": "Whole Current",
+      "sourceRect": {
+        "left": 548,
+        "top": 436,
+        "width": 288,
+        "height": 192,
+        "cx": 692,
+        "cy": 532
+      },
+      "visiblePixels": 25594
+    }
+  ],
+  "review": [
+    {
+      "file": "liminal_glide.png",
+      "reason": "Fully translucent watercolor wash — inspect on dark UI surfaces"
+    }
+  ]
+}

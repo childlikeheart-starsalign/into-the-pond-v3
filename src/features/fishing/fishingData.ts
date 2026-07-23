@@ -3,7 +3,7 @@ import type { ImageSourcePropType } from "react-native";
 /**
  * Single source of truth for rod and bait definitions.
  * isPremium: true -> locked behind paywall for free users.
- * isLecture: true -> intended for a future lesson-completion gate.
+ * Mid/premium bait also require inventory stock (see FishingModal).
  */
 export type RodTier = "basic" | "rare" | "epic";
 export type FishingElement = "fire" | "water" | "wind" | "electric" | "any";
@@ -21,7 +21,6 @@ export interface FishingRod {
 export interface Bait {
   id: string;
   isPremium: boolean;
-  isLecture: boolean;
   asset: ImageSourcePropType;
   previewAsset: ImageSourcePropType;
 }
@@ -122,21 +121,18 @@ export const BAITS: Bait[] = [
   {
     id: "bait_basic",
     isPremium: false,
-    isLecture: false,
     asset: require("@/assets/Fishing/baits/bait_basic.png"),
     previewAsset: require("@/assets/Fishing/preview/baits/bait_basic.png"),
   },
   {
     id: "bait_mid",
     isPremium: true,
-    isLecture: true,
     asset: require("@/assets/Fishing/baits/bait_mid.png"),
     previewAsset: require("@/assets/Fishing/preview/baits/bait_mid.png"),
   },
   {
     id: "bait_premium",
     isPremium: true,
-    isLecture: true,
     asset: require("@/assets/Fishing/baits/bait_premium.png"),
     previewAsset: require("@/assets/Fishing/preview/baits/bait_premium.png"),
   },

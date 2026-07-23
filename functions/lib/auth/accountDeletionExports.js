@@ -38,7 +38,14 @@ exports.confirmAccountDeletionWeb = (0, https_1.onCall)(async (request) => {
 });
 exports.requestAccountDeletionByEmail = (0, https_1.onCall)(async (request) => {
   const email = typeof request.data?.email === "string" ? request.data.email : "";
-  return (0, accountDeletionCallables_1.requestAccountDeletionByEmailCallable)(email);
+  const forwarded = request.rawRequest?.headers?.["x-forwarded-for"];
+  const clientIp =
+    typeof forwarded === "string"
+      ? forwarded.split(",")[0]?.trim() || null
+      : Array.isArray(forwarded)
+        ? String(forwarded[0] ?? "").trim() || null
+        : request.rawRequest?.ip || null;
+  return (0, accountDeletionCallables_1.requestAccountDeletionByEmailCallable)(email, { clientIp });
 });
 var purgeExpiredAccountDeletions_1 = require("./purgeExpiredAccountDeletions");
 Object.defineProperty(exports, "purgeExpiredAccountDeletions", {

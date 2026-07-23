@@ -203,15 +203,13 @@ Password reset and verification emails use **`ActionCodeSettings`** in [`src/ser
 
 Tuning **`handleCodeInApp`** / domains / templates on physical devices is tracked in **`TECH_DEBT.md`** (_Auth email links and deep links_ → **Checklist**).
 
-Set Firebase Functions runtime config before deploy:
+firebase functions:config:set is deprecated for Functions v2. Runtime settings live in
+`functions/src/config.ts` via `process.env` (see `functions/.env.example`). Optional:
 
 ```bash
-firebase functions:config:set \
-  revenuecat.secret_key="YOUR_REVENUECAT_SECRET_KEY" \
-  revenuecat.entitlement_pro="into_the_pond_pro" \
-  revenuecat.entitlement_wooden="wooden_rod" \
-  revenuecat.entitlement_fiberglass="fiberglass_rod" \
-  revenuecat.entitlement_lifetime="lifetime_keeper"
+# In functions/.env.into-the-pond or Secret Manager — not functions:config:set
+REVENUECAT_SECRET_KEY=...
+REVENUECAT_ENTITLEMENT_PRO=into_the_pond_pro
 ```
 
 ## Project layout

@@ -36,8 +36,11 @@ import type {
   SelfCheckRitual,
   SelfCheckRitualStep,
 } from "@/src/features/diary/types";
-import { useRitualAmbientSound } from "@/src/hooks/useRitualAmbientSound";
+import { useDiaryRitualMiddleAmbientSound } from "@/src/hooks/useDiaryRitualMiddleAmbientSound";
+import { useEveningPondSuppression } from "@/src/hooks/useEveningPondSuppression";
 import { Sentry } from "@/src/services/sentry/init";
+import { playClosingTheJournal } from "@/src/services/audio/playClosingTheJournal";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 
 const DEFAULT_STEP_ORDER: SelfCheckRitualStep[] = [
   "arrival",
@@ -223,10 +226,17 @@ export function DiaryRitualFlow({
   const maxStepIndex = stepOrder.length - 1;
   const step = stepOrder[stepIndex] ?? "closure";
 
-  useRitualAmbientSound({
-    enabled: step === "arrival" || step === "closure",
-    volume: step === "closure" ? 0.12 : 0.18,
+  const isArrivalOrClosure = step === "arrival" || step === "closure";
+  const isMiddleStep = !isArrivalOrClosure;
+
+  useEveningPondSuppression("diary-ritual-middle", { kind: "pause", active: isMiddleStep });
+  useEveningPondSuppression("diary-ritual-volume", {
+    kind: "pause",
+    active: false,
+    volumeOnly: true,
+    volume: isArrivalOrClosure ? (step === "closure" ? 0.12 : 0.18) : undefined,
   });
+  useDiaryRitualMiddleAmbientSound({ active: isMiddleStep, reduceMotion });
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
@@ -302,6 +312,7 @@ export function DiaryRitualFlow({
 
   const handleReframeSelect = useCallback(
     (value: string) => {
+      playPaperClick();
       advanceAfterQuotedSelect(
         value,
         "reframeAssumption",
@@ -315,6 +326,7 @@ export function DiaryRitualFlow({
 
   const handleRuleSelect = useCallback(
     (value: string) => {
+      playPaperClick();
       advanceAfterQuotedSelect(
         value,
         "ruleAssumption",
@@ -460,11 +472,13 @@ export function DiaryRitualFlow({
     if (isPlanting) return;
 
     if (step === "intention") {
+      playPaperClick();
       setStepIndex((index) => index + 1);
       return;
     }
 
     if (step === "closure") {
+      void playClosingTheJournal();
       try {
         await onComplete(responses);
       } catch (error) {
@@ -475,6 +489,8 @@ export function DiaryRitualFlow({
       }
       return;
     }
+
+    playPaperClick();
 
     setStepIndex((index) => Math.min(index + 1, maxStepIndex));
   }, [step, arrivalLineDone, isPlanting, maxStepIndex, onComplete, responses]);
@@ -1035,7 +1051,10 @@ export function DiaryRitualFlow({
                     accessibilityLabel={suggestion}
                     accessibilityState={{ selected }}
                     style={[styles.suggestionChip, selected && styles.suggestionChipSelected]}
-                    onPress={() => patch({ intentionAction: suggestion })}
+                    onPress={() => {
+                      playPaperClick();
+                      patch({ intentionAction: suggestion });
+                    }}
                   >
                     <Text
                       style={[styles.suggestionText, selected && styles.suggestionTextSelected]}

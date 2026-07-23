@@ -5,9 +5,10 @@ import {
   lessonProgressFromCompletedMap,
   mergeEvaluateResult,
 } from "./evaluateCraftable";
-import { TOTAL_LESSON_COUNT } from "./moduleRodMap";
+import { ALL_LESSON_IDS, TOTAL_LESSON_COUNT } from "./moduleRodMap";
 import { computePartsAwardForLessonCompletion } from "./partsAwards";
 import { ROD_PROGRESSION_CRAFT_COSTS } from "./craftCosts";
+import { isRodOwnedForFishing } from "./rodFishingAccess";
 
 function expectEqual<T>(actual: T, expected: T, message: string) {
   if (actual !== expected) {
@@ -105,8 +106,71 @@ export function runRodProgressionSelfTest(): void {
   const merged = mergeEvaluateResult({}, wildcardGift);
   expectEqual(merged.rare_wildcard?.state, "ready", "wildcard merged to ready");
   expectEqual(merged.rare_wildcard?.giftSource, "journey_gift", "wildcard gift source");
+
+  // Journey 1/2/3 — ready rods stay ready (no decay / no auto-lock on re-evaluate).
+  const readyStaysReady = evaluateCraftableStates({
+    lessonProgress: moduleOneComplete,
+    playerRods: {
+      rare_fire: {
+        rodId: "rare_fire",
+        state: "ready",
+        craftStartedAt: "2026-01-01T00:00:00.000Z",
+        craftCompletedAt: "2026-01-02T00:00:00.000Z",
+        wonderInvested: 25,
+        partsSpentOnCraft: 4,
+        sourceModule: 1,
+      },
+    },
+    subscriptionTier: "wooden",
+    inventory: { parts: 0, storedWonder: 0 },
+  });
+  expectEqual(
+    readyStaysReady.transitions.find((t) => t.rodId === "rare_fire"),
+    undefined,
+    "Journey 2/3: ready rod does not transition away on re-evaluate",
+  );
+
+  // Journey 6 — alreadyCompleted / already in progress map awards 0 parts (no retroactive economy).
+  const zeroRetro = computePartsAwardForLessonCompletion({
+    lessonId: "1.1",
+    lessonProgress: moduleOneComplete,
+    alreadyCompleted: true,
+  });
+  expectEqual(zeroRetro.total, 0, "Journey 6: no retroactive parts when alreadyCompleted");
+
+  // Journey 8 — curriculum complete + rare in hand unlocks epic craftable (lifetime).
+  const allLessons = lessonProgressFromCompletedMap(
+    Object.fromEntries(ALL_LESSON_IDS.map((id) => [id, true])),
+  );
+  const epicPath = evaluateCraftableStates({
+    lessonProgress: allLessons,
+    playerRods: {
+      rare_fire: {
+        rodId: "rare_fire",
+        state: "equipped",
+        craftStartedAt: null,
+        craftCompletedAt: null,
+        wonderInvested: 25,
+        partsSpentOnCraft: 4,
+        sourceModule: 1,
+      },
+    },
+    subscriptionTier: "lifetime",
+    inventory: { parts: 56, storedWonder: 200 },
+  });
+  expectTrue(
+    epicPath.rodUnlocked.includes("epic_fire"),
+    "Journey 8: epic_fire unlocks after curriculum",
+  );
 }
 
 test("rod progression craft formulas", () => {
   runRodProgressionSelfTest();
+});
+
+test("locked rod is not owned for fishing (Journey 5)", () => {
+  expectEqual(isRodOwnedForFishing("locked"), false, "locked cannot cast");
+  expectEqual(isRodOwnedForFishing("craftable"), false, "craftable cannot cast");
+  expectEqual(isRodOwnedForFishing("ready"), true, "ready can cast");
+  expectEqual(isRodOwnedForFishing("equipped"), true, "equipped can cast");
 });

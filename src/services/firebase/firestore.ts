@@ -1,6 +1,9 @@
 import { addDoc, collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 
-import { assertClientSafeUserPayload } from "@/shared/firestore/economyFieldRegistry";
+import {
+  assertClientSafeUserPayload,
+  assertClientSafeUserUpdatePayload,
+} from "@/shared/firestore/economyFieldRegistry";
 import { firestore } from "@/src/services/firebase/client";
 
 export async function createDocument<T extends Record<string, unknown>>(
@@ -19,7 +22,7 @@ export async function setDocument<T extends Record<string, unknown>>(
   payload: T,
 ) {
   if (collectionName === "users") {
-    assertClientSafeUserPayload(payload);
+    assertClientSafeUserUpdatePayload(payload);
     if (__DEV__) {
       console.debug("[Firestore] client-safe users write", {
         documentId,

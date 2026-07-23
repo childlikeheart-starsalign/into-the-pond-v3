@@ -4,6 +4,7 @@
  * Client-side creature pool data only. Cloud Functions must use encounterEngine.ts
  * for fishing outcomes — do not import this module from functions/src.
  */
+import type { Creature } from "./types";
 import { pool_basic } from "./pool_basic";
 import { pool_rare_fire } from "./pool_rare_fire";
 import { pool_rare_water } from "./pool_rare_water";
@@ -27,6 +28,22 @@ export const POOL = {
   epicwind: pool_epic_wind,
   epicelectric: pool_epic_electric,
 };
+
+const CREATURE_BY_TYPE_ID: Map<string, Creature> = (() => {
+  const map = new Map<string, Creature>();
+  for (const pool of Object.values(POOL)) {
+    for (const creature of pool) {
+      map.set(creature.creatureTypeId, creature);
+    }
+  }
+  return map;
+})();
+
+/** Client lookup for claim celebration art / field notes. */
+export function getCreatureByTypeId(creatureTypeId: string | undefined | null): Creature | null {
+  if (!creatureTypeId) return null;
+  return CREATURE_BY_TYPE_ID.get(creatureTypeId) ?? null;
+}
 
 /** Validates pool sizes match spec */
 export function validatePoolCounts(): void {

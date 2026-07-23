@@ -17,6 +17,15 @@ export const routes = {
   emailVerified: href("/email-verified"),
   deletionPending: href("/deletion-pending"),
   narrativeOnboarding: href("/narrative-onboarding"),
+  createChildProfile: href("/create-child-profile"),
+  /** Free-tier / at-cap add-child storybook (avatar switcher only). */
+  childProfileLimit: href("/child-profile-limit"),
+  /** Pre-auth dialogue prologue (Part 1) */
+  prologue: href("/prologue"),
+  /** Post-auth dialogue continuation (Part 2) */
+  prologueContinuation: href("/prologue-continuation"),
+  /** Alias — Garden = Sanctuary */
+  garden: href("/sanctuary"),
   /** Default tab after sign-in */
   sanctuary: href("/sanctuary"),
   classroom: href("/classroom"),
@@ -30,5 +39,10 @@ export const routes = {
   craft: href("/craft"),
   practiceMoment: href("/practice-moment"),
   customerCenter: href("/customer-center"),
-  casting: href("/casting"),
+  /** Dev-only ArchetypeResultMap visual QA (see app/archetype-map-fixture.tsx) */
+  archetypeMapFixture: href("/archetype-map-fixture"),
+  /** Dev-only CatalogRarityRing visual QA (see app/pond-ripple-fixture.tsx) */
+  pondRippleFixture: href("/pond-ripple-fixture"),
+  /** Dev-only full cast-finish ceremony (rings + Focus card) */
+  castFinishFixture: href("/cast-finish-fixture"),
 };

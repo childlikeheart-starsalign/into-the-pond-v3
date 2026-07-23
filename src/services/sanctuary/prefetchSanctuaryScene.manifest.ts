@@ -7,6 +7,7 @@ import {
   SANCTUARY_NAV_TABS,
   sanctuaryAssets,
 } from "@/src/constants/sanctuaryAssets";
+import { getSanctuaryHeaderPrefetchSources } from "@/src/constants/sanctuaryHeaderAssets";
 import { sanctuaryTabBarStrip } from "@/src/constants/sanctuaryNavLayout";
 
 type CriticalPrefetchLayer = (typeof CRITICAL_PREFETCH_LAYERS)[number];
@@ -20,6 +21,7 @@ export type SanctuaryPrefetchManifest = {
   mood: ImageSourcePropType;
   avatar: ImageSourcePropType;
   tabStrip: ImageSourcePropType;
+  headerSources: ImageSourcePropType[];
   navIcons: ImageSourcePropType[];
 };
 
@@ -32,6 +34,7 @@ export function getSanctuaryPrefetchManifest(): SanctuaryPrefetchManifest {
     mood: getSanctuaryMoodOverlay("afternoon"),
     avatar: sanctuaryAssets.avatarPoses.standing.source,
     tabStrip: sanctuaryTabBarStrip,
+    headerSources: getSanctuaryHeaderPrefetchSources(),
     navIcons,
   };
 }

@@ -4,6 +4,14 @@ const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12;
 const TAG_LENGTH = 16;
 
+export type AccountDeletionChildBackup = {
+  childId: string;
+  data: Record<string, unknown>;
+  wellStateCurrent?: Record<string, unknown> | null;
+  wellQuestions?: Array<{ id: string; data: Record<string, unknown> }>;
+  childAtlas?: Array<{ id: string; data: Record<string, unknown> }>;
+};
+
 export type AccountDeletionRestorePayload = {
   email: string;
   childBirthDate?: string;
@@ -16,6 +24,18 @@ export type AccountDeletionRestorePayload = {
     lastUpdated?: string;
   };
   authProvider?: string;
+  /** All children on the account at deletion time — not just activeChildId. */
+  children?: AccountDeletionChildBackup[];
+  activeChildId?: string | null;
+  childrenSummary?: Array<{
+    childId: string;
+    name: string;
+    companionId: string;
+    childOrder: number;
+    displayArchetypeName?: string | null;
+    ageYears?: number | null;
+    lastVisitedAt?: string | null;
+  }>;
 };
 
 function deletionSecretMaterial(): string {

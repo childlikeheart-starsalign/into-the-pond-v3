@@ -49,13 +49,21 @@ export function toFishingClaimPresentation(claim: FishingClaim): FishingClaimPre
 
 /** Client-safe summary — no percentages exposed. */
 export function toClientClaimSummary(claim: FishingClaim): FishingClaimClientSummary {
-  return {
+  const summary: FishingClaimClientSummary = {
     outcome: claim.outcome,
     rarityIndicator: claim.rarityIndicator,
-    creatureTypeId: claim.creatureTypeId,
-    creatureDisplayName: claim.creatureDisplayName,
     wonderAwarded: claim.wonderAwarded,
     materialsAwarded: claim.materialsAwarded,
-    spiritMessage: claim.spiritMessage,
+    claimedAt: claim.claimedAt,
   };
+  if (claim.creatureTypeId != null) summary.creatureTypeId = claim.creatureTypeId;
+  if (claim.creatureDisplayName != null) summary.creatureDisplayName = claim.creatureDisplayName;
+  if (claim.spiritMessage != null) summary.spiritMessage = claim.spiritMessage;
+
+  const reason = claim.metadata?.reason;
+  if (typeof reason === "string" && reason.length > 0) {
+    summary.metadata = { reason };
+  }
+
+  return summary;
 }

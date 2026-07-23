@@ -1,5 +1,6 @@
 import type { ViewStyle } from "react-native";
 
+import { minTapTargetRect as fishingMinTapTargetRect } from "@/src/features/fishing/fishingModalLayout";
 import { WELL_CARD_ASPECT } from "@/src/features/well/WellCardShell";
 
 export type NormalizedBox = {
@@ -109,12 +110,6 @@ export function minTapTargetRect(
   rect: { left: number; top: number; width: number; height: number },
   minSize = 48,
 ) {
-  const width = Math.max(minSize, rect.width);
-  const height = Math.max(minSize, rect.height);
-  return {
-    left: rect.left + rect.width / 2 - width / 2,
-    top: rect.top + rect.height / 2 - height / 2,
-    width,
-    height,
-  };
+  // Shared with fishing modal layout — re-export to avoid drift.
+  return fishingMinTapTargetRect(rect, minSize);
 }

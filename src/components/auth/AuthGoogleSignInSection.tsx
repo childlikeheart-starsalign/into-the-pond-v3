@@ -1,7 +1,10 @@
-import { GoogleSigninButton } from "@react-native-google-signin/google-signin";
 import { Platform, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import { fontFamilies } from "@/src/constants/theme";
+import {
+  getGoogleSignInModule,
+  isGoogleSignInNativeAvailable,
+} from "@/src/services/auth/googleSignInNative";
 
 const DIVIDER_LINE_COLOR = "rgba(44, 24, 16, 0.18)";
 const DIVIDER_LABEL_COLOR = "rgba(44, 24, 16, 0.38)";
@@ -23,10 +26,16 @@ export function AuthGoogleSignInSection({
   error = null,
   onSignIn,
 }: AuthGoogleSignInSectionProps) {
-  if (Platform.OS !== "android") {
+  if (Platform.OS !== "android" || !isGoogleSignInNativeAvailable()) {
     return null;
   }
 
+  const googleSignIn = getGoogleSignInModule();
+  if (!googleSignIn) {
+    return null;
+  }
+
+  const { GoogleSigninButton } = googleSignIn;
   const isDisabled = disabled || loading;
 
   const handlePress = () => {

@@ -20,6 +20,7 @@ import { AccountFooter } from "@/src/features/gate/components/AccountFooter";
 import { AnalyticsPrivacySection } from "@/src/features/gate/components/AnalyticsPrivacySection";
 import { DeleteAccountSection } from "@/src/features/gate/components/DeleteAccountSection";
 import { CurrentAccessCard } from "@/src/features/gate/components/CurrentAccessCard";
+import { GateAddChildCard } from "@/src/features/gate/components/GateAddChildCard";
 import { PricingCard } from "@/src/features/gate/components/PricingCard";
 import { SanctuaryGateBackground } from "@/src/features/gate/components/SanctuaryGateBackground";
 import { StickyCurrentTierHeader } from "@/src/features/gate/components/StickyCurrentTierHeader";
@@ -27,6 +28,8 @@ import { useGateViewModels } from "@/src/features/gate/buildGateViewModels";
 import { translateGateCopy } from "@/src/features/gate/gateCopy";
 import { GateLayoutDebugProvider } from "@/src/features/gate/gateLayoutDebug";
 import type { GateEntitlementContext } from "@/src/features/gate/types";
+import type { ChildrenSummaryEntry } from "@/src/features/childProfile/types";
+import { useChildProfileFeatureFlags } from "@/src/features/childProfile/featureFlags";
 import {
   useGateTiersConfig,
   useRecommendedTierId,
@@ -35,7 +38,7 @@ import {
 import { useGateOfferingProducts } from "@/src/hooks/useGateOfferingProducts";
 import { useRevenueCatCustomerInfo } from "@/src/hooks/useRevenueCatCustomerInfo";
 import { routes } from "@/src/navigation/routes";
-import { firebaseAuth } from "@/src/services/firebase/client";
+import { firebaseAuth, firestore } from "@/src/services/firebase/client";
 import {
   DEFAULT_SUBSCRIPTION_STATE,
   subscribeToUserSubscription,
@@ -44,6 +47,8 @@ import {
 import { signOutCurrentUser } from "@/src/services/firebase/auth";
 import { LogicalProductId, PRODUCT_IDS } from "@/src/services/iap/catalog";
 import { runPurchase, runRestore } from "@/src/services/iap/purchaseFlow";
+import { doc, onSnapshot } from "firebase/firestore";
+import type { UserDoc } from "@/src/services/firebase/types";
 
 const isNativeStore = Platform.OS === "ios" || Platform.OS === "android";
 const STICKY_THRESHOLD_PX = 8;
@@ -54,6 +59,7 @@ export function GateScreen() {
   const config = useGateTiersConfig();
   const recommendedTierId = useRecommendedTierId(config);
   const unavailableTierIds = useUnavailableTierIds(config);
+  const { createChildProfileUi } = useChildProfileFeatureFlags();
 
   const [subscription, setSubscription] = useState(
     toDerivedSubscriptionState(DEFAULT_SUBSCRIPTION_STATE),
@@ -62,6 +68,9 @@ export function GateScreen() {
   const [signingOut, setSigningOut] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [childrenSummary, setChildrenSummary] = useState<ChildrenSummaryEntry[] | null>(null);
+  const wasPaidRef = useRef(false);
+  const entitlementHydratedRef = useRef(false);
 
   const [currentAccessHeight, setCurrentAccessHeight] = useState(0);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
@@ -84,6 +93,43 @@ export function GateScreen() {
     if (!uid) return;
     return subscribeToUserSubscription(uid, setSubscription);
   }, [uid]);
+
+  useEffect(() => {
+    if (!uid) {
+      setChildrenSummary(null);
+      return;
+    }
+    return onSnapshot(doc(firestore, "users", uid), (snap) => {
+      const data = snap.data() as UserDoc | undefined;
+      setChildrenSummary((data?.childrenSummary as ChildrenSummaryEntry[] | undefined) ?? []);
+    });
+  }, [uid]);
+
+  useEffect(() => {
+    const paid = subscription.hasPaidRod;
+    if (!entitlementHydratedRef.current) {
+      wasPaidRef.current = paid;
+      entitlementHydratedRef.current = true;
+      return;
+    }
+    if (
+      createChildProfileUi &&
+      paid &&
+      !wasPaidRef.current &&
+      (childrenSummary?.length ?? 0) > 0 &&
+      (childrenSummary?.length ?? 0) < 3
+    ) {
+      router.push({
+        pathname: "/create-child-profile",
+        params: { entry: "add_child" },
+      } as never);
+    }
+    wasPaidRef.current = paid;
+  }, [subscription.hasPaidRod, childrenSummary, router, createChildProfileUi]);
+
+  const scrollToPricing = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: Math.max(0, currentAccessHeight), animated: true });
+  }, [currentAccessHeight]);
 
   const entitlementContext: GateEntitlementContext = useMemo(
     () => ({
@@ -191,6 +237,12 @@ export function GateScreen() {
             <CurrentAccessCard
               model={currentAccess}
               onLayout={(height) => setCurrentAccessHeight(height)}
+            />
+
+            <GateAddChildCard
+              subscription={subscription}
+              childrenSummary={childrenSummary}
+              onScrollToPricing={scrollToPricing}
             />
 
             <View style={styles.pricingStack}>

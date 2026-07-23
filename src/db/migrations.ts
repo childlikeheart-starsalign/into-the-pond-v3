@@ -1,8 +1,17 @@
-import { createTable, schemaMigrations } from "@nozbe/watermelondb/Schema/migrations";
+import {
+  createTable,
+  schemaMigrations,
+  unsafeExecuteSql,
+} from "@nozbe/watermelondb/Schema/migrations";
 
 /**
- * Incremental local DB upgrades (v1 → v5).
+ * Incremental local DB upgrades (v1 → v6).
  * Fresh installs run all steps; Firestore remains source of truth on reset.
+ *
+ * v6: ensure Wonder columns exist on `local_user_profile` whether the table was
+ * created without them (main v2 createTable) or already had them (schema-side /
+ * older createTable). `addColumns` alone throws duplicate column name on the
+ * latter — rebuild copies only the v2-era columns and leaves new ones NULL.
  */
 export const migrations = schemaMigrations({
   migrations: [
@@ -23,10 +32,6 @@ export const migrations = schemaMigrations({
             { name: "uid", type: "string", isIndexed: true },
             { name: "email", type: "string", isOptional: true },
             { name: "total_wonder", type: "number" },
-            { name: "current_wonder", type: "number", isOptional: true },
-            { name: "stored_wonder", type: "number", isOptional: true },
-            { name: "lifetime_wonder_earned", type: "number", isOptional: true },
-            { name: "last_reflection_at", type: "number", isOptional: true },
             { name: "daily_question_count", type: "number" },
             { name: "fishing_wonder_today", type: "number" },
             { name: "active_rod", type: "string" },
@@ -169,6 +174,19 @@ export const migrations = schemaMigrations({
             { name: "updated_at", type: "number" },
           ],
         }),
+      ],
+    },
+    {
+      toVersion: 6,
+      steps: [
+        unsafeExecuteSql(`
+CREATE TABLE "local_user_profile_mig6" ("id" primary key, "_changed", "_status", "uid", "email", "total_wonder", "current_wonder", "stored_wonder", "lifetime_wonder_earned", "last_reflection_at", "daily_question_count", "fishing_wonder_today", "active_rod", "rod_dullness_count", "is_rod_dull", "subscription_product_id", "subscription_expiry_ts", "subscription_is_lifetime", "subscription_status", "updated_at");
+INSERT INTO "local_user_profile_mig6" ("id", "_changed", "_status", "uid", "email", "total_wonder", "daily_question_count", "fishing_wonder_today", "active_rod", "rod_dullness_count", "is_rod_dull", "subscription_product_id", "subscription_expiry_ts", "subscription_is_lifetime", "subscription_status", "updated_at") SELECT "id", "_changed", "_status", "uid", "email", "total_wonder", "daily_question_count", "fishing_wonder_today", "active_rod", "rod_dullness_count", "is_rod_dull", "subscription_product_id", "subscription_expiry_ts", "subscription_is_lifetime", "subscription_status", "updated_at" FROM "local_user_profile";
+DROP TABLE "local_user_profile";
+ALTER TABLE "local_user_profile_mig6" RENAME TO "local_user_profile";
+CREATE INDEX IF NOT EXISTS "local_user_profile_uid" ON "local_user_profile" ("uid");
+CREATE INDEX IF NOT EXISTS "local_user_profile__status" ON "local_user_profile" ("_status");
+`),
       ],
     },
   ],

@@ -31,6 +31,7 @@ type AuthBootContextValue = {
   unlockGateForSession: () => void;
   unlockGateAndGoToSignup: () => void;
   unlockGateAndGoToLogin: () => void;
+  unlockGateAndGoToPrologue: () => void;
 };
 
 const AuthBootContext = createContext<AuthBootContextValue | null>(null);
@@ -73,6 +74,11 @@ export function AuthBootProvider({
     router.replace(routes.signup);
   }, []);
 
+  const unlockGateAndGoToPrologue = useCallback(() => {
+    setGateUnlockedThisSession(true);
+    router.replace(routes.prologue);
+  }, []);
+
   const unlockGateAndGoToLogin = useCallback(() => {
     setGateUnlockedThisSession(true);
     router.replace(routes.login);
@@ -88,6 +94,7 @@ export function AuthBootProvider({
       unlockGateForSession,
       unlockGateAndGoToSignup,
       unlockGateAndGoToLogin,
+      unlockGateAndGoToPrologue,
     }),
     [
       authInitializing,
@@ -98,6 +105,7 @@ export function AuthBootProvider({
       unlockGateForSession,
       unlockGateAndGoToSignup,
       unlockGateAndGoToLogin,
+      unlockGateAndGoToPrologue,
     ],
   );
 

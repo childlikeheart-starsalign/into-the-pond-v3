@@ -16,6 +16,7 @@ import { getCraftDurationMs, rareRodForEpic } from "@/shared/sanctuary/progressi
 import { ROD_CATALOG } from "@/shared/sanctuary/rods/catalog";
 import type { FishingRodId } from "@/shared/sanctuary/types";
 import { colors, fontFamilies, layout as themeLayout, spacing } from "@/src/constants/theme";
+import { SanctuaryFieldNote } from "@/src/components/sanctuary/SanctuaryFieldNote";
 import { CraftBenchCarousel } from "@/src/features/craftBench/CraftBenchCarousel";
 import { CraftBenchMemo } from "@/src/features/craftBench/CraftBenchMemo";
 import { RodCollectionMoment } from "@/src/features/craftBench/RodCollectionMoment";
@@ -68,6 +69,10 @@ function formatRodName(rodId: FishingRodId): string {
   return ROD_CATALOG[rodId].displayName.replace("Rare ", "").replace(" Epic", " Epic");
 }
 
+const CRAFT_BENCH_HELP_HEADING = "Craft Bench";
+const CRAFT_BENCH_HELP_BODY =
+  "Choose a rod below. Gather Wonder and Parts from lessons, then Craft. Finished rods need a little time before you can collect them.";
+
 async function loadCompletedLessons(uid: string): Promise<Record<string, boolean>> {
   const snap = await getDoc(doc(firestore, "users", uid));
   if (!snap.exists()) return {};
@@ -100,6 +105,7 @@ export function CraftBenchScreen() {
   } | null>(null);
 
   const [retryBusy, setRetryBusy] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const benchOpenedFired = useRef(false);
   const benchOpenedAt = useRef<number | null>(null);
@@ -472,7 +478,7 @@ export function CraftBenchScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Craft Bench help"
-          onPress={() => Alert.alert("Craft Bench", "Great things take time.")}
+          onPress={() => setHelpOpen(true)}
           style={[
             styles.chromeHit,
             {
@@ -483,6 +489,26 @@ export function CraftBenchScreen() {
             },
           ]}
         />
+
+        {helpOpen ? (
+          <View style={styles.helpOverlay} pointerEvents="box-none">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss Craft Bench help"
+              onPress={() => setHelpOpen(false)}
+              style={styles.helpScrim}
+            />
+            <View style={styles.helpNoteWrap} pointerEvents="box-none">
+              <SanctuaryFieldNote
+                heading={CRAFT_BENCH_HELP_HEADING}
+                body={CRAFT_BENCH_HELP_BODY}
+                onPress={() => setHelpOpen(false)}
+                accessibilityLabel="Dismiss Craft Bench help"
+                scale={0.9}
+              />
+            </View>
+          </View>
+        ) : null}
 
         {userDocStatus === "pending" ? (
           <View style={styles.pendingOverlay} pointerEvents="none">
@@ -573,6 +599,24 @@ const styles = StyleSheet.create({
   chromeHit: {
     position: "absolute",
     borderRadius: 999,
+  },
+  helpOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 40,
+    elevation: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  helpScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(31, 26, 23, 0.28)",
+  },
+  helpNoteWrap: {
+    position: "absolute",
+    left: "8%",
+    right: "8%",
+    alignItems: "center",
+    zIndex: 41,
   },
   pendingOverlay: {
     ...StyleSheet.absoluteFillObject,

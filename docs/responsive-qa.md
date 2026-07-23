@@ -16,15 +16,19 @@ Run at least one **physical device** before store submission (see [`RELEASE.md`]
 
 Record pass/fail per device. Use the rubric below.
 
-| Flow            | Route / component                       | SE  | iPhone 15 | Pro Max | Notes                              |
-| --------------- | --------------------------------------- | --- | --------- | ------- | ---------------------------------- |
-| Auth sign-in    | `app/(auth)/login.tsx`                  |     |           |         | Keyboard does not hide submit      |
-| Auth sign-up    | `app/(auth)/signup.tsx`                 |     |           |         | OAuth + email CTAs tappable        |
-| Email verify    | `app/(auth)/verify-required.tsx`        |     |           |         | Resend + continue reachable        |
-| Gate / paywall  | `GateScreen`                            |     |           |         | Scroll to pricing + account footer |
-| Delete account  | Gate footer                             |     |           |         | Confirm sheet opens                |
-| Archetype FTUE  | `app/onboarding/archetype-selector.tsx` |     |           |         | All three cards reachable          |
-| Sanctuary entry | `app/(tabs)/sanctuary.tsx`              |     |           |         | Primary CTA tappable               |
+| Flow             | Route / component                               | SE  | iPhone 15 | Pro Max | Notes                                                                      |
+| ---------------- | ----------------------------------------------- | --- | --------- | ------- | -------------------------------------------------------------------------- |
+| Auth sign-in     | `app/(auth)/login.tsx`                          |     |           |         | Keyboard does not hide submit                                              |
+| Auth sign-up     | `app/(auth)/signup.tsx`                         |     |           |         | OAuth + email CTAs tappable                                                |
+| Email verify     | `app/(auth)/verify-required.tsx`                |     |           |         | Resend + continue reachable                                                |
+| Gate / paywall   | `GateScreen`                                    |     |           |         | Scroll to pricing + account footer                                         |
+| Delete account   | Gate footer                                     |     |           |         | Confirm sheet opens                                                        |
+| Archetype FTUE   | `app/onboarding/archetype-selector.tsx`         |     |           |         | All three cards reachable                                                  |
+| Sanctuary entry  | `app/(tabs)/sanctuary.tsx`                      |     |           |         | Header + landmarks; see [sanctuary-header-qa.md](./sanctuary-header-qa.md) |
+| JournalMargin S1 | Cast-finish field-note (`ClaimCelebrationCard`) |     |           |         | Left `FIELD ENTRY` + corner claim date; no overlap with body copy          |
+| JournalMargin S2 | Sanctuary header bottom margin                  |     |           |         | `${month} · ${timeOfDay}` readable on composite band                       |
+| JournalMargin S3 | Create Child Profile chapter label              |     |           |         | **SE focus:** rotated left label must not collide with Back (48px tap)     |
+| JournalMargin S4 | Deep Check map corner (`ArchetypeResultMap`)    |     |           |         | `Observed …` when deep history present; absent on quick-check-only         |
 
 ## Pass / fail rubric
 

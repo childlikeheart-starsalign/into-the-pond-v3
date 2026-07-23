@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 
 type DiarySingleSelectProps = {
   options: string[];
@@ -20,7 +21,10 @@ export function DiarySingleSelect({ options, selected, onChange }: DiarySingleSe
             accessibilityLabel={option}
             accessibilityState={{ selected: isSelected }}
             style={[styles.option, isSelected && styles.optionSelected]}
-            onPress={() => onChange(option)}
+            onPress={() => {
+              playPaperClick();
+              onChange(option);
+            }}
           >
             <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
               {option}

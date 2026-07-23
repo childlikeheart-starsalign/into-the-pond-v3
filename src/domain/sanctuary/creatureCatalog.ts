@@ -9,4 +9,5 @@ export const CREATURE_REFS: CreatureRef[] = CREATURES.map((c) => ({
   elementType: c.elementType,
   rodRequired: c.rodRequired,
   peakWonderGate: c.peakWonderGate,
+  sub_tier: c.sub_tier,
 }));

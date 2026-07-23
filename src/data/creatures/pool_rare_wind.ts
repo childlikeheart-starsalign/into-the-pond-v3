@@ -8,6 +8,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "1.2",
     moduleId: 1,
     visualMetaphor:
@@ -25,6 +26,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "3.1",
     moduleId: 3,
     visualMetaphor:
@@ -42,6 +44,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "3.2",
     moduleId: 3,
     visualMetaphor:
@@ -58,6 +61,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "3.3",
     moduleId: 3,
     visualMetaphor:
@@ -75,6 +79,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "3.5",
     moduleId: 3,
     visualMetaphor: "A fish that moves in melodic undulations, as though swimming to spoken rhythm",
@@ -91,6 +96,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "3.9",
     moduleId: 3,
     visualMetaphor:
@@ -107,6 +113,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.1",
     moduleId: 4,
     visualMetaphor:
@@ -124,6 +131,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.2",
     moduleId: 4,
     visualMetaphor: "A folded, geometric fish that holds its shape perfectly in any current",
@@ -139,6 +147,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.3",
     moduleId: 4,
     visualMetaphor:
@@ -155,6 +164,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.4",
     moduleId: 4,
     visualMetaphor:
@@ -171,6 +181,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.6",
     moduleId: 4,
     visualMetaphor:
@@ -187,6 +198,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.2",
     moduleId: 5,
     visualMetaphor: "A fish that swims in a perfect thread, unbroken from beginning to end",
@@ -203,6 +215,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.3",
     moduleId: 5,
     visualMetaphor: "An old, wide fish that generates a permanent gentle breeze in all directions",
@@ -218,6 +231,7 @@ export const pool_rare_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "rare3",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.6",
     moduleId: 5,
     visualMetaphor:

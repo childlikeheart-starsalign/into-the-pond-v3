@@ -35,16 +35,16 @@ export function SanctuaryTabBarStrip({ frameHeight, onStripLoad }: SanctuaryTabB
 
 type SanctuaryTabBarOverlayProps = {
   frameHeight: number;
+  onStripLoad?: () => void;
 };
 
 /**
- * Parchment tab-bar strip + sanctuary-aligned icon row for screens without
- * the bar baked into background art (Gate, Store, Classroom chapters).
+ * Parchment tab-bar strip + sanctuary-aligned icon row for all main tab screens.
  */
-export function SanctuaryTabBarOverlay({ frameHeight }: SanctuaryTabBarOverlayProps) {
+export function SanctuaryTabBarOverlay({ frameHeight, onStripLoad }: SanctuaryTabBarOverlayProps) {
   return (
     <View style={styles.host} pointerEvents="box-none">
-      <SanctuaryTabBarStrip frameHeight={frameHeight} />
+      <SanctuaryTabBarStrip frameHeight={frameHeight} onStripLoad={onStripLoad} />
       <SanctuaryNavBar />
     </View>
   );

@@ -40,6 +40,10 @@ export function castCreateKey(requestId: string): string {
   return `cast_create:${requestId}`;
 }
 
+export function castCancelKey(castId: string): string {
+  return `cast_cancel:${castId}`;
+}
+
 export function wellAssignKey(localDate: string): string {
   return `well_assign:${localDate}`;
 }

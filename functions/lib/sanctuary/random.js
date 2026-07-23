@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createSeededRandom = createSeededRandom;
 exports.rollBelow = rollBelow;
 exports.pickIndex = pickIndex;
+exports.pickWeightedIndex = pickWeightedIndex;
 function hashSeed(seed) {
   let h = 1779033703 ^ seed.length;
   for (let i = 0; i < seed.length; i += 1) {
@@ -30,4 +31,21 @@ function rollBelow(seed, probability) {
 function pickIndex(seed, length) {
   if (length <= 0) return 0;
   return Math.floor(createSeededRandom(`${seed}:pick`)() * length);
+}
+/** Weighted pick — weights must be positive; returns index into weights. */
+function pickWeightedIndex(seed, weights) {
+  if (weights.length === 0) return 0;
+  let total = 0;
+  for (const w of weights) {
+    if (w > 0) total += w;
+  }
+  if (total <= 0) return pickIndex(seed, weights.length);
+  const roll = createSeededRandom(`${seed}:weighted`)() * total;
+  let cumulative = 0;
+  for (let i = 0; i < weights.length; i += 1) {
+    const w = weights[i] > 0 ? weights[i] : 0;
+    cumulative += w;
+    if (roll < cumulative) return i;
+  }
+  return weights.length - 1;
 }

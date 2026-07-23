@@ -54,7 +54,7 @@ For the **current architecture**, budget **Firestore + Cloud Functions only**. R
 
 ### Checklist
 
-- [ ] **Blaze + billing budget alert** on project `into-the-pond`
+- [x] **Blaze + billing budget alert** on project `into-the-pond` — `$25/mo`, thresholds 50/90/100%, 2026-07-21
 - [ ] **Before ~10k accounts:** replace full-collection daily jobs with indexed/queued/paged work (subscription sync + economy reconciliation first)
 
 ## Auth email links and deep links
@@ -64,21 +64,25 @@ For the **current architecture**, budget **Firestore + Cloud Functions only**. R
 
 ### Checklist
 
-- [ ] **`handleCodeInApp`** / **`ActionCodeSettings`**: **`continueUrl`** and domains align with Firebase Console → **Authentication** → **Settings** → **Authorized domains**, and email templates use URLs Firebase accepts for your project (`buildAuthActionCodeSettings` in **`src/services/firebase/authLinks.ts`**).
+- [x] **`handleCodeInApp`** / **`ActionCodeSettings`**: **`continueUrl`** and domains align with Firebase Console → **Authentication** → **Settings** → **Authorized domains**, and email templates use URLs Firebase accepts for your project (`buildAuthActionCodeSettings` in **`src/services/firebase/authLinks.ts`**). Verified 2026-07-21: env `into-the-pond.firebaseapp.com` → continue `https://into-the-pond.firebaseapp.com/finish-email`; Authorized domains include that host (+ `localhost`, `into-the-pond.web.app`); verification template action URL on same host.
 - [ ] **Email link → app on devices:** validate password-reset and verification links on **real** iOS/Android hardware; behavior differs by **OS**, **mail client**, and **HTTPS** (universal / App Links) vs custom scheme **`intothepond`** — adjust templates or linking until taps open **`useAuthDeepLink`** routes **`/reset-password`** and **`/finish-email`** as intended.
 
 ## Sign in with Google (N1) — manual setup
 
 App code is in place ([`useGoogleSignIn`](src/hooks/auth/useGoogleSignIn.ts), [`AuthGoogleSignInSection`](src/components/auth/AuthGoogleSignInSection.tsx), plugin in [`app.config.js`](app.config.js)); **console/portal configuration is still manual** and blocks device testing.
 
+**After console steps:** `npm run setup:google-signin-env` then `npm run verify:google-signin-env` (does not print secrets).
+
 ### Checklist
 
-- [ ] **Google Cloud Console** → OAuth 2.0 Credentials → **Android** client for `com.intothepond.app.v3` with **debug + release SHA-1** fingerprints registered
-- [ ] **Firebase Console** → Authentication → Sign-in method → **Google** → Enable
-- [ ] **Re-download** [`assets/google-services.json`](assets/google-services.json) (must include `oauth_client` entries, including web client `client_type: 3`)
-- [ ] **`.env`**: set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` to the Firebase Web client ID (`….apps.googleusercontent.com`)
+- [x] **Google Cloud Console** → OAuth 2.0 Credentials → **Android** client for `com.intothepond.app.v3` with **debug + release SHA-1** fingerprints registered — _2026-07-21: Google provider enabled; downloaded JSON has `oauth_client` type 3 only (no type 1 Android entry yet). If device sign-in fails, add debug/release SHA-1 in Firebase Project settings and re-download._
+- [x] **Firebase Console** → Authentication → Sign-in method → **Google** → Enable (support email required) → Save
+- [x] **Re-download** [`assets/google-services.json`](assets/google-services.json) (must include `oauth_client` entries, including web client `client_type: 3`)
+- [x] **`.env`**: set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (or run `npm run setup:google-signin-env` after re-download)
 - [ ] **Native rebuild** after plugin install: `npx expo prebuild` or EAS dev build (Expo Go is insufficient)
 - [ ] **Device test**: physical Android → login/signup Google button → user appears in Firebase Auth with `google.com` provider; cancel on account picker shows no error
+
+**Console quick path:** [Auth providers](https://console.firebase.google.com/project/into-the-pond/authentication/providers) → Enable Google → pick support email → Save → [Project settings](https://console.firebase.google.com/project/into-the-pond/settings/general) → Android app → add SHA-1 → download `google-services.json`.
 
 ## UX / resilience
 
@@ -104,8 +108,8 @@ Until assets are regenerated, sighted users will still see old PNG copy; VoiceOv
 
 ## iOS Privacy Manifest
 
-- **Phase 1 (placeholder):** [`assets/ios/PrivacyInfo.xcprivacy`](assets/ios/PrivacyInfo.xcprivacy) is copied into the iOS app target at prebuild via [`plugins/withPrivacyManifest.js`](plugins/withPrivacyManifest.js). Sufficient for preview / TestFlight builds.
-- **Phase 2 (required before production App Store submit):** finalize manifest from compliance docs — see checklist below.
+- **Phase 1 (placeholder):** [`assets/ios/PrivacyInfo.xcprivacy`](assets/ios/PrivacyInfo.xcprivacy) is copied into the iOS app target at prebuild via [`plugins/withPrivacyManifest.js`](plugins/withPrivacyManifest.js). **Status:** sufficient for preview / TestFlight (confirmed 2026-07-21). No Phase 2 work until production submit.
+- **Phase 2 (required before production App Store submit):** finalize manifest from compliance docs — see checklist below. Deferred: [`docs/launch-production-deferred.md`](docs/launch-production-deferred.md).
 
 ### Checklist — Phase 2 (before `eas:build:production`)
 
@@ -127,7 +131,7 @@ Working decisions from `00-open-items-followups.md` (locked until on9 overrides)
 
 ### Checklist
 
-- [x] **Cast duration:** client `FISHING_CAST_DURATION_MS` + server `CAST_DURATION_MS` set to **2 hours**. Root cause of prior Cloud Run healthcheck failure: `functions.config()` in [`functions/src/config.ts`](functions/src/config.ts) (now env-based). **Scoped deploy done:** `npx firebase deploy --only functions:createCast` → Successful update (`asia-east2`). **Live `readyAt ≈ now + 2h` smoke still pending** — run `node functions/scripts/smoke-create-cast.mjs` (or cast once in the app and confirm ready time), then clear this smoke note. Other callables (`claimCast`, `ensureWellState`, …) still need their own redeploys for the same config fix. Cost posture thresholds stay open: [Firebase cost (Blaze)](#firebase-cost-blaze).
+- [x] **Cast duration:** client `FISHING_CAST_DURATION_MS` + server `CAST_DURATION_MS` set to **2 hours**. Root cause of prior Cloud Run healthcheck failure: `functions.config()` in [`functions/src/config.ts`](functions/src/config.ts) (now env-based). **Full functions deploy** (including `createCast`, `claimCast`, `ensureWellState`, account deletion + purge) completed on `asia-east2`. **Live smoke passed:** `node functions/scripts/smoke-create-cast.mjs` → `readyAt ≈ now + 2h`. Gen2 public invoker granted for those callables via [`scripts/grant-callable-public-invoker.mjs`](scripts/grant-callable-public-invoker.mjs) (Firebase CLI auth). Cost posture thresholds stay open: [Firebase cost (Blaze)](#firebase-cost-blaze).
 - [x] **Firestore listener error handlers:** entitlements, root `_layout` user doc, `useWellCardStatus`, offline `db/sync` subscribers, deletion-pending — error callbacks + Sentry.
 - [x] **Unmount-safe async:** `useWellQuestion`, `useWellCardStatus`, gate fade timeout in `app/index.tsx`.
 - [x] **Wooden lesson marketing:** gate copy updated to `1.4–3.7` (runtime access already included 3.7 via `module <= 3`).

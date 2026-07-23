@@ -36,26 +36,28 @@ Project: **into-the-pond** → [Google Cloud Console → Credentials](https://co
 
 From `google-services.json` → `client[].api_key[].current_key` (exposed in git history).
 
-- [ ] **Application restrictions** → Android apps → package `com.intothepond.app.v3`
-- [ ] Add debug + release SHA-1 fingerprints (Firebase Console → Project settings → Your apps → Android)
-- [ ] **API restrictions** → Restrict key → Firebase-related APIs only
+- [x] **Application restrictions** → Android apps → package `com.intothepond.app.v3` _(new key, 2026-07-23)_
+- [x] Debug SHA-1 registered on Firebase Android app + new Android key _(release SHA still follow-up)_
+- [x] **API restrictions** → Restrict key → Firebase-related APIs only
 
 ### iOS API key
 
 From `GoogleService-Info.plist` → `API_KEY` (exposed in git history).
 
-- [ ] **Application restrictions** → iOS apps → bundle ID `com.intothepond.app.v3`
-- [ ] **API restrictions** → Restrict key → Firebase-related APIs only
+- [x] **Application restrictions** → iOS apps → bundle ID `com.intothepond.app.v3` _(new key, 2026-07-23)_
+- [x] **API restrictions** → Restrict key → Firebase-related APIs only
 
 ## 2. Rotate keys (recommended)
 
 Keys were public on GitHub — treat as compromised even after restriction.
 
-- [ ] Firebase Console → Project settings → Your apps → download fresh Android JSON + iOS plist
-- [ ] Replace local `assets/google-services.json` and `assets/GoogleService-Info.plist`
-- [ ] `npm run setup:eas-firebase-files` (re-upload EAS secrets)
-- [ ] Disable old Android + iOS API keys in GCP Credentials
-- [ ] Trigger a test EAS build on both platforms
+Completed **2026-07-23**: switched local + EAS assets to pre-created “New Android/iOS” GCP keys; neutralized leaked keys (locked to non-existent package/bundle — SA lacks `apikeys.keys.delete`).
+
+- [x] Firebase Console → Project settings → Your apps → download fresh Android JSON + iOS plist _(Console still served old key strings; rotated via GCP API Keys + patched local assets)_
+- [x] Replace local `assets/google-services.json` and `assets/GoogleService-Info.plist`
+- [x] `npm run setup:eas-firebase-files` (re-upload EAS secrets)
+- [x] Disable old Android + iOS API keys in GCP Credentials _(neutralized — rename + impossible app restrictions)_
+- [ ] Trigger a test EAS build on both platforms _(Phase 5 — out of Phase 1 scope)_
 
 ## 3. Purge git history
 

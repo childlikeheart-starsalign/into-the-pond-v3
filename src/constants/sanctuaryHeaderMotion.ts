@@ -1,0 +1,1 @@
+export const HEADER_FADE_DURATION_MS = 180;

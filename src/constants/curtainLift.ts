@@ -10,7 +10,13 @@ export const CURTAIN_BRIDGE_FADE_MS = 500;
 /** Final monolithic curtain lift crossfade (ms). */
 export const CURTAIN_REVEAL_FADE_MS = 400;
 
-export const SANCTUARY_SCENE_LAYERS = ["background", "mood", "avatar", "tabStrip"] as const;
+export const SANCTUARY_SCENE_LAYERS = [
+  "background",
+  "mood",
+  "avatar",
+  "tabStrip",
+  "header",
+] as const;
 
 export type SanctuarySceneLayer = (typeof SANCTUARY_SCENE_LAYERS)[number];
 
@@ -20,6 +26,7 @@ export const CRITICAL_PREFETCH_LAYERS = [
   "mood",
   "avatar",
   "tabStrip",
+  "header",
 ] as const satisfies readonly SanctuarySceneLayer[];
 
 export type CriticalPrefetchLayer = (typeof CRITICAL_PREFETCH_LAYERS)[number];

@@ -255,7 +255,7 @@ function initializeFirebaseAdmin(admin) {
     if (!fs.existsSync(rawPath)) {
       console.error(`FIREBASE_SERVICE_ACCOUNT_PATH file not found: ${rawPath}`);
       console.error(
-        "Set the real JSON path in functions/.env (see .env.example) or export FIREBASE_SERVICE_ACCOUNT_PATH before running.",
+        "Set the real JSON path in functions/.env.local (see .env.example) or export FIREBASE_SERVICE_ACCOUNT_PATH before running.",
       );
       process.exit(1);
     }
@@ -272,7 +272,7 @@ function initializeFirebaseAdmin(admin) {
       "FIREBASE_SERVICE_ACCOUNT_PATH is a documentation placeholder, not a real file path.",
     );
     console.error(
-      "Copy functions/.env.example to functions/.env and set FIREBASE_SERVICE_ACCOUNT_PATH to your service account JSON.",
+      "Copy functions/.env.example to functions/.env.local and set FIREBASE_SERVICE_ACCOUNT_PATH to your service account JSON.",
     );
     process.exit(1);
   }
@@ -335,7 +335,7 @@ async function main() {
   const limit = limitArg ? Number(limitArg.split("=")[1]) : null;
   const offset = offsetArg ? Number(offsetArg.split("=")[1]) : 0;
 
-  require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+  require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
   const admin = require("firebase-admin");
 
   initializeFirebaseAdmin(admin);

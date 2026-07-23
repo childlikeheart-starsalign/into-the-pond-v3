@@ -318,13 +318,13 @@ parent.
 
 ### Confirmed palette
 
-| Element                      | Color                     | Hex       |
-| ---------------------------- | ------------------------- | --------- |
-| Storm region                 | Dusk Rose                 | `#A87878` |
-| Wall region                  | Pond Sage                 | `#6F7D68` |
-| Spark region                 | Lamp Amber                | `#C4A35A` |
-| Quiet Tester region          | _unconfirmed placeholder_ | `#8E7C93` |
-| Marker, trail, region labels | Bark Umber                | `#7A5C45` |
+| Element                      | Color        | Hex       |
+| ---------------------------- | ------------ | --------- |
+| Storm region                 | Dusk Rose    | `#A87878` |
+| Wall region                  | Pond Sage    | `#6F7D68` |
+| Spark region                 | Lamp Amber   | `#C4A35A` |
+| Quiet Tester region          | Mist Heather | `#8E7C93` |
+| Marker, trail, region labels | Bark Umber   | `#7A5C45` |
 
 **Why the marker is neutral, not region-colored:** the marker shows
 _where an observation sits_, independent of which region it's currently
@@ -358,7 +358,6 @@ sequenced through the surrounding regions instead.
 
 ### Not yet resolved
 
-- Quiet Tester's real color, pending §0.5 / §9's product decision
 - Whether the illustrated regions need real paper-texture treatment
   (matching the brand's hand-painted material language) rather than the
   flat mockup washes used for this planning pass — likely yes, flagged
@@ -416,7 +415,7 @@ current age.
 - [ ] Confirm "Quiet Tester" should actively move toward becoming a real
       fourth archetype (§0.5 strengthens this case) vs. staying permanently
       `wall`-mapped
-- [ ] Quiet Tester's region color (§5) — pick once the above is decided
+- [x] Quiet Tester map wash (§5) — Mist Heather `#8E7C93` at peer opacity
 - [ ] Full age-band interpretive copy pass (§0.2) — only 2 illustrative
       examples exist today, needs real content development, ideally
       reviewed by someone with child-development content experience, not

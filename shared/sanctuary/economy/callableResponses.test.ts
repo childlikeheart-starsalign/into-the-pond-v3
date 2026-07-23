@@ -25,9 +25,11 @@ test("FishingClaimClientSummary requires wonderAwarded", () => {
     rarityIndicator: "common",
     wonderAwarded: 0,
     materialsAwarded: 1,
+    claimedAt: 1_700_000_000_000,
     previewOnly: true,
   };
   assert.equal(sample.wonderAwarded, 0);
+  assert.equal(sample.claimedAt, 1_700_000_000_000);
 });
 
 test("SubmitWellReflectionSuccess allows previewOnly flag", () => {

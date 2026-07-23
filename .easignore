@@ -1,0 +1,106 @@
+# EAS prioritizes .easignore over .gitignore — keep .gitignore patterns in sync.
+# See https://docs.expo.dev/build-reference/easignore/
+
+# --- copied from .gitignore ---
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+.tmp-ios-bundle/
+
+# Native (EAS prebuild generates these on the server)
+/ios/
+/android/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.cursor/
+firestore-debug.log
+scripts/__pycache__/
+
+# macOS
+.DS_Store
+*.pem
+
+# Firebase native config (real files — never commit; EAS uses base64 secrets)
+**/GoogleService-Info.plist
+**/google-services.json
+!**/*.example
+
+# local env files
+.env
+.env*.local
+
+# Local scratch / dry-run / pilot outputs
+/tmp/
+/tmp/**
+
+# Firebase Admin service account JSON
+**/serviceAccountKey.json
+functions/**/serviceAccount*.json
+*-firebase-adminsdk-*.json
+
+# Firebase Apple SDK manual zip (local only; iOS uses SPM via prebuild plugin)
+/Firebase/
+
+# typescript
+*.tsbuildinfo
+
+app-example
+
+expo-env.d.ts
+
+# local python venvs (docx generator)
+.venv-handoff/
+.env.local
+
+# --- extra exclusions for EAS upload size (archive was 4.5GB; limit 2.0GB) ---
+
+# Local git worktrees / phase copies (primary bloat: ~5.3GB)
+.worktrees/
+
+# QA exports / debug crop sheets
+.qa/
+
+# Other local venvs not in .gitignore
+.venv-fishing-assets/
+.venv-scripts/
+
+# Design scratch / non-runtime reference art
+sign in screen/
+CreatureAssets/
+assets/Reference. Slightly irregular lifework.-13/
+
+# Loose root PNGs (not referenced by app asset map)
+/child.png
+/Parent.png
+/Old_spirit.png
+/kitchen.png
+/Bubble.png
+/60.png
+/61.png
+/62.png
+/63.png
+
+# Docs and IDE (not needed to compile)
+/docs/
+.idea/
+.husky/
+
+# functions deps reinstalled on server if needed; keep source, skip nested modules if present
+functions/node_modules/

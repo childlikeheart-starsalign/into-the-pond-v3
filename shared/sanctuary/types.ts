@@ -187,6 +187,20 @@ export type CatchEncounter = {
 
 export type FishingClaimOutcome = "catch" | "miss" | "duplicate";
 
+/** Epic rods that track independent top-rare dry streaks (Sheet E). */
+export type EpicFishingRodId = "epic_fire" | "epic_water" | "epic_wind" | "epic_electric";
+
+/** Flat on users/{uid} — server-written pity counters for fishing. */
+export type FishingPityState = {
+  consecutiveChanceMisses: number;
+  epicTopRareDryStreak: Partial<Record<EpicFishingRodId, number>>;
+};
+
+export const DEFAULT_FISHING_PITY: FishingPityState = {
+  consecutiveChanceMisses: 0,
+  epicTopRareDryStreak: {},
+};
+
 export type FishingClaim = {
   id: EntityId;
   encounterId: EntityId;

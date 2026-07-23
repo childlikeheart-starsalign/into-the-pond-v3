@@ -12,6 +12,7 @@ export type EconomyActionType =
   | "diary_reflection"
   | "compensation"
   | "cast_create"
+  | "cast_cancel"
   | "rod_equip"
   | "well_assign"
   | "well_reroll"

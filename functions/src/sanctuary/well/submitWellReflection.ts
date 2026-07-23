@@ -10,10 +10,13 @@ import { isValidWellQuestionId, WELL_QUESTION_BY_ID } from "./catalog";
 import { hasAnsweredToday, mergeWellState } from "./wellQuestionService";
 import type { DiscoveryCategory } from "./types";
 import {
+  childAtlasCollectionRef,
   logStaleAgeBandSubmission,
   parseLocalDate,
+  parseOptionalChildId,
   recordWellAnalytics,
   requireUid,
+  resolveBirthDateForWell,
   userRef,
   wellStateRef,
 } from "./wellHelpers";
@@ -24,6 +27,8 @@ export type SubmitWellReflectionRequest = {
   reflectionText: string;
   headline?: string | null;
   localDate: string;
+  /** Optional — when set, Well state + Atlas write under children/{childId}. Economy stays on users/{uid}. */
+  childId?: string | null;
 };
 
 export type SubmitWellReflectionError =
@@ -58,6 +63,7 @@ export async function handleSubmitWellReflection(
   payload: SubmitWellReflectionRequest,
 ): Promise<SubmitWellReflectionResponse> {
   const { questionId, reflectionText, headline, localDate } = payload;
+  const childId = parseOptionalChildId(payload.childId);
 
   if (!isValidWellQuestionId(questionId)) {
     await recordWellAnalytics(uid, {
@@ -119,9 +125,8 @@ export async function handleSubmitWellReflection(
     const userSnap = await tx.get(userRef(uid));
     const userData = (userSnap.data() ?? {}) as Record<string, unknown>;
     applyOperationalCounterResetsInTransaction(tx, userRef(uid), userData);
-    const wellStateSnap = await tx.get(wellStateRef(uid));
+    const wellStateSnap = await tx.get(wellStateRef(uid, childId));
     const wellState = mergeWellState(wellStateSnap.data());
-    const userProfile = userData as { childBirthDate?: string } | undefined;
     let staleAgeBand: {
       questionId: string;
       expectedBand: ReturnType<typeof computeAgeBand>;
@@ -135,8 +140,9 @@ export async function handleSubmitWellReflection(
       return { success: false as const, error: "ALREADY_ANSWERED_TODAY" as const };
     }
 
-    if (userProfile?.childBirthDate) {
-      const birthDate = parseBirthDate(userProfile.childBirthDate);
+    const birthRaw = await resolveBirthDateForWell(tx, uid, childId);
+    if (birthRaw) {
+      const birthDate = parseBirthDate(birthRaw);
       if (birthDate) {
         const expectedBand = computeAgeBand(birthDate);
         if (question.ageBand !== expectedBand) {
@@ -151,7 +157,8 @@ export async function handleSubmitWellReflection(
     );
     const transactionId = `tx_well_${parsedDate}_${questionId}`;
     const updatedAnsweredIds = [...wellState.answeredQuestionIds, questionId];
-    const atlasRef = userRef(uid).collection("childAtlas").doc();
+    // Atlas is child-aware; Wonder / ledger remain account-level via commitEconomyAction.
+    const atlasRef = childAtlasCollectionRef(uid, childId).doc();
 
     const economyCommit = await commitEconomyAction<WellReflectionSuccessPayload>({
       tx,
@@ -212,7 +219,7 @@ export async function handleSubmitWellReflection(
       });
 
       tx.set(
-        wellStateRef(uid),
+        wellStateRef(uid, childId),
         {
           ...wellState,
           answeredQuestionIds: updatedAnsweredIds,
@@ -275,5 +282,6 @@ export function submitWellReflectionCallable(
     reflectionText: String(data.reflectionText ?? ""),
     headline: data.headline ?? null,
     localDate: String(data.localDate ?? ""),
+    childId: parseOptionalChildId(data.childId),
   });
 }

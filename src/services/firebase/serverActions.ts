@@ -7,6 +7,7 @@ import type {
   FishingClaimClientSummary,
   SubmitDiaryEntryResponse,
 } from "@/shared/sanctuary/economy/callableResponses";
+import { withCallableAuth } from "@/src/services/firebase/callableAuth";
 import { functions } from "@/src/services/firebase/client";
 
 import type {
@@ -51,21 +52,26 @@ export async function checkSignInEmailRegistered(email: string): Promise<boolean
   return result.data.registered === true;
 }
 
-export async function ensureWellState(uid: string) {
+export async function ensureWellState(uid: string, childId?: string | null) {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "ensureWellState");
-  const result = await callable({});
-  return result.data as { success: true; alreadyExisted: boolean };
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "ensureWellState");
+    const result = await callable(childId ? { childId } : {});
+    return result.data as { success: true; alreadyExisted: boolean };
+  });
 }
 
 export async function getOrAssignTodaysWellQuestion(
   uid: string,
   localDate: string,
+  childId?: string | null,
 ): Promise<GetOrAssignTodaysQuestionResponse> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "getOrAssignTodaysQuestion");
-  const result = await callable({ localDate });
-  return result.data as GetOrAssignTodaysQuestionResponse;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "getOrAssignTodaysQuestion");
+    const result = await callable(childId ? { localDate, childId } : { localDate });
+    return result.data as GetOrAssignTodaysQuestionResponse;
+  });
 }
 
 export async function submitWellReflection(
@@ -75,24 +81,34 @@ export async function submitWellReflection(
     reflectionText: string;
     headline?: string | null;
     localDate: string;
+    childId?: string | null;
   },
 ): Promise<SubmitWellReflectionResponse> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "submitWellReflection");
-  const result = await callable(payload);
-  return result.data as SubmitWellReflectionResponse;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "submitWellReflection");
+    const result = await callable(payload);
+    return result.data as SubmitWellReflectionResponse;
+  });
 }
 
 export async function rerollWellQuestion(
   uid: string,
   localDate: string,
   requestId?: string,
+  childId?: string | null,
 ): Promise<RerollWellQuestionResponse> {
   ensureSignedIn(uid);
-  const stableRequestId = requestId ?? createClientRequestId("well_reroll");
-  const callable = httpsCallable(functions, "rerollWellQuestion");
-  const result = await callable({ localDate, requestId: stableRequestId });
-  return result.data as RerollWellQuestionResponse;
+  return withCallableAuth(async () => {
+    const stableRequestId = requestId ?? createClientRequestId("well_reroll");
+    const callable = httpsCallable(functions, "rerollWellQuestion");
+    const result = await callable(
+      childId
+        ? { localDate, requestId: stableRequestId, childId }
+        : { localDate, requestId: stableRequestId },
+    );
+    return result.data as RerollWellQuestionResponse;
+  });
 }
 
 export type ServerClaimSummary = FishingClaimClientSummary & {
@@ -104,9 +120,11 @@ export async function submitDiaryEntry(
   payload: Record<string, unknown>,
 ): Promise<SubmitDiaryEntryResponse> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "submitDiaryEntry");
-  const result = await callable(payload);
-  return result.data as SubmitDiaryEntryResponse;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "submitDiaryEntry");
+    const result = await callable(payload);
+    return result.data as SubmitDiaryEntryResponse;
+  });
 }
 
 export async function completePractice(
@@ -114,9 +132,11 @@ export async function completePractice(
   payload: { kind: string; note?: string; localDate?: string },
 ): Promise<CompletePracticeResponse> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "completePractice");
-  const result = await callable(payload);
-  return result.data as CompletePracticeResponse;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "completePractice");
+    const result = await callable(payload);
+    return result.data as CompletePracticeResponse;
+  });
 }
 
 export async function initializeSanctuary(
@@ -124,12 +144,14 @@ export async function initializeSanctuary(
   payload: { requestId: string },
 ): Promise<{ status: "success" | "already_initialized"; sanctuaryInitialized: boolean }> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "initializeSanctuary");
-  const result = await callable({ requestId: payload.requestId });
-  return result.data as {
-    status: "success" | "already_initialized";
-    sanctuaryInitialized: boolean;
-  };
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "initializeSanctuary");
+    const result = await callable({ requestId: payload.requestId });
+    return result.data as {
+      status: "success" | "already_initialized";
+      sanctuaryInitialized: boolean;
+    };
+  });
 }
 
 export async function craftBait(
@@ -138,10 +160,12 @@ export async function craftBait(
 ): Promise<CraftBaitResponse> {
   ensureSignedIn(uid);
   const requestId = payload.requestId ?? (await getOrCreateBaitRequestId(uid, payload.tier));
-  const callable = httpsCallable(functions, "craftBait");
-  const result = await callable({ tier: payload.tier, requestId });
-  await clearBaitRequestId(uid, payload.tier);
-  return result.data as CraftBaitResponse;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "craftBait");
+    const result = await callable({ tier: payload.tier, requestId });
+    await clearBaitRequestId(uid, payload.tier);
+    return result.data as CraftBaitResponse;
+  });
 }
 
 export async function createCast(
@@ -150,16 +174,39 @@ export async function createCast(
 ) {
   ensureSignedIn(uid);
   const requestId = payload.requestId ?? createClientRequestId("cast");
-  const callable = httpsCallable(functions, "createCast");
-  const result = await callable({ ...payload, requestId });
-  return result.data as { success: boolean; castId?: string; readyAt?: number };
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "createCast");
+    const result = await callable({ ...payload, requestId });
+    return result.data as {
+      success: boolean;
+      castId?: string;
+      readyAt?: number;
+      createdAt?: number;
+    };
+  });
 }
 
 export async function claimCast(uid: string, payload: Record<string, unknown>) {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "claimCast");
-  const result = await callable(payload);
-  return result.data as { success: boolean; claim?: ServerClaimSummary };
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "claimCast");
+    const result = await callable(payload);
+    return result.data as { success: boolean; claim?: ServerClaimSummary };
+  });
+}
+
+export async function cancelCast(uid: string) {
+  ensureSignedIn(uid);
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "cancelCast");
+    const result = await callable({});
+    return result.data as {
+      success: boolean;
+      castId?: string;
+      baitRefunded?: boolean;
+      alreadyCleared?: boolean;
+    };
+  });
 }
 
 export type StartCraftResult = {
@@ -176,9 +223,11 @@ export type StartCraftResult = {
 
 export async function startCraft(uid: string, rodId: string): Promise<StartCraftResult> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "startCraft");
-  const result = await callable({ rodId });
-  return result.data as StartCraftResult;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "startCraft");
+    const result = await callable({ rodId });
+    return result.data as StartCraftResult;
+  });
 }
 
 export type CollectCraftResult = {
@@ -189,9 +238,11 @@ export type CollectCraftResult = {
 
 export async function collectCraft(uid: string, rodId: string): Promise<CollectCraftResult> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "collectCraft");
-  const result = await callable({ rodId });
-  return result.data as CollectCraftResult;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "collectCraft");
+    const result = await callable({ rodId });
+    return result.data as CollectCraftResult;
+  });
 }
 
 export type EquipRodResult = {
@@ -208,14 +259,16 @@ export async function equipRod(
   options?: { collectedThisBenchSession?: boolean },
 ): Promise<EquipRodResult> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "equipRod");
-  const result = await callable({
-    rodId,
-    ...(options?.collectedThisBenchSession != null
-      ? { collectedThisBenchSession: options.collectedThisBenchSession }
-      : {}),
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "equipRod");
+    const result = await callable({
+      rodId,
+      ...(options?.collectedThisBenchSession != null
+        ? { collectedThisBenchSession: options.collectedThisBenchSession }
+        : {}),
+    });
+    return result.data as EquipRodResult;
   });
-  return result.data as EquipRodResult;
 }
 
 export type CompleteLessonReflectionResult = {
@@ -245,9 +298,11 @@ export async function completeLessonReflection(
   },
 ): Promise<CompleteLessonReflectionResult> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "completeLessonReflection");
-  const result = await callable(payload);
-  return result.data as CompleteLessonReflectionResult;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "completeLessonReflection");
+    const result = await callable(payload);
+    return result.data as CompleteLessonReflectionResult;
+  });
 }
 
 export type GetRodProgressionResult = {
@@ -259,19 +314,23 @@ export type GetRodProgressionResult = {
 
 export async function getRodProgression(uid: string): Promise<GetRodProgressionResult> {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "getRodProgression");
-  const result = await callable({});
-  return result.data as GetRodProgressionResult;
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "getRodProgression");
+    const result = await callable({});
+    return result.data as GetRodProgressionResult;
+  });
 }
 
 export async function requestSubscriptionSync(uid: string) {
   ensureSignedIn(uid);
-  const callable = httpsCallable(functions, "syncSubscriptionStatus");
-  const result = await callable();
-  return result.data as {
-    success: boolean;
-    mismatchDetected: boolean;
-    activeRod: "basic" | "wooden" | "fiberglass";
-    subscriptionStatus: "free" | "wooden" | "fiberglass";
-  };
+  return withCallableAuth(async () => {
+    const callable = httpsCallable(functions, "syncSubscriptionStatus");
+    const result = await callable();
+    return result.data as {
+      success: boolean;
+      mismatchDetected: boolean;
+      activeRod: "basic" | "wooden" | "fiberglass";
+      subscriptionStatus: "free" | "wooden" | "fiberglass";
+    };
+  });
 }

@@ -22,13 +22,16 @@ const adapter = new SQLiteAdapter({
     Sentry.captureException(error, {
       tags: { area: "db_sync", flow: "setup" },
     });
-    adapter.unsafeResetDatabase((result) => {
-      if ("error" in result && result.error) {
-        console.warn("[db] reset failed", result.error);
-        Sentry.captureException(result.error, {
-          tags: { area: "db_sync", flow: "reset" },
-        });
-      }
+    // Defer reset so it does not re-enter the native dispatcher during failed init.
+    void Promise.resolve().then(() => {
+      adapter.unsafeResetDatabase((result) => {
+        if ("error" in result && result.error) {
+          console.warn("[db] reset failed", result.error);
+          Sentry.captureException(result.error, {
+            tags: { area: "db_sync", flow: "reset" },
+          });
+        }
+      });
     });
   },
 });

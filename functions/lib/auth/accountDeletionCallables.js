@@ -13,7 +13,10 @@ const posthogServer_1 = require("../analytics/posthogServer");
 const init_1 = require("../init");
 const accountDeletionConstants_1 = require("./accountDeletionConstants");
 const deletionCrypto_1 = require("./deletionCrypto");
+const childrenDeletionBackup_1 = require("./childrenDeletionBackup");
 const deletePiiSubcollections_1 = require("./deletePiiSubcollections");
+const deletionWebRateLimit_1 = require("./deletionWebRateLimit");
+const sendDeletionConfirmEmail_1 = require("./sendDeletionConfirmEmail");
 const resolveCallableIdempotency_1 = require("../sanctuary/economy/resolveCallableIdempotency");
 const IDEMPOTENCY_ACTION = "compensation";
 function toStatusResponse(data) {
@@ -23,7 +26,7 @@ function toStatusResponse(data) {
     requestedAt: data.deletionRequestedAt?.toDate?.()?.toISOString?.() ?? null,
   };
 }
-function buildRestorePayload(uid, userData, authEmail, authProvider) {
+function buildRestorePayload(_uid, userData, authEmail, authProvider, children) {
   return {
     email: userData.email ?? authEmail ?? "",
     childBirthDate: userData.childBirthDate,
@@ -31,6 +34,9 @@ function buildRestorePayload(uid, userData, authEmail, authProvider) {
     hasCompletedDay1Narrative: userData.hasCompletedDay1Narrative,
     narrativeProgress: userData.narrativeProgress,
     authProvider: authProvider ?? "password",
+    children,
+    activeChildId: userData.activeChildId ?? null,
+    childrenSummary: userData.childrenSummary,
   };
 }
 function scrubbedSubscription(userData) {
@@ -57,6 +63,9 @@ async function runPhase1Deletion(params) {
   const authUser = await (0, auth_1.getAuth)().getUser(uid);
   const authProvider = authUser.providerData[0]?.providerId ?? "password";
   const authEmail = authUser.email;
+  // Backup all children BEFORE the scrubbing transaction (reads outside txn are ok —
+  // children are only deleted after a successful fresh deletion commit).
+  const childrenBackup = await (0, childrenDeletionBackup_1.backupAllChildrenSubtrees)(uid);
   const txResult = await init_1.db.runTransaction(async (tx) => {
     const idemRead = await (0, resolveCallableIdempotency_1.readIdempotencyInTransaction)(
       tx,
@@ -96,7 +105,13 @@ async function runPhase1Deletion(params) {
     const purgeAt = firestore_1.Timestamp.fromDate(
       (0, accountDeletionConstants_1.purgeAtFromRequestedAt)(requestedAt.toMillis()),
     );
-    const restorePayload = buildRestorePayload(uid, userData, authEmail, authProvider);
+    const restorePayload = buildRestorePayload(
+      uid,
+      userData,
+      authEmail,
+      authProvider,
+      childrenBackup,
+    );
     const emailHmac = (0, deletionCrypto_1.hashEmailForLookup)(
       restorePayload.email || authEmail || uid,
     );
@@ -116,6 +131,8 @@ async function runPhase1Deletion(params) {
         childArchetype: null,
         childBirthDate: firestore_1.FieldValue.delete(),
         narrativeProgress: firestore_1.FieldValue.delete(),
+        activeChildId: firestore_1.FieldValue.delete(),
+        childrenSummary: firestore_1.FieldValue.delete(),
         subscription: scrubbedSubscription(userData),
         deletionStatus: "pending",
         deletionRequestedAt: requestedAt,
@@ -142,6 +159,7 @@ async function runPhase1Deletion(params) {
   });
   if (txResult.kind === "fresh") {
     await (0, deletePiiSubcollections_1.deletePiiSubcollections)(uid);
+    await (0, childrenDeletionBackup_1.deleteAllChildrenSubtrees)(uid);
     await (0, auth_1.getAuth)().revokeRefreshTokens(uid);
     await (0, posthogServer_1.captureAccountDeletionRequested)({ uid, source });
     firebase_functions_1.logger.info("account_deletion_requested", { uid, source, requestId });
@@ -178,6 +196,7 @@ async function cancelAccountDeletionCallable(authUid) {
   const uid = authUid;
   const userRef = init_1.db.collection("users").doc(uid);
   const deletionRequestRef = init_1.db.collection("deletion_requests").doc(uid);
+  let childrenToRestore;
   await init_1.db.runTransaction(async (tx) => {
     const userSnap = await tx.get(userRef);
     if (!userSnap.exists) {
@@ -200,6 +219,7 @@ async function cancelAccountDeletionCallable(authUid) {
       throw new https_1.HttpsError("failed-precondition", "Deletion backup is invalid.");
     }
     const restored = (0, deletionCrypto_1.decryptRestorePayload)(encryptedPayload);
+    childrenToRestore = restored.children;
     tx.set(
       userRef,
       {
@@ -210,6 +230,8 @@ async function cancelAccountDeletionCallable(authUid) {
           ? { hasCompletedDay1Narrative: restored.hasCompletedDay1Narrative }
           : {}),
         ...(restored.narrativeProgress ? { narrativeProgress: restored.narrativeProgress } : {}),
+        ...(restored.activeChildId != null ? { activeChildId: restored.activeChildId } : {}),
+        ...(restored.childrenSummary ? { childrenSummary: restored.childrenSummary } : {}),
         deletionStatus: "active",
         deletionRequestedAt: null,
         deletionPurgeAt: null,
@@ -220,6 +242,7 @@ async function cancelAccountDeletionCallable(authUid) {
     );
     tx.delete(deletionRequestRef);
   });
+  await (0, childrenDeletionBackup_1.restoreChildrenSubtrees)(uid, childrenToRestore);
   firebase_functions_1.logger.info("account_deletion_restored", { uid });
   return { success: true, status: "active" };
 }
@@ -256,7 +279,7 @@ async function confirmAccountDeletionWebCallable(params) {
     .set({ usedAt: firestore_1.Timestamp.now() }, { merge: true });
   return response;
 }
-async function requestAccountDeletionByEmailCallable(email) {
+async function requestAccountDeletionByEmailCallable(email, opts = {}) {
   const normalized = email.trim().toLowerCase();
   if (!normalized || !/^\S+@\S+\.\S+$/.test(normalized)) {
     throw new https_1.HttpsError("invalid-argument", "A valid email address is required.");
@@ -264,6 +287,16 @@ async function requestAccountDeletionByEmailCallable(email) {
   const genericMessage =
     "If an account exists for this email, you will receive a confirmation link shortly.";
   if (!(0, accountDeletionConstants_1.isAccountDeletionEnabled)()) {
+    return { message: genericMessage };
+  }
+  const rateLimited = await (0, deletionWebRateLimit_1.isDeletionWebRequestRateLimited)({
+    email: normalized,
+    clientIp: opts.clientIp ?? null,
+  });
+  if (rateLimited) {
+    firebase_functions_1.logger.warn("account_deletion_web_rate_limited", {
+      hasIp: Boolean(opts.clientIp),
+    });
     return { message: genericMessage };
   }
   let uid;
@@ -295,13 +328,32 @@ async function requestAccountDeletionByEmailCallable(email) {
       createdAt: firestore_1.Timestamp.now(),
       usedAt: null,
     });
-  firebase_functions_1.logger.info("account_deletion_web_email_issued", {
-    uid,
-    requestId,
-    emulatorLink:
-      process.env.FUNCTIONS_EMULATOR === "true"
-        ? `confirm?uid=${uid}&token=${token}&requestId=${requestId}`
-        : undefined,
-  });
+  if (process.env.FUNCTIONS_EMULATOR === "true") {
+    firebase_functions_1.logger.info("account_deletion_web_email_issued", {
+      uid,
+      requestId,
+      emulatorLink: `confirm?uid=${uid}&token=${token}&requestId=${requestId}`,
+    });
+  } else {
+    firebase_functions_1.logger.info("account_deletion_web_email_issued", { uid, requestId });
+  }
+  try {
+    await (0, sendDeletionConfirmEmail_1.sendDeletionConfirmEmail)({
+      to: normalized,
+      uid,
+      token,
+      requestId,
+    });
+  } catch (error) {
+    firebase_functions_1.logger.error("account_deletion_web_email_send_failed", {
+      uid,
+      requestId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    throw new https_1.HttpsError(
+      "internal",
+      "Unable to send confirmation email. Please try again in a moment.",
+    );
+  }
   return { message: genericMessage };
 }

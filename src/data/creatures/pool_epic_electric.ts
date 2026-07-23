@@ -8,6 +8,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.5",
     moduleId: 5,
     visualMetaphor:
@@ -25,6 +26,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.6",
     moduleId: 5,
     visualMetaphor:
@@ -41,6 +43,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor:
@@ -58,6 +61,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor:
@@ -74,6 +78,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "2.2",
     moduleId: 2,
     visualMetaphor: "A complete circuit creature — no open ends, no loose charge, deeply whole",
@@ -89,6 +94,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "2.4",
     moduleId: 2,
     visualMetaphor: "A fish that carries enormous charge invisibly, showing nothing on the surface",
@@ -104,6 +110,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "3.5",
     moduleId: 3,
     visualMetaphor:
@@ -121,6 +128,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.2",
     moduleId: 5,
     visualMetaphor:
@@ -137,6 +145,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "2.6",
     moduleId: 2,
     visualMetaphor:
@@ -153,6 +162,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "4.4",
     moduleId: 4,
     visualMetaphor:
@@ -169,6 +179,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "4.6",
     moduleId: 4,
     visualMetaphor:
@@ -185,6 +196,7 @@ export const pool_epic_electric: Creature[] = [
     elementType: "electric",
     rodRequired: "epic4",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.3",
     moduleId: 5,
     visualMetaphor:

@@ -34,6 +34,7 @@ class MockTransaction {
   private userData: Record<string, unknown>;
   private readonly idempotencyHits = new Map<string, Record<string, unknown>>();
   private readonly ledgerEntries = new Map<string, EconomyLedgerEntry>();
+  private writeStarted = false;
 
   constructor(
     userData: Record<string, unknown> = {
@@ -73,6 +74,9 @@ class MockTransaction {
   }
 
   async get(ref: MockDocRef) {
+    if (this.writeStarted) {
+      throw new Error("Firestore transactions require all reads to be executed before all writes.");
+    }
     if (ref.path === `users/${UID}`) {
       return { exists: true, data: () => ({ ...this.userData }) };
     }
@@ -97,6 +101,7 @@ class MockTransaction {
   }
 
   set(ref: MockDocRef, data: Record<string, unknown>) {
+    this.writeStarted = true;
     this.writes.push({ path: ref.path, data });
     if (ref.path.includes("/economyLedger/")) {
       const id = ref.path.split("/").pop() ?? "";
@@ -213,8 +218,89 @@ test("runCreateCastInTransaction fresh cast writes activeCast once", async () =>
   });
 
   assert.equal(result.success, true);
+  assert.ok(typeof result.createdAt === "number");
   const activeCastWrites = tx.writes.filter((w) => w.path === `users/${UID}` && w.data.activeCast);
   assert.equal(activeCastWrites.length, 1);
+  const active = activeCastWrites[0]?.data.activeCast as {
+    createdAt?: { toMillis?: () => number };
+    baitDeducted?: boolean;
+  };
+  assert.ok(active?.createdAt);
+  assert.equal(active?.baitDeducted, false);
+});
+
+test("runCreateCastInTransaction accepts free UI bait_basic without deducting inventory", async () => {
+  const userRef = mockRef(`users/${UID}`) as unknown as FirebaseFirestore.DocumentReference;
+  const tx = new MockTransaction({
+    inventory: {
+      baits: { feather_bait: 0, scale_bait: 0, glimmerdust_bait: 0, random_bait: 0 },
+    },
+  });
+
+  const result = await runCreateCastInTransaction({
+    tx: tx as unknown as FirebaseFirestore.Transaction,
+    userRef,
+    uid: UID,
+    requestId: "req_bait_basic",
+    rodType: "basic",
+    baitUsed: "bait_basic",
+  });
+
+  assert.equal(result.success, true);
+  const userData = tx.getUserData();
+  assert.equal((userData.inventory as { baits: Record<string, number> }).baits.feather_bait, 0);
+  assert.equal((userData.inventory as { baits: Record<string, number> }).baits.scale_bait, 0);
+  const activeCast = tx.writes.find((w) => w.data.activeCast)?.data.activeCast as {
+    baitUsed?: string;
+  };
+  assert.equal(activeCast?.baitUsed, "bait_basic");
+});
+
+test("runCreateCastInTransaction with missing daily reset fields does not read after write", async () => {
+  const userRef = mockRef(`users/${UID}`) as unknown as FirebaseFirestore.DocumentReference;
+  const tx = new MockTransaction({
+    currentWonder: 100,
+    storedWonder: 50,
+    lifetimeWonderEarned: 100,
+    fishingWonderToday: 3,
+    // Missing lastFishingResetDate forces a counter reset patch.
+  });
+
+  const result = await runCreateCastInTransaction({
+    tx: tx as unknown as FirebaseFirestore.Transaction,
+    userRef,
+    uid: UID,
+    requestId: "req_counter_reset_cast",
+    rodType: "basic",
+    baitUsed: "bait_basic",
+  });
+
+  assert.equal(result.success, true);
+  const userData = tx.getUserData();
+  assert.equal(userData.fishingWonderToday, 0);
+  assert.ok(userData.lastFishingResetDate);
+  assert.ok(userData.activeCast);
+});
+
+test("runCreateCastInTransaction maps bait_mid to scale_bait inventory", async () => {
+  const userRef = mockRef(`users/${UID}`) as unknown as FirebaseFirestore.DocumentReference;
+  const tx = new MockTransaction({
+    inventory: {
+      baits: { feather_bait: 0, scale_bait: 2, glimmerdust_bait: 0, random_bait: 0 },
+    },
+  });
+
+  await runCreateCastInTransaction({
+    tx: tx as unknown as FirebaseFirestore.Transaction,
+    userRef,
+    uid: UID,
+    requestId: "req_bait_mid",
+    rodType: "basic",
+    baitUsed: "bait_mid",
+  });
+
+  const userData = tx.getUserData();
+  assert.equal((userData.inventory as { baits: Record<string, number> }).baits.scale_bait, 1);
 });
 
 test("runCreateCastInTransaction deducts feather_bait when balance is 1", async () => {

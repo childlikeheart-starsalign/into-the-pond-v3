@@ -1,0 +1,151 @@
+creatureTypeId,displayName,rodRequired,poolTier,elementType,moduleId,lessonId,sub_tier,notes
+puddle-dart,Puddle Dart,basic,common,fire,1,1.1,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+bubble-mote,Bubble Mote,basic,common,water,1,1.2,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+moss-skipper,Moss Skipper,basic,common,wind,1,1.3,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+spark-pebble,Spark Pebble,basic,common,electric,1,1.4,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+reed-tail,Reed Tail,basic,common,fire,1,1.5,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+cloud-fin,Cloud Fin,basic,common,water,1,1.6,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+hinge-glider,Hinge Glider,basic,common,wind,2,2.1,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+amber-ring,Amber Ring,basic,common,electric,2,2.2,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+shore-ghost,Shore Ghost,basic,common,fire,2,2.3,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+knot-swimmer,Knot Swimmer,basic,common,water,2,2.4,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+petal-dart,Petal Dart,basic,common,wind,2,2.5,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+chalk-line,Chalk Line,basic,common,electric,2,2.6,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+tide-pup,Tide Pup,basic,common,fire,2,2.7,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+mirror-leaf,Mirror Leaf,basic,common,water,2,2.8,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+blink-swimmer,Blink Swimmer,basic,common,wind,2,2.9,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+gilt-minnow,Gilt Minnow,basic,common,electric,3,3.1,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+rust-belly,Rust Belly,basic,common,fire,3,3.2,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+soft-arch,Soft Arch,basic,common,water,3,3.3,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+hollow-bell,Hollow Bell,basic,common,wind,3,3.4,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+coil-spark,Coil Spark,basic,common,electric,3,3.5,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+fog-glider,Fog Glider,basic,common,fire,3,3.6,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+pool-penny,Pool Penny,basic,common,water,3,3.7,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+wick-fin,Wick Fin,basic,common,wind,3,3.8,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+loop-drifter,Loop Drifter,basic,common,electric,3,3.9,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+bone-float,Bone Float,basic,common,fire,4,4.1,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+green-bead,Green Bead,basic,common,water,4,4.2,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+pine-needle,Pine Needle,basic,common,wind,4,4.3,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+faint-arc,Faint Arc,basic,common,electric,4,4.4,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+river-coin,River Coin,basic,common,fire,4,4.5,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+dusk-mote,Dusk Mote,basic,common,water,4,4.6,"uniform (basic pool, no sub-tier)",Basic pool is uniform-weight per Sheet C; sub-tier not applicable.
+ember-darter,Ember Darter,rare1,rare,fire,1,1.1,common-rare,
+cinder-veil,Cinder Veil,rare1,rare,fire,1,1.5,common-rare,
+flare-scout,Flare Scout,rare1,rare,fire,1,1.6,common-rare,
+hearthfin,Hearthfin,rare1,rare,fire,2,2.3,common-rare,
+scorchtail,Scorchtail,rare1,rare,fire,2,2.6,common-rare,
+soot-drifter,Soot Drifter,rare1,rare,fire,3,3.4,common-rare,
+forge-wraith,Forge Wraith,rare1,rare,fire,3,3.6,mid-rare,
+cinderback,Cinderback,rare1,rare,fire,3,3.9,mid-rare,
+heatwave-glide,Heatwave Glide,rare1,rare,fire,4,4.1,mid-rare,
+tinder-swift,Tinder Swift,rare1,rare,fire,4,4.3,mid-rare,
+ashwing,Ashwing,rare1,rare,fire,4,4.4,mid-rare,
+solstice-runner,Solstice Runner,rare1,rare,fire,5,5.1,top-rare,
+blaze-tender,Blaze Tender,rare1,rare,fire,5,5.3,top-rare,
+coal-sentinel,Coal Sentinel,rare1,rare,fire,5,5.5,top-rare,
+tide-whisper,Tide Whisper,rare2,rare,water,1,1.3,common-rare,
+mirror-minnow,Mirror Minnow,rare2,rare,water,1,1.4,common-rare,
+current-guide,Current Guide,rare2,rare,water,2,2.3,common-rare,
+still-pool,Still Pool,rare2,rare,water,2,2.5,common-rare,
+flow-keeper,Flow Keeper,rare2,rare,water,2,2.7,common-rare,
+ripple-sage,Ripple Sage,rare2,rare,water,3,3.7,mid-rare,
+deep-current,Deep Current,rare2,rare,water,3,3.8,mid-rare,
+pool-weaver,Pool Weaver,rare2,rare,water,3,3.9,mid-rare,
+heron-blue,Heron Blue,rare2,rare,water,3,4.2,common-rare,
+glassfin,Glassfin,rare2,rare,water,4,4.5,mid-rare,
+spring-mouth,Spring Mouth,rare2,rare,water,5,5.1,mid-rare,
+salt-runner,Salt Runner,rare2,rare,water,5,5.2,top-rare,
+winter-swimmer,Winter Swimmer,rare2,rare,water,5,5.4,top-rare,
+confluence,Confluence,rare2,rare,water,5,5.7,top-rare,
+breath-dart,Breath Dart,rare3,rare,wind,1,1.2,common-rare,
+whisperfin,Whisperfin,rare3,rare,wind,3,3.1,common-rare,
+drift-leaf,Drift Leaf,rare3,rare,wind,3,3.2,common-rare,
+gust-runner,Gust Runner,rare3,rare,wind,3,3.3,common-rare,
+language-lilt,Language Lilt,rare3,rare,wind,3,3.5,common-rare,
+zephyr-counsel,Zephyr Counsel,rare3,rare,wind,3,3.9,common-rare,
+echo-bird,Echo Bird,rare3,rare,wind,4,4.1,mid-rare,
+paper-crane-fish,Paper Crane Fish,rare3,rare,wind,4,4.2,mid-rare,
+wind-knot,Wind Knot,rare3,rare,wind,4,4.3,mid-rare,
+canopy-drifter,Canopy Drifter,rare3,rare,wind,4,4.4,mid-rare,
+feather-wake,Feather Wake,rare3,rare,wind,4,4.6,mid-rare,
+voice-thread,Voice Thread,rare3,rare,wind,5,5.2,top-rare,
+gust-elder,Gust Elder,rare3,rare,wind,5,5.3,top-rare,
+stillpoint-wing,Stillpoint Wing,rare3,rare,wind,5,5.6,top-rare,
+spark-mote,Spark Mote,rare4,rare,electric,2,2.2,common-rare,
+signal-dart,Signal Dart,rare4,rare,electric,2,2.4,common-rare,
+arc-scout,Arc Scout,rare4,rare,electric,2,2.8,common-rare,
+volt-tender,Volt Tender,rare4,rare,electric,2,2.9,common-rare,
+resonance-fish,Resonance Fish,rare4,rare,electric,3,3.5,common-rare,
+charge-keeper,Charge Keeper,rare4,rare,electric,4,4.2,mid-rare,
+field-weaver,Field Weaver,rare4,rare,electric,5,5.1,mid-rare,
+ground-pulse,Ground Pulse,rare4,rare,electric,3,3.6,mid-rare,
+arc-tender,Arc Tender,rare4,rare,electric,2,2.1,common-rare,
+static-keeper,Static Keeper,rare4,rare,electric,4,4.6,mid-rare,
+fuse-swimmer,Fuse Swimmer,rare4,rare,electric,5,5.4,top-rare,
+bright-node,Bright Node,rare4,rare,electric,5,5.5,top-rare,
+current-arrow,Current Arrow,rare4,rare,electric,3,3.7,mid-rare,
+zenith-mote,Zenith Mote,rare4,rare,electric,5,5.7,top-rare,
+prism-drifter,Prism Drifter,rare5,rare,any,1,1.1,common-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+threshold-fish,Threshold Fish,rare5,rare,any,1,1.6,common-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+double-current,Double Current,rare5,rare,any,2,2.3,common-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+compass-glide,Compass Glide,rare5,rare,any,2,2.8,common-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+convergence,Convergence,rare5,rare,any,3,3.4,common-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+deep-mirror,Deep Mirror,rare5,rare,any,3,3.5,common-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+phase-swimmer,Phase Swimmer,rare5,rare,any,4,4.1,mid-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+echo-twin,Echo Twin,rare5,rare,any,4,4.3,mid-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+origin-spark,Origin Spark,rare5,rare,any,5,5.1,mid-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+horizon-walker,Horizon Walker,rare5,rare,any,5,5.3,mid-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+memory-fish,Memory Fish,rare5,rare,any,5,5.4,mid-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+bridge-swimmer,Bridge Swimmer,rare5,rare,any,5,5.5,top-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+liminal-glide,Liminal Glide,rare5,rare,any,5,5.6,top-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+whole-current,Whole Current,rare5,rare,any,5,5.7,top-rare,"Wildcard pool; sub-tier ratio mirrors rare-element pools, but overall catch% is already lower via the rareAny profile (see CURRENT_ENGINE_SUMMARY.md), so no separate weight discount needed here."
+magma-elder,Magma Elder,epic1,epic,fire,4,4.3,mid-rare,
+pyrefish,Pyrefish,epic1,epic,fire,4,4.4,mid-rare,
+solarfin-sovereign,Solarfin Sovereign,epic1,epic,fire,5,5.2,mid-rare,
+crucible-fish,Crucible Fish,epic1,epic,fire,3,3.4,common-rare,
+phoenix-ray,Phoenix Ray,epic1,epic,fire,4,4.1,common-rare,
+deep-ember,Deep Ember,epic1,epic,fire,3,3.1,common-rare,
+furnace-elder,Furnace Elder,epic1,epic,fire,4,4.2,common-rare,
+corona-wraith,Corona Wraith,epic1,epic,fire,5,5.1,mid-rare,
+inferno-calm,Inferno Calm,epic1,epic,fire,1,1.6,common-rare,
+forge-sovereign,Forge Sovereign,epic1,epic,fire,5,5.5,top-rare,
+stellar-drifter,Stellar Drifter,epic1,epic,fire,3,3.9,common-rare,
+radiance-keeper,Radiance Keeper,epic1,epic,fire,5,5.3,top-rare,
+prime-flame,Prime Flame,epic1,epic,fire,5,5.7,top-rare,
+abyssal-calm,Abyssal Calm,epic2,epic,water,4,4.5,mid-rare,
+tidal-elder,Tidal Elder,epic2,epic,water,5,5.4,mid-rare,
+origin-leviathan,Origin Leviathan,epic2,epic,water,5,5.7,top-rare,
+deep-tide,Deep Tide,epic2,epic,water,1,1.3,common-rare,
+ancient-mirror,Ancient Mirror,epic2,epic,water,1,1.4,common-rare,
+source-swimmer,Source Swimmer,epic2,epic,water,2,2.3,common-rare,
+bedrock-blue,Bedrock Blue,epic2,epic,water,2,2.7,common-rare,
+estuary-sage,Estuary Sage,epic2,epic,water,3,3.8,common-rare,
+pressure-drifter,Pressure Drifter,epic2,epic,water,4,4.1,common-rare,
+void-swimmer,Void Swimmer,epic2,epic,water,5,5.1,mid-rare,
+undertow-sage,Undertow Sage,epic2,epic,water,5,5.2,mid-rare,
+stillwater-elder,Stillwater Elder,epic2,epic,water,5,5.6,top-rare,
+first-tide,First Tide,epic2,epic,water,5,5.7,top-rare,
+gale-witness,Gale Witness,epic3,epic,wind,4,4.6,mid-rare,
+storm-anchor,Storm Anchor,epic3,epic,wind,5,5.3,mid-rare,
+sky-sovereign,Sky Sovereign,epic3,epic,wind,5,5.6,top-rare,
+elder-breath,Elder Breath,epic3,epic,wind,1,1.2,common-rare,
+word-root,Word Root,epic3,epic,wind,3,3.5,common-rare,
+voice-elder,Voice Elder,epic3,epic,wind,5,5.2,mid-rare,
+fracture-calm,Fracture Calm,epic3,epic,wind,4,4.1,common-rare,
+resonance-elder,Resonance Elder,epic3,epic,wind,4,4.4,common-rare,
+canopy-sovereign,Canopy Sovereign,epic3,epic,wind,3,3.9,common-rare,
+breath-sovereign,Breath Sovereign,epic3,epic,wind,5,5.7,top-rare,
+gust-sovereign,Gust Sovereign,epic3,epic,wind,5,5.4,top-rare,
+deepwind-elder,Deepwind Elder,epic3,epic,wind,5,5.1,mid-rare,
+lightning-elder,Lightning Elder,epic4,epic,electric,5,5.5,top-rare,
+aurora-wraith,Aurora Wraith,epic4,epic,electric,5,5.6,top-rare,
+zenith-sovereign,Zenith Sovereign,epic4,epic,electric,5,5.7,top-rare,
+network-elder,Network Elder,epic4,epic,electric,5,5.1,mid-rare,
+deep-circuit,Deep Circuit,epic4,epic,electric,2,2.2,common-rare,
+quiet-charge,Quiet Charge,epic4,epic,electric,2,2.4,common-rare,
+grid-sovereign,Grid Sovereign,epic4,epic,electric,3,3.5,common-rare,
+field-sovereign,Field Sovereign,epic4,epic,electric,5,5.2,mid-rare,
+arc-sovereign,Arc Sovereign,epic4,epic,electric,2,2.6,common-rare,
+coherence-fish,Coherence Fish,epic4,epic,electric,4,4.4,common-rare,
+resonant-sovereign,Resonant Sovereign,epic4,epic,electric,4,4.6,mid-rare,
+deep-signal,Deep Signal,epic4,epic,electric,5,5.3,mid-rare,

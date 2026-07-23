@@ -53,7 +53,10 @@ export type UseChildAtlasResult = {
   insightCount: number;
 };
 
-export function useChildAtlas(uid: string | null | undefined): UseChildAtlasResult {
+export function useChildAtlas(
+  uid: string | null | undefined,
+  childId?: string | null,
+): UseChildAtlasResult {
   const [firestoreEntries, setFirestoreEntries] = useState<ChildAtlasEntry[]>([]);
   const [devEntries, setDevEntries] = useState<ChildAtlasEntry[]>([]);
   const [loading, setLoading] = useState(Boolean(uid));
@@ -85,7 +88,10 @@ export function useChildAtlas(uid: string | null | undefined): UseChildAtlasResu
         ? subscribeDevChildAtlasEntries(uid, () => void refreshDevEntries())
         : () => {};
 
-    const col = collection(firestore, "users", uid, "childAtlas");
+    // Dual-read (plan §8): prefer children/{childId}/childAtlas when childId present, else legacy root.
+    const col = childId
+      ? collection(firestore, "users", uid, "children", childId, "childAtlas")
+      : collection(firestore, "users", uid, "childAtlas");
     // Firestore cap (P7-A); __DEV__ dev-store entries may add rows on top via mergeAtlasEntries.
     const q = query(col, orderBy("dateDiscovered", "desc"), limit(200));
     const unsub = onSnapshot(
@@ -119,7 +125,7 @@ export function useChildAtlas(uid: string | null | undefined): UseChildAtlasResu
       unsub();
       unsubDev();
     };
-  }, [refreshDevEntries, uid]);
+  }, [refreshDevEntries, uid, childId]);
 
   const entries = useMemo(
     () => (__DEV__ ? mergeAtlasEntries(firestoreEntries, devEntries) : firestoreEntries),

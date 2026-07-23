@@ -15,6 +15,9 @@ const FUNCTIONS_UNAVAILABLE_CODES = new Set([
   "functions/internal",
   "functions/deadline-exceeded",
   "functions/failed-precondition",
+  // Gen2 IAM/gateway can return this even when the client has a valid ID token.
+  "functions/unauthenticated",
+  "unauthenticated",
 ]);
 
 /** Map thrown Well load errors to user-facing error codes (excluding structured API errors). */

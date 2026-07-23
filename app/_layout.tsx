@@ -1,13 +1,16 @@
 import "react-native-reanimated";
 import "@/src/services/sentry/init";
-import "@/src/services/analytics/posthogClient";
+import "@/src/services/analytics/initAnalytics";
 import {
   CormorantGaramond_400Regular,
+  CormorantGaramond_400Regular_Italic,
+  CormorantGaramond_600SemiBold,
   CormorantGaramond_700Bold,
 } from "@expo-google-fonts/cormorant-garamond";
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from "@expo-google-fonts/inter";
 import {
   PlayfairDisplay_400Regular,
+  PlayfairDisplay_600SemiBold,
   PlayfairDisplay_700Bold,
 } from "@expo-google-fonts/playfair-display";
 import { useFonts } from "expo-font";
@@ -23,6 +26,10 @@ import { assertRequiredEnv } from "@/src/config/env";
 import { AuthBootScreen } from "@/src/components/auth/AuthBootScreen";
 import { SignInArrivalOverlay } from "@/src/components/auth/SignInArrivalOverlay";
 import { AuthBootProvider, useAuthBoot } from "@/src/contexts/AuthBootContext";
+import {
+  EveningPondSessionController,
+  EveningPondSessionProvider,
+} from "@/src/contexts/EveningPondSessionContext";
 import { CurtainLiftProvider } from "@/src/contexts/CurtainLiftContext";
 import { SignInArrivalProvider, useSignInArrival } from "@/src/contexts/SignInArrivalContext";
 import { useAuthDeepLink } from "@/src/hooks/useAuthDeepLink";
@@ -30,12 +37,22 @@ import { useAuthAccess } from "@/src/hooks/useAuthAccess";
 import { useEmailVerifiedCelebration } from "@/src/hooks/useEmailVerifiedCelebration";
 import { useNarrativeOnboarding } from "@/src/hooks/useNarrativeOnboarding";
 import { mergeCelebrationState } from "@/src/navigation/mergeCelebrationState";
+import { resolveNewOnboardingRouting } from "@/src/navigation/newOnboardingRouting";
 import { resolveAuthenticatedDestination } from "@/src/navigation/resolveAuthenticatedDestination";
 import type { SignInArrivalReadiness } from "@/src/navigation/resolveSignInArrivalDestination";
+import {
+  CHILD_PROFILE_FLAG_NAMES,
+  useChildProfileFeatureFlags,
+} from "@/src/features/childProfile/featureFlags";
+import { useActiveChild } from "@/src/features/childProfile/useActiveChild";
 import { clearCelebrationSessionComplete } from "@/src/services/onboarding/emailVerifiedCelebrationStorage";
 import { getSyncNarrativeNeeds } from "@/src/services/onboarding/narrativeOnboardingStorage";
 import { reloadAuthOnce } from "@/src/services/auth/authReloadCoordinator";
 import { isAnonymousAuthUser, signOutCurrentUser } from "@/src/services/firebase/auth";
+import {
+  clearFeatureFlagsSession,
+  hydrateSessionFeatureFlags,
+} from "@/src/services/featureFlags/sessionFlags";
 import { hideAppSplashOnce } from "@/src/services/splash/hideAppSplashOnce";
 import { useOfflineSync } from "@/src/hooks/useOfflineSync";
 import { usePostHogIdentify } from "@/src/hooks/usePostHogIdentify";
@@ -74,6 +91,11 @@ type RootLayoutShellProps = {
   deletionStatus: DeletionStatus;
   celebration: ReturnType<typeof useEmailVerifiedCelebration>;
   narrativeOnboarding: ReturnType<typeof useNarrativeOnboarding>;
+  prologueOnboarding: {
+    ready: boolean;
+    hasCompletedPrologueOnboarding: boolean;
+    hasCompletedDay1Narrative: boolean;
+  };
 };
 
 function RootLayoutShell({
@@ -84,6 +106,7 @@ function RootLayoutShell({
   deletionStatus,
   celebration,
   narrativeOnboarding,
+  prologueOnboarding,
 }: RootLayoutShellProps) {
   const { gateUnlockedThisSession, completeColdStartBoot } = useAuthBoot();
 
@@ -139,6 +162,7 @@ function RootLayoutShell({
           deletionStatus={deletionStatus}
           celebration={celebration}
           narrativeOnboarding={narrativeOnboarding}
+          prologueOnboarding={prologueOnboarding}
         />
       </SignInArrivalProvider>
     </CurtainLiftProvider>
@@ -152,6 +176,7 @@ function RootLayoutShellInner({
   deletionStatus,
   celebration,
   narrativeOnboarding,
+  prologueOnboarding,
 }: RootLayoutShellProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -164,6 +189,15 @@ function RootLayoutShellInner({
     completeColdStartBoot,
   } = useAuthBoot();
   const { active: signInArrivalActive } = useSignInArrival();
+  const activeChild = useActiveChild();
+  const childProfileFlags = useChildProfileFeatureFlags();
+
+  const { legacyComplete, needsContinuation } = resolveNewOnboardingRouting({
+    newOnboardingEnabled: childProfileFlags.newOnboardingEnabled,
+    hasCompletedDay1Narrative: prologueOnboarding.hasCompletedDay1Narrative,
+    hasCompletedPrologueOnboarding: prologueOnboarding.hasCompletedPrologueOnboarding,
+    existingChildCount: activeChild.ready ? activeChild.childrenSummary.length : 0,
+  });
 
   useEffect(() => {
     navigationInFlightRef.current = false;
@@ -197,6 +231,22 @@ function RootLayoutShellInner({
       celebration: mergedCelebration,
       gateUnlockedThisSession,
       deletionStatus,
+      childProfile: {
+        flagEnabled: childProfileFlags.createChildProfileUi,
+        ready: !authState.uid || activeChild.ready,
+        needsCreate:
+          childProfileFlags.createChildProfileUi &&
+          activeChild.ready &&
+          activeChild.childrenSummary.length === 0 &&
+          // When new onboarding owns first-run child creation, skip Flag B route.
+          !needsContinuation,
+      },
+      newOnboarding: {
+        flagEnabled: childProfileFlags.newOnboardingEnabled,
+        ready: !authState.uid || prologueOnboarding.ready,
+        needsContinuation,
+        legacyComplete,
+      },
     });
 
     if (!destination) {
@@ -238,42 +288,62 @@ function RootLayoutShellInner({
     router,
     sanctuaryInitialized,
     signInArrivalActive,
+    activeChild.ready,
+    activeChild.childrenSummary.length,
+    childProfileFlags.createChildProfileUi,
+    childProfileFlags.newOnboardingEnabled,
+    prologueOnboarding.ready,
+    prologueOnboarding.hasCompletedDay1Narrative,
+    prologueOnboarding.hasCompletedPrologueOnboarding,
   ]);
 
   return (
-    <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="narrative-onboarding" />
-          <Stack.Screen
-            name="well"
-            options={{
-              presentation: "fullScreenModal",
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="(modals)"
-            options={{
-              presentation: "modal",
-              headerShown: false,
-            }}
-          />
-        </Stack>
-        {showBootOverlay && !signInArrivalActive ? (
-          <View
-            style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, zIndex: 1000 }}
-          >
-            <AuthBootScreen />
-          </View>
-        ) : null}
-        <SignInArrivalOverlay />
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
+    <EveningPondSessionProvider>
+      <SafeAreaProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="prologue" />
+            <Stack.Screen name="prologue-continuation" />
+            <Stack.Screen name="child-profile-limit" />
+            <Stack.Screen name="narrative-onboarding" />
+            <Stack.Screen
+              name="well"
+              options={{
+                presentation: "fullScreenModal",
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="craft"
+              options={{
+                presentation: "fullScreenModal",
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="(modals)"
+              options={{
+                presentation: "modal",
+                headerShown: false,
+              }}
+            />
+          </Stack>
+          <EveningPondSessionController uid={authState.uid} pathname={pathname} />
+          {showBootOverlay && !signInArrivalActive ? (
+            <View
+              style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, zIndex: 1000 }}
+            >
+              <AuthBootScreen />
+            </View>
+          ) : null}
+          <SignInArrivalOverlay />
+        </GestureHandlerRootView>
+      </SafeAreaProvider>
+    </EveningPondSessionProvider>
   );
 }
 
@@ -298,6 +368,11 @@ function RootLayout() {
   const narrativeOnboarding = useNarrativeOnboarding();
   const [sanctuaryInitialized, setSanctuaryInitialized] = useState(false);
   const [deletionStatus, setDeletionStatus] = useState<DeletionStatus>("active");
+  const [prologueOnboarding, setPrologueOnboarding] = useState({
+    ready: false,
+    hasCompletedPrologueOnboarding: false,
+    hasCompletedDay1Narrative: false,
+  });
   const storeSanctuaryInitialized = useSyncExternalStore(
     subscribeAuthInit,
     isSanctuaryInitialized,
@@ -310,16 +385,27 @@ function RootLayout() {
   usePostHogIdentify(authState.uid, effectiveSanctuaryInitialized);
   useAuthDeepLink();
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     CormorantGaramond_400Regular,
+    CormorantGaramond_400Regular_Italic,
+    CormorantGaramond_600SemiBold,
     CormorantGaramond_700Bold,
     PlayfairDisplay_400Regular,
+    PlayfairDisplay_600SemiBold,
     PlayfairDisplay_700Bold,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
     CrustaceansSignatureDemo: require("@/assets/fonts/Crustaceans-SignatureDEMO-Regular.otf"),
   });
+
+  useEffect(() => {
+    if (fontError) {
+      console.warn("[fonts] Failed to load app fonts; continuing without blocking boot", fontError);
+    }
+  }, [fontError]);
+
+  const fontsReady = fontsLoaded || fontError != null;
 
   useEffect(() => {
     if (authState.uid) {
@@ -356,6 +442,12 @@ function RootLayout() {
         resetAuthInitStore();
         setSanctuaryInitialized(false);
         setDeletionStatus("active");
+        clearFeatureFlagsSession();
+        setPrologueOnboarding({
+          ready: true,
+          hasCompletedPrologueOnboarding: false,
+          hasCompletedDay1Narrative: false,
+        });
       }
       setAuthState({
         uid: user?.uid ?? null,
@@ -368,12 +460,27 @@ function RootLayout() {
         void hydrateAuthInitPhase(user.uid);
         void (async () => {
           try {
-            const snap = await getDoc(doc(firestore, "users", user.uid));
+            // Piggyback flag reads with the existing launch user-doc fetch (parallel, one UI gate).
+            const [snap] = await Promise.all([
+              getDoc(doc(firestore, "users", user.uid)),
+              hydrateSessionFeatureFlags(user.uid, [
+                CHILD_PROFILE_FLAG_NAMES.childMigrationDualRead,
+                CHILD_PROFILE_FLAG_NAMES.createChildProfileUi,
+                CHILD_PROFILE_FLAG_NAMES.newOnboardingEnabled,
+                CHILD_PROFILE_FLAG_NAMES.childResultPeek,
+                CHILD_PROFILE_FLAG_NAMES.catalogRarityRingUi,
+              ]),
+            ]);
             if (snap.exists()) {
               const data = snap.data() as UserDoc;
               const initialized = data.authFunnel?.sanctuaryInitialized === true;
               setSanctuaryInitialized(initialized);
               setDeletionStatus(data.deletionStatus ?? "active");
+              setPrologueOnboarding({
+                ready: true,
+                hasCompletedPrologueOnboarding: data.hasCompletedPrologueOnboarding === true,
+                hasCompletedDay1Narrative: data.hasCompletedDay1Narrative === true,
+              });
               if (initialized) {
                 setSanctuaryInitializedFromRemote(true);
               }
@@ -386,6 +493,11 @@ function RootLayout() {
             } else {
               setSanctuaryInitialized(false);
               setDeletionStatus("active");
+              setPrologueOnboarding({
+                ready: true,
+                hasCompletedPrologueOnboarding: false,
+                hasCompletedDay1Narrative: false,
+              });
             }
           } catch (err) {
             console.warn("[narrative hydrate] failed to load user profile", err);
@@ -437,24 +549,48 @@ function RootLayout() {
     if (!authState.uid) {
       setSanctuaryInitialized(false);
       setDeletionStatus("active");
+      setPrologueOnboarding({
+        ready: true,
+        hasCompletedPrologueOnboarding: false,
+        hasCompletedDay1Narrative: false,
+      });
       return;
     }
 
     const userRef = doc(firestore, "users", authState.uid);
-    const unsub = onSnapshot(userRef, (snap) => {
-      if (!snap.exists()) {
-        setSanctuaryInitialized(false);
-        setDeletionStatus("active");
-        return;
-      }
-      const data = snap.data() as UserDoc;
-      const initialized = data.authFunnel?.sanctuaryInitialized === true;
-      setSanctuaryInitialized(initialized);
-      setDeletionStatus(data.deletionStatus ?? "active");
-      if (initialized) {
-        setSanctuaryInitializedFromRemote(true);
-      }
-    });
+    const unsub = onSnapshot(
+      userRef,
+      (snap) => {
+        if (!snap.exists()) {
+          setSanctuaryInitialized(false);
+          setDeletionStatus("active");
+          setPrologueOnboarding({
+            ready: true,
+            hasCompletedPrologueOnboarding: false,
+            hasCompletedDay1Narrative: false,
+          });
+          return;
+        }
+        const data = snap.data() as UserDoc;
+        const initialized = data.authFunnel?.sanctuaryInitialized === true;
+        setSanctuaryInitialized(initialized);
+        setDeletionStatus(data.deletionStatus ?? "active");
+        setPrologueOnboarding({
+          ready: true,
+          hasCompletedPrologueOnboarding: data.hasCompletedPrologueOnboarding === true,
+          hasCompletedDay1Narrative: data.hasCompletedDay1Narrative === true,
+        });
+        if (initialized) {
+          setSanctuaryInitializedFromRemote(true);
+        }
+      },
+      (error) => {
+        console.warn("[RootLayout] user snapshot failed", error);
+        Sentry.captureException(error, {
+          tags: { area: "firebase", flow: "root_user_snapshot" },
+        });
+      },
+    );
 
     return () => unsub();
   }, [authState.uid]);
@@ -465,20 +601,21 @@ function RootLayout() {
 
   return (
     <AuthBootProvider
-      fontsLoaded={fontsLoaded}
+      fontsLoaded={fontsReady}
       authReady={authState.ready}
       uid={authState.uid}
       emailVerified={authState.emailVerified}
       narrativeGateReady={narrativeGateReady}
     >
       <RootLayoutShell
-        fontsLoaded={fontsLoaded}
+        fontsLoaded={fontsReady}
         authState={authState}
         sanctuaryInitialized={effectiveSanctuaryInitialized}
         authAccessReady={authAccess.ready}
         deletionStatus={deletionStatus}
         celebration={celebration}
         narrativeOnboarding={narrativeOnboarding}
+        prologueOnboarding={prologueOnboarding}
       />
     </AuthBootProvider>
   );

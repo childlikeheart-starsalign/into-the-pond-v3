@@ -1,5 +1,7 @@
 # Firestore rules rollback — step 7 (children)
 
+Related: [children-migration-audit.md](./children-migration-audit.md) (planner dry-run / CR-gated export).
+
 Incident rollback for the multi-child rules deploy. Keep this folder committed;
 do not rely on `/tmp` or untracked `tmp/` copies.
 

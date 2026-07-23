@@ -16,6 +16,7 @@ const resolveDevFishingClaim = fs.readFileSync(
 
 assert.match(resolveDevFishingClaim, /previewOnly:\s*true/);
 assert.match(resolveDevFishingClaim, /resolveFishingClaimFromContext/);
+assert.match(resolveDevFishingClaim, /fishingPity/);
 
 for (const symbol of [
   "applyFishingClaim",

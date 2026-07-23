@@ -1,0 +1,760 @@
+{
+  "source": "/Users/hjcfung/.cursor/projects/Users-hjcfung-Documents-into-the-pond-v3/assets/common_creatures_0-29-bf46523a-6f44-4649-8665-6e0cce17e191.png",
+  "sourceSize": [
+    1024,
+    682
+  ],
+  "sourceProfile": "embedded",
+  "extraction": [
+    {
+      "index": 0,
+      "name": "puddle_dart",
+      "file": "puddle_dart.png",
+      "sourceRect": {
+        "left": 145,
+        "top": 45,
+        "width": 145,
+        "height": 78
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 131,
+        "height": 78
+      },
+      "localPaperRgb": [
+        236,
+        217,
+        186
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 3672,
+      "semiTransparentPixels": 3968
+    },
+    {
+      "index": 1,
+      "name": "bubble_mote",
+      "file": "bubble_mote.png",
+      "sourceRect": {
+        "left": 290,
+        "top": 45,
+        "width": 145,
+        "height": 78
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 132,
+        "height": 78
+      },
+      "localPaperRgb": [
+        235,
+        218,
+        190
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 4275,
+      "semiTransparentPixels": 4849
+    },
+    {
+      "index": 2,
+      "name": "moss_skipper",
+      "file": "moss_skipper.png",
+      "sourceRect": {
+        "left": 435,
+        "top": 45,
+        "width": 145,
+        "height": 78
+      },
+      "cropWithinSourceRect": {
+        "left": 4,
+        "top": 0,
+        "width": 137,
+        "height": 78
+      },
+      "localPaperRgb": [
+        236,
+        220,
+        192
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4820,
+      "semiTransparentPixels": 5267
+    },
+    {
+      "index": 3,
+      "name": "spark_pebble",
+      "file": "spark_pebble.png",
+      "sourceRect": {
+        "left": 580,
+        "top": 45,
+        "width": 145,
+        "height": 78
+      },
+      "cropWithinSourceRect": {
+        "left": 5,
+        "top": 0,
+        "width": 129,
+        "height": 78
+      },
+      "localPaperRgb": [
+        236,
+        220,
+        192
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4748,
+      "semiTransparentPixels": 5145
+    },
+    {
+      "index": 4,
+      "name": "whisper_minnow",
+      "file": "whisper_minnow.png",
+      "sourceRect": {
+        "left": 725,
+        "top": 45,
+        "width": 145,
+        "height": 78
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 145,
+        "height": 78
+      },
+      "localPaperRgb": [
+        239,
+        222,
+        193
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4797,
+      "semiTransparentPixels": 5302
+    },
+    {
+      "index": 5,
+      "name": "dandelion_drift",
+      "file": "dandelion_drift.png",
+      "sourceRect": {
+        "left": 870,
+        "top": 45,
+        "width": 130,
+        "height": 78
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 130,
+        "height": 78
+      },
+      "localPaperRgb": [
+        232,
+        211,
+        177
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 3888,
+      "semiTransparentPixels": 4515
+    },
+    {
+      "index": 6,
+      "name": "lantern_fry",
+      "file": "lantern_fry.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 193,
+        "width": 145,
+        "height": 65
+      },
+      "cropWithinSourceRect": {
+        "left": 6,
+        "top": 0,
+        "width": 135,
+        "height": 65
+      },
+      "localPaperRgb": [
+        231,
+        209,
+        172
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 5010,
+      "semiTransparentPixels": 5336
+    },
+    {
+      "index": 7,
+      "name": "paperfin",
+      "file": "paperfin.png",
+      "sourceRect": {
+        "left": 145,
+        "top": 193,
+        "width": 145,
+        "height": 65
+      },
+      "cropWithinSourceRect": {
+        "left": 15,
+        "top": 0,
+        "width": 129,
+        "height": 65
+      },
+      "localPaperRgb": [
+        238,
+        221,
+        193
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 3415,
+      "semiTransparentPixels": 3694
+    },
+    {
+      "index": 8,
+      "name": "reed_glider",
+      "file": "reed_glider.png",
+      "sourceRect": {
+        "left": 290,
+        "top": 193,
+        "width": 145,
+        "height": 65
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 145,
+        "height": 65
+      },
+      "localPaperRgb": [
+        239,
+        223,
+        196
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4853,
+      "semiTransparentPixels": 5394
+    },
+    {
+      "index": 9,
+      "name": "static_eel",
+      "file": "static_eel.png",
+      "sourceRect": {
+        "left": 435,
+        "top": 193,
+        "width": 145,
+        "height": 65
+      },
+      "cropWithinSourceRect": {
+        "left": 14,
+        "top": 0,
+        "width": 131,
+        "height": 65
+      },
+      "localPaperRgb": [
+        239,
+        223,
+        195
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 5140,
+      "semiTransparentPixels": 5593
+    },
+    {
+      "index": 10,
+      "name": "cloud_guppy",
+      "file": "cloud_guppy.png",
+      "sourceRect": {
+        "left": 650,
+        "top": 193,
+        "width": 145,
+        "height": 65
+      },
+      "cropWithinSourceRect": {
+        "left": 5,
+        "top": 0,
+        "width": 136,
+        "height": 65
+      },
+      "localPaperRgb": [
+        239,
+        225,
+        200
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 2363,
+      "semiTransparentPixels": 2697
+    },
+    {
+      "index": 11,
+      "name": "ember_loop",
+      "file": "ember_loop.png",
+      "sourceRect": {
+        "left": 805,
+        "top": 193,
+        "width": 160,
+        "height": 65
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 158,
+        "height": 65
+      },
+      "localPaperRgb": [
+        239,
+        221,
+        193
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 6492,
+      "semiTransparentPixels": 6870
+    },
+    {
+      "index": 12,
+      "name": "dew_belly",
+      "file": "dew_belly.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 335,
+        "width": 145,
+        "height": 57
+      },
+      "cropWithinSourceRect": {
+        "left": 5,
+        "top": 0,
+        "width": 133,
+        "height": 57
+      },
+      "localPaperRgb": [
+        232,
+        215,
+        192
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 2561,
+      "semiTransparentPixels": 2752
+    },
+    {
+      "index": 13,
+      "name": "zephyr_tail",
+      "file": "zephyr_tail.png",
+      "sourceRect": {
+        "left": 145,
+        "top": 335,
+        "width": 145,
+        "height": 57
+      },
+      "cropWithinSourceRect": {
+        "left": 14,
+        "top": 0,
+        "width": 131,
+        "height": 57
+      },
+      "localPaperRgb": [
+        230,
+        217,
+        193
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 3320,
+      "semiTransparentPixels": 3546
+    },
+    {
+      "index": 14,
+      "name": "firefly_nib",
+      "file": "firefly_nib.png",
+      "sourceRect": {
+        "left": 335,
+        "top": 335,
+        "width": 145,
+        "height": 57
+      },
+      "cropWithinSourceRect": {
+        "left": 2,
+        "top": 0,
+        "width": 129,
+        "height": 57
+      },
+      "localPaperRgb": [
+        232,
+        212,
+        182
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4067,
+      "semiTransparentPixels": 4299
+    },
+    {
+      "index": 15,
+      "name": "moonscale",
+      "file": "moonscale.png",
+      "sourceRect": {
+        "left": 490,
+        "top": 335,
+        "width": 145,
+        "height": 57
+      },
+      "cropWithinSourceRect": {
+        "left": 4,
+        "top": 0,
+        "width": 136,
+        "height": 57
+      },
+      "localPaperRgb": [
+        235,
+        219,
+        192
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4760,
+      "semiTransparentPixels": 5067
+    },
+    {
+      "index": 16,
+      "name": "lily_wisp",
+      "file": "lily_wisp.png",
+      "sourceRect": {
+        "left": 650,
+        "top": 335,
+        "width": 145,
+        "height": 57
+      },
+      "cropWithinSourceRect": {
+        "left": 5,
+        "top": 0,
+        "width": 135,
+        "height": 57
+      },
+      "localPaperRgb": [
+        238,
+        223,
+        198
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 5023,
+      "semiTransparentPixels": 5440
+    },
+    {
+      "index": 17,
+      "name": "drift_scribe",
+      "file": "drift_scribe.png",
+      "sourceRect": {
+        "left": 805,
+        "top": 335,
+        "width": 175,
+        "height": 57
+      },
+      "cropWithinSourceRect": {
+        "left": 10,
+        "top": 0,
+        "width": 165,
+        "height": 57
+      },
+      "localPaperRgb": [
+        226,
+        207,
+        175
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 6166,
+      "semiTransparentPixels": 6699
+    },
+    {
+      "index": 18,
+      "name": "glowmoth",
+      "file": "glowmoth.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 465,
+        "width": 145,
+        "height": 49
+      },
+      "cropWithinSourceRect": {
+        "left": 5,
+        "top": 0,
+        "width": 134,
+        "height": 49
+      },
+      "localPaperRgb": [
+        221,
+        197,
+        163
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4271,
+      "semiTransparentPixels": 4574
+    },
+    {
+      "index": 19,
+      "name": "blueglass",
+      "file": "blueglass.png",
+      "sourceRect": {
+        "left": 145,
+        "top": 465,
+        "width": 145,
+        "height": 49
+      },
+      "cropWithinSourceRect": {
+        "left": 14,
+        "top": 0,
+        "width": 131,
+        "height": 49
+      },
+      "localPaperRgb": [
+        232,
+        215,
+        188
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 2772,
+      "semiTransparentPixels": 2970
+    },
+    {
+      "index": 20,
+      "name": "leafling",
+      "file": "leafling.png",
+      "sourceRect": {
+        "left": 320,
+        "top": 465,
+        "width": 145,
+        "height": 49
+      },
+      "cropWithinSourceRect": {
+        "left": 5,
+        "top": 0,
+        "width": 136,
+        "height": 49
+      },
+      "localPaperRgb": [
+        237,
+        221,
+        190
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 3621,
+      "semiTransparentPixels": 3845
+    },
+    {
+      "index": 21,
+      "name": "pulse_jelly",
+      "file": "pulse_jelly.png",
+      "sourceRect": {
+        "left": 490,
+        "top": 465,
+        "width": 145,
+        "height": 49
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 130,
+        "height": 49
+      },
+      "localPaperRgb": [
+        226,
+        207,
+        183
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4172,
+      "semiTransparentPixels": 4550
+    },
+    {
+      "index": 22,
+      "name": "hushfin",
+      "file": "hushfin.png",
+      "sourceRect": {
+        "left": 650,
+        "top": 465,
+        "width": 145,
+        "height": 49
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 135,
+        "height": 49
+      },
+      "localPaperRgb": [
+        233,
+        216,
+        188
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 3712,
+      "semiTransparentPixels": 4047
+    },
+    {
+      "index": 23,
+      "name": "stone_nibble",
+      "file": "stone_nibble.png",
+      "sourceRect": {
+        "left": 805,
+        "top": 465,
+        "width": 160,
+        "height": 49
+      },
+      "cropWithinSourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 149,
+        "height": 49
+      },
+      "localPaperRgb": [
+        233,
+        214,
+        183
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 3709,
+      "semiTransparentPixels": 4050
+    },
+    {
+      "index": 24,
+      "name": "ripple_wing",
+      "file": "ripple_wing.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 572,
+        "width": 145,
+        "height": 52
+      },
+      "cropWithinSourceRect": {
+        "left": 8,
+        "top": 0,
+        "width": 137,
+        "height": 52
+      },
+      "localPaperRgb": [
+        221,
+        199,
+        168
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 4482,
+      "semiTransparentPixels": 4825
+    },
+    {
+      "index": 25,
+      "name": "lantern_jell",
+      "file": "lantern_jell.png",
+      "sourceRect": {
+        "left": 145,
+        "top": 572,
+        "width": 145,
+        "height": 52
+      },
+      "cropWithinSourceRect": {
+        "left": 14,
+        "top": 0,
+        "width": 131,
+        "height": 52
+      },
+      "localPaperRgb": [
+        227,
+        204,
+        171
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 4459,
+      "semiTransparentPixels": 4758
+    },
+    {
+      "index": 26,
+      "name": "breeze_dot",
+      "file": "breeze_dot.png",
+      "sourceRect": {
+        "left": 290,
+        "top": 572,
+        "width": 145,
+        "height": 52
+      },
+      "cropWithinSourceRect": {
+        "left": 14,
+        "top": 0,
+        "width": 131,
+        "height": 52
+      },
+      "localPaperRgb": [
+        233,
+        216,
+        186
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 3823,
+      "semiTransparentPixels": 4168
+    },
+    {
+      "index": 27,
+      "name": "quill_flicker",
+      "file": "quill_flicker.png",
+      "sourceRect": {
+        "left": 435,
+        "top": 572,
+        "width": 145,
+        "height": 52
+      },
+      "cropWithinSourceRect": {
+        "left": 8,
+        "top": 0,
+        "width": 137,
+        "height": 52
+      },
+      "localPaperRgb": [
+        226,
+        209,
+        182
+      ],
+      "alphaNoiseFloor": 0.18,
+      "visiblePixels": 4304,
+      "semiTransparentPixels": 4551
+    },
+    {
+      "index": 28,
+      "name": "mistgill",
+      "file": "mistgill.png",
+      "sourceRect": {
+        "left": 580,
+        "top": 572,
+        "width": 145,
+        "height": 52
+      },
+      "cropWithinSourceRect": {
+        "left": 14,
+        "top": 0,
+        "width": 131,
+        "height": 52
+      },
+      "localPaperRgb": [
+        234,
+        217,
+        189
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 3959,
+      "semiTransparentPixels": 4326
+    },
+    {
+      "index": 29,
+      "name": "dreamweaver",
+      "file": "dreamweaver.png",
+      "sourceRect": {
+        "left": 725,
+        "top": 572,
+        "width": 145,
+        "height": 52
+      },
+      "cropWithinSourceRect": {
+        "left": 8,
+        "top": 0,
+        "width": 137,
+        "height": 52
+      },
+      "localPaperRgb": [
+        235,
+        218,
+        190
+      ],
+      "alphaNoiseFloor": 0.13,
+      "visiblePixels": 4768,
+      "semiTransparentPixels": 5152
+    }
+  ]
+}

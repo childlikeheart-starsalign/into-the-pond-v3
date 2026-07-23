@@ -29,7 +29,6 @@ export default function ModalsLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="child-atlas" />
-      <Stack.Screen name="craft" />
       <Stack.Screen name="practice-moment" />
       <Stack.Screen name="customer-center" />
     </Stack>

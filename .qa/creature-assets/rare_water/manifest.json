@@ -1,0 +1,195 @@
+{
+  "sheet": "rare_water",
+  "source": "rare_water_creatures_44-57-a13002be-c708-4ae6-a89f-36589294c409.png",
+  "paper": [
+    230,
+    204,
+    166
+  ],
+  "count": 14,
+  "exports": [
+    {
+      "name": "tide_whisper",
+      "displayName": "Tide Whisper",
+      "sourceRect": {
+        "left": 25,
+        "top": 43,
+        "width": 224,
+        "height": 154,
+        "cx": 137,
+        "cy": 120
+      },
+      "visiblePixels": 7513
+    },
+    {
+      "name": "mirror_minnow",
+      "displayName": "Mirror Minnow",
+      "sourceRect": {
+        "left": 153,
+        "top": 52,
+        "width": 218,
+        "height": 128,
+        "cx": 262,
+        "cy": 116
+      },
+      "visiblePixels": 14031
+    },
+    {
+      "name": "current_guide",
+      "displayName": "Current Guide",
+      "sourceRect": {
+        "left": 318,
+        "top": 50,
+        "width": 212,
+        "height": 140,
+        "cx": 424,
+        "cy": 120
+      },
+      "visiblePixels": 15386
+    },
+    {
+      "name": "still_pool",
+      "displayName": "Still Pool",
+      "sourceRect": {
+        "left": 477,
+        "top": 50,
+        "width": 218,
+        "height": 140,
+        "cx": 586,
+        "cy": 120
+      },
+      "visiblePixels": 18616
+    },
+    {
+      "name": "flow_keeper",
+      "displayName": "Flow Keeper",
+      "sourceRect": {
+        "left": 647,
+        "top": 50,
+        "width": 206,
+        "height": 140,
+        "cx": 750,
+        "cy": 120
+      },
+      "visiblePixels": 13709
+    },
+    {
+      "name": "ripple_sage",
+      "displayName": "Ripple Sage",
+      "sourceRect": {
+        "left": 0,
+        "top": 276,
+        "width": 231,
+        "height": 148,
+        "cx": 115.5,
+        "cy": 350
+      },
+      "visiblePixels": 15878
+    },
+    {
+      "name": "deep_current",
+      "displayName": "Deep Current",
+      "sourceRect": {
+        "left": 175,
+        "top": 273,
+        "width": 230,
+        "height": 166,
+        "cx": 290,
+        "cy": 356
+      },
+      "visiblePixels": 15364
+    },
+    {
+      "name": "pool_weaver",
+      "displayName": "Pool Weaver",
+      "sourceRect": {
+        "left": 361,
+        "top": 276,
+        "width": 218,
+        "height": 148,
+        "cx": 470,
+        "cy": 350
+      },
+      "visiblePixels": 13038
+    },
+    {
+      "name": "heron_blue",
+      "displayName": "Heron Blue",
+      "sourceRect": {
+        "left": 543,
+        "top": 275,
+        "width": 230,
+        "height": 154,
+        "cx": 658,
+        "cy": 352
+      },
+      "visiblePixels": 15012
+    },
+    {
+      "name": "glassfin",
+      "displayName": "Glassfin",
+      "sourceRect": {
+        "left": 739,
+        "top": 276,
+        "width": 230,
+        "height": 148,
+        "cx": 854,
+        "cy": 350
+      },
+      "visiblePixels": 14340
+    },
+    {
+      "name": "spring_mouth",
+      "displayName": "Spring Mouth",
+      "sourceRect": {
+        "left": 3,
+        "top": 479,
+        "width": 230,
+        "height": 134,
+        "cx": 118,
+        "cy": 546
+      },
+      "visiblePixels": 13636
+    },
+    {
+      "name": "salt_runner",
+      "displayName": "Salt Runner",
+      "sourceRect": {
+        "left": 191,
+        "top": 488,
+        "width": 250,
+        "height": 128,
+        "cx": 316,
+        "cy": 552
+      },
+      "visiblePixels": 13915
+    },
+    {
+      "name": "winter_swimmer",
+      "displayName": "Winter Swimmer",
+      "sourceRect": {
+        "left": 400,
+        "top": 480,
+        "width": 200,
+        "height": 148,
+        "cx": 500,
+        "cy": 554
+      },
+      "visiblePixels": 13326
+    },
+    {
+      "name": "confluence",
+      "displayName": "Confluence",
+      "sourceRect": {
+        "left": 577,
+        "top": 487,
+        "width": 218,
+        "height": 134,
+        "cx": 686,
+        "cy": 554
+      },
+      "visiblePixels": 13051
+    }
+  ],
+  "review": []
+}

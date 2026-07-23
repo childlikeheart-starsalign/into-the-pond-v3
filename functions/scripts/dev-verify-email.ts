@@ -4,14 +4,14 @@
  * Usage:
  *   cd functions && npm run dev:verify-email -- engineer-preview@yourdomain.com
  *
- * Requires FIREBASE_SERVICE_ACCOUNT_PATH in functions/.env or the environment.
+ * Requires FIREBASE_SERVICE_ACCOUNT_PATH in functions/.env.local or the environment.
  */
 import * as fs from "fs";
 import * as path from "path";
 
 import admin from "firebase-admin";
 
-const functionsEnvPath = path.join(__dirname, "..", ".env");
+const functionsEnvPath = path.join(__dirname, "..", ".env.local");
 if (fs.existsSync(functionsEnvPath)) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -24,7 +24,7 @@ if (fs.existsSync(functionsEnvPath)) {
 if (admin.apps.length === 0) {
   const keyPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH?.trim();
   if (!keyPath) {
-    console.error("Set FIREBASE_SERVICE_ACCOUNT_PATH in functions/.env (see .env.example).");
+    console.error("Set FIREBASE_SERVICE_ACCOUNT_PATH in functions/.env.local (see .env.example).");
     process.exit(1);
   }
   const resolved = path.isAbsolute(keyPath) ? keyPath : path.resolve(process.cwd(), keyPath);

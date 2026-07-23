@@ -48,7 +48,13 @@ export const FISHING_BOTTOM_NAV_INSET = 0.12;
 export const FISHING_OVERLAY_SCALE = 0.85;
 
 /** Shift overlay group upward (device px). */
-export const FISHING_OVERLAY_TOP_OFFSET_PX = -25;
+export const FISHING_OVERLAY_TOP_OFFSET_PX = -11;
+
+/** Shift casting dimming scrim downward (device px). */
+export const FISHING_SCRIM_TOP_OFFSET_PX = 7;
+
+/** Grow casting dimming scrim height relative to the base top/bottom rect. */
+export const FISHING_SCRIM_HEIGHT_SCALE = 1.1;
 
 export const FISHING_SLOT_LAYOUT: {
   previewRod: NormalizedBox;

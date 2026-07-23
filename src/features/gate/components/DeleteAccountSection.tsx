@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Linking, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FirebaseError } from "firebase/app";
 
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
 import { translateGateCopy } from "@/src/features/gate/gateCopy";
@@ -7,6 +8,27 @@ import { requestAccountDeletionAndSignOut } from "@/src/services/auth/accountDel
 
 const DELETE_CONFIRM_TEXT = "DELETE";
 const DELETE_ACCOUNT_WEB_URL = "https://intothepond.app/delete-account";
+
+function mapAccountDeletionError(err: unknown): string {
+  const code =
+    err instanceof FirebaseError
+      ? err.code
+      : err && typeof err === "object" && "code" in err
+        ? String((err as { code?: unknown }).code)
+        : "";
+  const message = err instanceof Error ? err.message : "";
+
+  if (
+    code === "functions/internal" ||
+    code === "internal" ||
+    message.trim().toUpperCase() === "INTERNAL"
+  ) {
+    return translateGateCopy("gate.delete.errorServer");
+  }
+
+  if (message.trim()) return message;
+  return translateGateCopy("gate.delete.error");
+}
 
 type DeleteAccountSectionProps = {
   disabled?: boolean;
@@ -47,7 +69,7 @@ export function DeleteAccountSection({ disabled = false }: DeleteAccountSectionP
           : translateGateCopy("gate.delete.scheduledFallback"),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : translateGateCopy("gate.delete.error"));
+      setError(mapAccountDeletionError(err));
     } finally {
       setBusy(false);
     }

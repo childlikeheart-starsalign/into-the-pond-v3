@@ -12,6 +12,7 @@ import {
 } from "@/src/features/onboarding/validateChildBirthDate";
 import { WellBirthdateGateView } from "@/src/features/well/birthdateGate";
 import { computeAgeBand, parseBirthDate } from "@/shared/sanctuary/well/computeAgeBand";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 
 const MONTH_LABELS = [
   "January",
@@ -88,6 +89,7 @@ function OnboardingBirthDateStep({
       return;
     }
 
+    playPaperClick();
     setSubmitting(true);
     try {
       await onSubmit(month, year);
@@ -122,7 +124,10 @@ function OnboardingBirthDateStep({
             <Pressable
               accessibilityRole="button"
               style={({ pressed }) => [styles.fieldBtn, pressed && styles.fieldBtnPressed]}
-              onPress={() => setPicker("month")}
+              onPress={() => {
+                playPaperClick();
+                setPicker("month");
+              }}
             >
               <Text style={styles.fieldLabel}>Month</Text>
               <Text style={styles.fieldValue}>
@@ -133,7 +138,10 @@ function OnboardingBirthDateStep({
             <Pressable
               accessibilityRole="button"
               style={({ pressed }) => [styles.fieldBtn, pressed && styles.fieldBtnPressed]}
-              onPress={() => setPicker("year")}
+              onPress={() => {
+                playPaperClick();
+                setPicker("year");
+              }}
             >
               <Text style={styles.fieldLabel}>Year</Text>
               <Text style={styles.fieldValue}>{year != null ? String(year) : "Select year"}</Text>
@@ -178,6 +186,7 @@ function OnboardingBirthDateStep({
                       pressed && styles.modalOptionPressed,
                     ]}
                     onPress={() => {
+                      playPaperClick();
                       if (picker === "month") setMonth(option.value);
                       if (picker === "year") setYear(option.value);
                       setPicker(null);

@@ -1,4 +1,5 @@
 import type { WonderAccount, WonderTransaction } from "@/src/domain/sanctuary";
+import { randomBytes } from "crypto";
 import {
   applyWonderEarn,
   createEmptyWonderAccount,
@@ -25,7 +26,7 @@ const store: MemoryStore = {
 };
 
 function txId(prefix: string) {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return `${prefix}_${Date.now()}_${randomBytes(8).toString("hex")}`;
 }
 
 /** TEST/DEV STUB ONLY — violates Invariant 6 if used for production grants. */

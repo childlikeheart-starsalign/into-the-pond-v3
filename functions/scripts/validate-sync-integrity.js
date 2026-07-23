@@ -39,6 +39,7 @@ function rewriteFishingImports(content) {
     .replace(/from "\.\.\/rods\/catalog"/g, 'from "./rodCatalog"')
     .replace(/from "\.\.\/progression\/rodFishingAccess"/g, 'from "./progression/rodFishingAccess"')
     .replace(/from "\.\/encounterEngine"/g, 'from "./encounterEngine"');
+    .replace(/from "\.\.\/fishing\/castMapping"/g, 'from "./castMapping"');
 }
 
 function rewriteEconomyImports(content) {

@@ -41,7 +41,7 @@ const db = admin.firestore();
 const userRef = db.collection("users").doc(uid);
 const snap = await userRef.get();
 if (!snap.exists) {
-  console.error("user missing", uid);
+  console.error("user missing");
   process.exit(1);
 }
 const data = snap.data() || {};

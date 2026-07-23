@@ -2,7 +2,7 @@ import { Timestamp } from "firebase/firestore";
 
 import { ChildArchetype } from "@/src/constants/narrative/types";
 import type { DiscoveryCategory, WellBankQuestion } from "@/shared/sanctuary/well/types";
-import type { FishingRodId } from "@/shared/sanctuary/types";
+import type { FishingRodId, FishingPityState } from "@/shared/sanctuary/types";
 import type { PlayerRodGiftSource, PlayerRodState } from "@/shared/sanctuary/progression";
 
 export type RodTier = "basic" | "wooden" | "fiberglass";
@@ -22,9 +22,12 @@ export type UserSubscription = {
 export type ActiveCast = {
   castId: string;
   readyTimestamp: Timestamp;
-  rodType: RodTier;
+  /** Server create time — required for cancel grace. */
+  createdAt?: Timestamp;
+  rodType: RodTier | string;
   baitUsed: string;
-  expectedRarity: "basic" | "rare" | "legendary";
+  baitDeducted?: boolean;
+  expectedRarity?: "basic" | "rare" | "legendary";
 };
 
 export type UserInventory = {
@@ -67,6 +70,8 @@ export type UserDoc = {
   lastQuestionResetDate: Timestamp | null;
   fishingWonderToday: number;
   lastFishingResetDate: Timestamp | null;
+  /** Sheet E pity counters — server-written on fishing claim. */
+  fishingPity?: FishingPityState;
   activeRod: RodTier;
   /** Domain rod selected for fishing / collection (v2 progression). */
   equippedRodId?: FishingRodId;
@@ -80,6 +85,11 @@ export type UserDoc = {
   /** ISO date "YYYY-MM-DD" — used to compute Well question age band */
   childBirthDate?: string;
   hasCompletedDay1Narrative?: boolean;
+  /**
+   * Server-only: set by createChildProfile when onboardingComplete is true.
+   * Legacy `hasCompletedDay1Narrative` also counts as onboarding-complete (no backfill).
+   */
+  hasCompletedPrologueOnboarding?: boolean;
   /** Set when user taps Enter on the email-verified celebration screen. */
   hasCompletedEmailVerifiedCelebration?: boolean;
   narrativeProgress?: {
@@ -90,6 +100,18 @@ export type UserDoc = {
   };
   /** When true, skip client and server PostHog events for this user. */
   analyticsOptOut?: boolean;
+  /** Multi-child: currently selected child profile id. */
+  activeChildId?: string | null;
+  /** Denormalized switcher list — server-written by createChildProfile / switchActiveChild. */
+  childrenSummary?: Array<{
+    childId: string;
+    name: string;
+    companionId: string;
+    childOrder: number;
+    displayArchetypeName?: string | null;
+    ageYears?: number | null;
+    lastVisitedAt?: string | null;
+  }>;
   /** Server-written auth funnel marker — not client-writable. */
   authFunnel?: AuthFunnelDoc;
   /** Account deletion lifecycle — server-written only. */
@@ -245,6 +267,7 @@ export type ClientSafeUserPatch = Partial<
     | "childBirthDate"
     | "hasCompletedDay1Narrative"
     | "narrativeProgress"
+    | "analyticsOptOut"
   >
 >;
 

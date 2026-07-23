@@ -9,6 +9,7 @@ import { Timestamp } from "firebase/firestore";
  * State lives in AsyncStorage + local child-atlas dev store only.
  */
 import { appendDevChildAtlasEntry } from "@/src/features/childAtlas/childAtlasDevStore";
+import { creditDevPreviewWonderIdempotent } from "@/src/features/sanctuary/devPreviewWonder";
 import { getNarrativeOnboardingState } from "@/src/services/onboarding/narrativeOnboardingStorage";
 import { firestore } from "@/src/services/firebase/client";
 import type {
@@ -39,6 +40,11 @@ export function isFunctionsUnavailable(error: unknown): boolean {
     error.code === "not-found" ||
     error.message.includes("not-found")
   );
+}
+
+export function isCallableAuthError(error: unknown): boolean {
+  if (!(error instanceof FirebaseError)) return false;
+  return error.code === "functions/unauthenticated" || error.code === "unauthenticated";
 }
 
 async function loadDevWellState(uid: string): Promise<UserWellState> {
@@ -163,6 +169,8 @@ export async function devSubmitWellReflection(
     dateDiscovered: Timestamp.now(),
   });
 
+  await creditDevPreviewWonderIdempotent(uid, wonderAwarded, `well:${questionId}:${localDate}`);
+
   return {
     success: true,
     wonderAwarded,
@@ -170,6 +178,26 @@ export async function devSubmitWellReflection(
     atlasEntryId,
     previewOnly: true,
   };
+}
+
+/** Backfill preview wonder for dev Well answers that predate overlay crediting. */
+export async function syncDevPreviewWonderFromWellState(uid: string): Promise<void> {
+  if (!__DEV__) return;
+
+  const state = await loadDevWellState(uid);
+  const { currentQuestionId, currentQuestionDate } = state;
+  if (!currentQuestionId || !currentQuestionDate) return;
+  if (!hasAnsweredToday(state, currentQuestionDate, currentQuestionId)) return;
+
+  const wonderAwarded = wonderAmountForRule(
+    WELL_QUESTION_ANSWERED,
+    `${uid}:${currentQuestionId}:${currentQuestionDate}`,
+  );
+  await creditDevPreviewWonderIdempotent(
+    uid,
+    wonderAwarded,
+    `well:${currentQuestionId}:${currentQuestionDate}`,
+  );
 }
 
 export async function devRerollWellQuestion(

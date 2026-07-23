@@ -34,12 +34,12 @@ function assertLedgerOnlyEnvFile() {
 }
 
 async function probeProd() {
-  require("dotenv").config({ path: path.join(FUNCTIONS_DIR, ".env") });
+  require("dotenv").config({ path: path.join(FUNCTIONS_DIR, ".env.local") });
   const admin = require("firebase-admin");
   if (admin.apps.length === 0) {
     const rawPath = (process.env.FIREBASE_SERVICE_ACCOUNT_PATH ?? "").trim();
     if (!rawPath || !fs.existsSync(rawPath)) {
-      console.warn("Probe skipped: set FIREBASE_SERVICE_ACCOUNT_PATH in functions/.env");
+      console.warn("Probe skipped: set FIREBASE_SERVICE_ACCOUNT_PATH in functions/.env.local");
       return;
     }
     const serviceAccount = JSON.parse(fs.readFileSync(rawPath, "utf8"));

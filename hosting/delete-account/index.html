@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Delete your Into the Pond account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-bg: #faf7f2;
+        --color-surface: #ffffff;
+        --color-text-primary: #1f1a17;
+        --color-text-secondary: #5b514a;
+        --color-border: #e8ddd3;
+        --color-primary: #7a5c45;
+        --color-primary-hover: #684d3a;
+        --color-warning: #9a7a42;
+        --color-danger-soft: #b86a6a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: var(--color-bg);
+        color: var(--color-text-primary);
+        line-height: 1.5;
+      }
+      main {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+      h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        letter-spacing: -0.02em;
+        font-size: 1.75rem;
+        margin: 0 0 16px;
+      }
+      h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        letter-spacing: -0.02em;
+        font-size: 1.35rem;
+        margin: 0 0 16px;
+      }
+      .card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 24px;
+      }
+      .card > * + * {
+        margin-top: 16px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      input[type="email"] {
+        width: 100%;
+        min-height: 48px;
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 0 16px;
+        font-size: 16px;
+      }
+      button {
+        width: 100%;
+        min-height: 48px;
+        border: none;
+        border-radius: 12px;
+        background: var(--color-primary);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover {
+        background: var(--color-primary-hover);
+      }
+      button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--color-text-secondary);
+        text-decoration: underline;
+        font-weight: 500;
+      }
+      .note {
+        color: var(--color-warning);
+        font-size: 0.95rem;
+      }
+      .muted {
+        color: var(--color-text-secondary);
+        font-size: 0.95rem;
+      }
+      .error {
+        color: var(--color-danger-soft);
+        font-size: 0.95rem;
+      }
+      .hidden {
+        display: none;
+      }
+      #status,
+      #confirm-status {
+        min-height: 1.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section id="request-panel">
+        <h1>Delete your account</h1>
+        <p class="muted">
+          Into the Pond is a parent-operated app. You can delete your account from the app (Sanctuary
+          Gate → Delete account) or request deletion by email below.
+        </p>
+
+        <section class="card">
+          <p>
+            Your profile and journal entries are removed immediately. You have
+            <strong>30 days</strong> to sign back in and cancel deletion. After that, deletion is
+            permanent.
+          </p>
+          <p class="note">
+            Deleting your account does not cancel App Store or Google Play subscriptions. Manage
+            billing in your device settings.
+          </p>
+        </section>
+
+        <section class="card">
+          <form id="delete-form">
+            <label for="email">Account email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+            <button type="submit" id="request-btn">Email me a confirmation link</button>
+          </form>
+          <p id="status" class="muted" aria-live="polite"></p>
+        </section>
+
+        <p class="muted" style="margin-top: 24px">
+          Already signed in? Open the Into the Pond app → Sanctuary Gate → scroll to Delete account.
+        </p>
+      </section>
+
+      <section id="confirm-panel" class="hidden">
+        <h1>Confirm account deletion</h1>
+        <p class="muted">
+          This will schedule your account for deletion. Journal and profile content are cleared
+          right away. You can sign back into the app within 30 days to keep your sanctuary.
+        </p>
+
+        <section class="card">
+          <p class="note">
+            App Store and Google Play subscriptions are separate — cancel them in your device
+            settings if needed.
+          </p>
+          <button type="button" id="confirm-btn">Confirm deletion</button>
+          <button type="button" id="cancel-confirm-btn" class="secondary">Cancel</button>
+          <p id="confirm-status" class="muted" aria-live="polite"></p>
+        </section>
+      </section>
+
+      <section id="success-panel" class="hidden">
+        <h2>We'll keep your place by the pond.</h2>
+        <section class="card">
+          <p id="success-body"></p>
+          <p class="muted">
+            Sign in to the Into the Pond app before that date and choose
+            <strong>Keep my sanctuary</strong> if you want to restore your place.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const PROJECT_ID = "into-the-pond";
+      const REGION = "asia-east2";
+      const CALLABLE_BASE = `https://${REGION}-${PROJECT_ID}.cloudfunctions.net`;
+
+      const requestPanel = document.getElementById("request-panel");
+      const confirmPanel = document.getElementById("confirm-panel");
+      const successPanel = document.getElementById("success-panel");
+      const form = document.getElementById("delete-form");
+      const status = document.getElementById("status");
+      const confirmStatus = document.getElementById("confirm-status");
+      const confirmBtn = document.getElementById("confirm-btn");
+      const cancelConfirmBtn = document.getElementById("cancel-confirm-btn");
+      const requestBtn = document.getElementById("request-btn");
+      const successBody = document.getElementById("success-body");
+
+      const params = new URLSearchParams(window.location.search);
+      const confirmUid = params.get("uid") || "";
+      const confirmToken = params.get("token") || "";
+      const confirmRequestId = params.get("requestId") || "";
+      const isConfirmMode = Boolean(confirmUid && confirmToken && confirmRequestId);
+
+      function show(el) {
+        el.classList.remove("hidden");
+      }
+      function hide(el) {
+        el.classList.add("hidden");
+      }
+
+      async function callCallable(name, data) {
+        const response = await fetch(`${CALLABLE_BASE}/${name}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const message =
+            payload?.error?.message || payload?.error?.status || "request failed";
+          throw new Error(message);
+        }
+        return payload.result ?? payload;
+      }
+
+      function formatPurgeDate(iso) {
+        if (!iso) return "the scheduled date";
+        try {
+          return new Date(iso).toLocaleDateString(undefined, {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          });
+        } catch {
+          return "the scheduled date";
+        }
+      }
+
+      if (isConfirmMode) {
+        hide(requestPanel);
+        show(confirmPanel);
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        status.textContent = "Sending…";
+        status.className = "muted";
+        requestBtn.disabled = true;
+        const email = new FormData(form).get("email");
+        try {
+          const result = await callCallable("requestAccountDeletionByEmail", { email });
+          status.textContent =
+            result?.message ||
+            "If an account exists for this email, you will receive a confirmation link shortly.";
+        } catch {
+          status.textContent =
+            "If an account exists for this email, you will receive a confirmation link shortly.";
+        } finally {
+          requestBtn.disabled = false;
+        }
+      });
+
+      confirmBtn.addEventListener("click", async () => {
+        confirmStatus.textContent = "Confirming…";
+        confirmStatus.className = "muted";
+        confirmBtn.disabled = true;
+        cancelConfirmBtn.disabled = true;
+        try {
+          const result = await callCallable("confirmAccountDeletionWeb", {
+            uid: confirmUid,
+            token: confirmToken,
+            requestId: confirmRequestId,
+          });
+          hide(confirmPanel);
+          show(successPanel);
+          const dateLabel = formatPurgeDate(result?.purgeAt);
+          successBody.textContent = `Your account is scheduled to be permanently deleted on ${dateLabel}. Until then, your sanctuary remains reserved for your family.`;
+        } catch {
+          confirmStatus.textContent =
+            "This confirmation link is invalid or has already been used. Request a new link from the delete-account page.";
+          confirmStatus.className = "error";
+          confirmBtn.disabled = false;
+          cancelConfirmBtn.disabled = false;
+        }
+      });
+
+      cancelConfirmBtn.addEventListener("click", () => {
+        window.location.href = "/delete-account";
+      });
+    </script>
+  </body>
+</html>

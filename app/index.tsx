@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AccessibilityInfo,
   Image,
@@ -20,6 +20,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { doc, getDoc } from "firebase/firestore";
 
 import {
   GATE_FADE_DELAY_MS,
@@ -31,21 +32,27 @@ import {
   GATE_KEY_SETTLE_MS,
 } from "@/src/constants/gateTransition";
 import {
+  clampGateKeyCalibration,
   GATE_KEY_DEFAULT,
   GATE_KEY_STORAGE_KEY,
   GATE_KEY_WIDTH_RATIO,
-  LEGACY_STORAGE_KEY,
-  PREVIOUS_GATE_KEY_STORAGE_KEY,
   parseGateKeyCalibration,
   resolveGateKeyIntrinsic,
   resolveGateKeyPosition,
   resolveGateKeySize,
+  STALE_GATE_KEY_STORAGE_KEYS,
   type GateKeyCalibration,
 } from "@/src/constants/gateKeyLayout";
 import { media } from "@/src/constants/media";
 import { fontFamilies } from "@/src/constants/theme";
+import { parseFeatureFlagDoc } from "@/shared/featureFlags/evaluateFeatureFlag";
+import { FEATURE_FLAG_NAMES } from "@/shared/featureFlags/types";
 import { useAuthBoot } from "@/src/hooks/useAuthBoot";
+import { useGateAmbientSound } from "@/src/hooks/useGateAmbientSound";
 import { trackAuthGateViewed } from "@/src/services/analytics/authFunnel";
+import { playGateUnlock } from "@/src/services/audio/playGateUnlock";
+import { firestore } from "@/src/services/firebase/client";
+import { hasCompletedPreAuthPrologue } from "@/src/services/onboarding/narrativeOnboardingStorage";
 
 const defaultCalibration: GateKeyCalibration = {
   leftPct: GATE_KEY_DEFAULT.leftPct,
@@ -58,20 +65,46 @@ const defaultCalibration: GateKeyCalibration = {
  * Long press (dev only) saves key center position to AsyncStorage for alignment tuning.
  */
 export default function GateScreen() {
-  const { unlockGateAndGoToSignup, unlockGateAndGoToLogin } = useAuthBoot();
+  const { unlockGateAndGoToSignup, unlockGateAndGoToLogin, unlockGateAndGoToPrologue } =
+    useAuthBoot();
   const keyScale = useSharedValue(1);
   const keyOpacity = useSharedValue(1);
   const gateOpacity = useSharedValue(1);
   const [isAnimating, setIsAnimating] = useState(false);
+  useGateAmbientSound({ active: !isAnimating });
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
   const [calibration, setCalibration] = useState<GateKeyCalibration>(defaultCalibration);
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const navigateToSignup = useCallback(() => {
+  const navigateToSignup = useCallback(async () => {
+    const alreadyDidPart1 = await hasCompletedPreAuthPrologue();
+    let newOnboardingAll = false;
+    try {
+      // Signed-out Gate: only `rolloutState: "all"` can unlock Part 1 (no uid for allowlist).
+      const snap = await getDoc(
+        doc(firestore, "featureFlags", FEATURE_FLAG_NAMES.newOnboardingEnabled),
+      );
+      const flag = snap.exists() ? parseFeatureFlagDoc(snap.data()) : null;
+      newOnboardingAll = flag?.rolloutState === "all";
+    } catch {
+      newOnboardingAll = false;
+    }
+    // Key → /prologue only when flag is fully on and this device hasn't finished Part 1.
+    if (newOnboardingAll && !alreadyDidPart1) {
+      unlockGateAndGoToPrologue();
+      return;
+    }
     unlockGateAndGoToSignup();
-  }, [unlockGateAndGoToSignup]);
+  }, [unlockGateAndGoToPrologue, unlockGateAndGoToSignup]);
 
   useEffect(() => {
     trackAuthGateViewed();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+    };
   }, []);
 
   const keyIntrinsic = useMemo(() => resolveGateKeyIntrinsic(), []);
@@ -105,8 +138,7 @@ export default function GateScreen() {
     if (!__DEV__) return;
     void (async () => {
       try {
-        await AsyncStorage.removeItem(LEGACY_STORAGE_KEY);
-        await AsyncStorage.removeItem(PREVIOUS_GATE_KEY_STORAGE_KEY);
+        await AsyncStorage.multiRemove([...STALE_GATE_KEY_STORAGE_KEYS]);
         const stored = await AsyncStorage.getItem(GATE_KEY_STORAGE_KEY);
         if (!stored) return;
         const parsed = parseGateKeyCalibration(JSON.parse(stored));
@@ -131,6 +163,8 @@ export default function GateScreen() {
     if (isAnimating) return;
 
     void AccessibilityInfo.isReduceMotionEnabled().then((reduceMotion) => {
+      void playGateUnlock();
+
       if (reduceMotion) {
         navigateToSignup();
         return;
@@ -162,7 +196,9 @@ export default function GateScreen() {
         withTiming(1, { duration: GATE_KEY_OPACITY_RESTORE_MS }),
       );
 
-      setTimeout(() => {
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      fadeTimeoutRef.current = setTimeout(() => {
+        fadeTimeoutRef.current = null;
         startGateFadeAndNavigate();
       }, GATE_FADE_DELAY_MS);
     });
@@ -171,12 +207,12 @@ export default function GateScreen() {
   const handleCalibrationTap = (e: GestureResponderEvent) => {
     if (!__DEV__ || isAnimating) return;
     if (!screenSize.width || !screenSize.height) return;
-    const { locationX, locationY } = e.nativeEvent;
-    const next: GateKeyCalibration = {
-      leftPct: Number((locationX / screenSize.width).toFixed(4)),
-      topPct: Number((locationY / screenSize.height).toFixed(4)),
+    const { pageX, pageY } = e.nativeEvent;
+    const next = clampGateKeyCalibration({
+      leftPct: Number((pageX / screenSize.width).toFixed(4)),
+      topPct: Number((pageY / screenSize.height).toFixed(4)),
       widthRatio: calibration.widthRatio ?? GATE_KEY_WIDTH_RATIO,
-    };
+    });
     setCalibration(next);
     keyOpacity.value = 1;
     keyScale.value = 1;

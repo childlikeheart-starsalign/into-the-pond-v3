@@ -57,12 +57,14 @@ function isAllowedUserRefSet(relativePath, line) {
       line.includes("dailyQuestionCount") ||
       line.includes("lastQuestionResetDate") ||
       line.includes("fishingResetPatch") ||
-      line.includes("applyOperationalCounterResetsInTransaction")
+      line.includes("applyOperationalCounterResetsInTransaction") ||
+      line.includes("buildOperationalCounterResetPatch")
     );
   }
   if (relativePath.endsWith("createCastTransaction.ts")) {
     return (
       line.includes("applyOperationalCounterResetsInTransaction") ||
+      line.includes("buildOperationalCounterResetPatch") ||
       line.includes("fishingWonderToday") ||
       line.includes("dailyQuestionCount")
     );

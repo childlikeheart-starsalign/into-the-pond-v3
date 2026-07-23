@@ -30,3 +30,21 @@ export function pickIndex(seed: string, length: number): number {
   if (length <= 0) return 0;
   return Math.floor(createSeededRandom(`${seed}:pick`)() * length);
 }
+
+/** Weighted pick — weights must be positive; returns index into weights. */
+export function pickWeightedIndex(seed: string, weights: number[]): number {
+  if (weights.length === 0) return 0;
+  let total = 0;
+  for (const w of weights) {
+    if (w > 0) total += w;
+  }
+  if (total <= 0) return pickIndex(seed, weights.length);
+  const roll = createSeededRandom(`${seed}:weighted`)() * total;
+  let cumulative = 0;
+  for (let i = 0; i < weights.length; i += 1) {
+    const w = weights[i] > 0 ? weights[i] : 0;
+    cumulative += w;
+    if (roll < cumulative) return i;
+  }
+  return weights.length - 1;
+}

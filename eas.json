@@ -7,16 +7,14 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development",
-      "prebuildCommand": "node scripts/write-firebase-native-files.mjs"
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
       "env": {
         "NODE_ENV": "production"
-      },
-      "prebuildCommand": "node scripts/write-firebase-native-files.mjs"
+      }
     },
     "production": {
       "autoIncrement": true,
@@ -25,8 +23,7 @@
         "NODE_ENV": "production",
         "SENTRY_ORG": "childlike-heart",
         "SENTRY_PROJECT": "react-native"
-      },
-      "prebuildCommand": "node scripts/write-firebase-native-files.mjs"
+      }
     }
   }
 }

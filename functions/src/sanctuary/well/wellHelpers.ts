@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase-admin/firestore";
+import { Timestamp, type Transaction } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
 import { db } from "../../init";
@@ -19,12 +19,52 @@ export function parseLocalDate(localDate: unknown): string | null {
   return trimmed;
 }
 
-export function wellStateRef(uid: string) {
+export function wellStateRef(uid: string, childId?: string | null) {
+  if (childId) {
+    return db.doc(`users/${uid}/children/${childId}/wellState/current`);
+  }
   return db.doc(`users/${uid}/wellState/current`);
+}
+
+export function childAtlasCollectionRef(uid: string, childId?: string | null) {
+  if (childId) {
+    return db.collection(`users/${uid}/children/${childId}/childAtlas`);
+  }
+  return db.collection(`users/${uid}/childAtlas`);
+}
+
+export function childDocRef(uid: string, childId: string) {
+  return db.doc(`users/${uid}/children/${childId}`);
 }
 
 export function userRef(uid: string) {
   return db.doc(`users/${uid}`);
+}
+
+/** Optional childId from callable payload — never invents one. */
+export function parseOptionalChildId(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+/**
+ * Dual-read birth date: prefer children/{childId}.dob when present, else legacy root.
+ * Economy paths are untouched.
+ */
+export async function resolveBirthDateForWell(
+  tx: Transaction,
+  uid: string,
+  childId?: string | null,
+): Promise<string | null> {
+  if (childId) {
+    const childSnap = await tx.get(childDocRef(uid, childId));
+    const dob = childSnap.data()?.dob;
+    if (typeof dob === "string" && dob.trim()) return dob.trim();
+  }
+  const userSnap = await tx.get(userRef(uid));
+  const legacy = userSnap.data()?.childBirthDate;
+  return typeof legacy === "string" && legacy.trim() ? legacy.trim() : null;
 }
 
 export async function recordWellAnalytics(

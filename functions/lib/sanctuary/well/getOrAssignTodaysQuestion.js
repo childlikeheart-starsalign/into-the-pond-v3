@@ -9,7 +9,7 @@ const init_1 = require("../../init");
 const dailyCounters_1 = require("../dailyCounters");
 const economy_1 = require("../economy");
 const resolveCallableIdempotency_1 = require("../economy/resolveCallableIdempotency");
-async function handleGetOrAssignTodaysQuestion(uid, localDate) {
+async function handleGetOrAssignTodaysQuestion(uid, localDate, childId) {
   const parsedDate = (0, wellHelpers_1.parseLocalDate)(localDate);
   if (!parsedDate) {
     return { success: false, error: "INVALID_LOCAL_DATE" };
@@ -31,11 +31,9 @@ async function handleGetOrAssignTodaysQuestion(uid, localDate) {
       (0, wellHelpers_1.userRef)(uid),
       userData,
     );
-    const wellStateSnap = await tx.get((0, wellHelpers_1.wellStateRef)(uid));
-    const userProfile = userData;
-    const birthDate = userProfile?.childBirthDate
-      ? (0, computeAgeBand_1.parseBirthDate)(userProfile.childBirthDate)
-      : null;
+    const wellStateSnap = await tx.get((0, wellHelpers_1.wellStateRef)(uid, childId));
+    const birthRaw = await (0, wellHelpers_1.resolveBirthDateForWell)(tx, uid, childId);
+    const birthDate = birthRaw ? (0, computeAgeBand_1.parseBirthDate)(birthRaw) : null;
     if (!birthDate) {
       return { success: false, error: "MISSING_BIRTH_DATE" };
     }
@@ -50,7 +48,7 @@ async function handleGetOrAssignTodaysQuestion(uid, localDate) {
     );
     const finalState = statePatch ? { ...wellState, ...statePatch } : wellState;
     if (statePatch) {
-      tx.set((0, wellHelpers_1.wellStateRef)(uid), finalState, { merge: true });
+      tx.set((0, wellHelpers_1.wellStateRef)(uid, childId), finalState, { merge: true });
     }
     const response = {
       success: true,
@@ -102,5 +100,9 @@ async function handleGetOrAssignTodaysQuestion(uid, localDate) {
 }
 function getOrAssignTodaysQuestionCallable(authUid, data) {
   const uid = (0, wellHelpers_1.requireUid)(authUid);
-  return handleGetOrAssignTodaysQuestion(uid, String(data.localDate ?? ""));
+  return handleGetOrAssignTodaysQuestion(
+    uid,
+    String(data.localDate ?? ""),
+    (0, wellHelpers_1.parseOptionalChildId)(data.childId),
+  );
 }

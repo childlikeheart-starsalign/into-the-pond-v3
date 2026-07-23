@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, Image, Pressable, StyleSheet, View, type ViewStyle } from "react-native";
+import { Animated, Image, Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import type { SanctuaryAvatarPoseAsset } from "@/src/constants/sanctuaryAssets";
+import { colors, fontFamilies } from "@/src/constants/theme";
+import { SHOW_SANCTUARY_HIT_OVERLAY } from "@/src/features/sanctuary/sanctuaryHitOverlay";
 
 const POSE_CYCLE_MS = 3000;
 const FADE_MS = 350;
@@ -65,6 +67,7 @@ export function SanctuaryAvatar({ poses, onFirstPoseLoad }: SanctuaryAvatarProps
   if (poses.length === 0) return null;
 
   const pose = poses[index];
+  const hitStyle = hitRectToStyle(pose);
 
   return (
     <View style={styles.container} pointerEvents="box-none">
@@ -78,11 +81,17 @@ export function SanctuaryAvatar({ poses, onFirstPoseLoad }: SanctuaryAvatarProps
         />
       </Animated.View>
 
+      {SHOW_SANCTUARY_HIT_OVERLAY ? (
+        <View pointerEvents="none" style={[styles.hitOverlayBox, hitStyle]}>
+          <Text style={styles.hitOverlayLabel}>avatar</Text>
+        </View>
+      ) : null}
+
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Cycle avatar pose"
         onPress={advancePose}
-        style={[styles.hitTarget, hitRectToStyle(pose)]}
+        style={[styles.hitTarget, hitStyle]}
       />
     </View>
   );
@@ -105,5 +114,20 @@ const styles = StyleSheet.create({
     minWidth: 48,
     minHeight: 48,
     backgroundColor: "transparent",
+    zIndex: 1,
+  },
+  hitOverlayBox: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(111, 125, 104, 0.28)",
+    borderWidth: 1.5,
+    borderColor: "rgba(111, 125, 104, 0.65)",
+  },
+  hitOverlayLabel: {
+    fontFamily: fontFamilies.bodySemi,
+    fontSize: 11,
+    color: colors.textPrimary,
+    letterSpacing: 0.2,
   },
 });

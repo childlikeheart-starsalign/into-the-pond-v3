@@ -17,6 +17,18 @@ export type PoolTier = "common" | "rare" | "epic";
 export type ElementType = "fire" | "water" | "wind" | "electric" | "any";
 export type FishingClaimOutcome = "catch" | "miss" | "duplicate";
 
+export type EpicFishingRodId = "epic_fire" | "epic_water" | "epic_wind" | "epic_electric";
+
+export type FishingPityState = {
+  consecutiveChanceMisses: number;
+  epicTopRareDryStreak: Partial<Record<EpicFishingRodId, number>>;
+};
+
+export const DEFAULT_FISHING_PITY: FishingPityState = {
+  consecutiveChanceMisses: 0,
+  epicTopRareDryStreak: {},
+};
+
 export type WonderSource =
   | "diary_short_reflection"
   | "diary_deep_reflection"

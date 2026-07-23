@@ -112,6 +112,10 @@ export const media = {
   audio: {
     chime: require("@/assets/audio/gate-chime.mp4"),
     unlock: require("@/assets/audio/gate-unlock.mp4"),
+    sanctuaryTheme: require("@/assets/audio/sanctuary-theme.mp3"),
+    closingTheJournal: require("@/assets/audio/closing-the-journal.mp3"),
+    diaryRitualMiddleSteps: require("@/assets/audio/diary-ritual-middle-steps.mp3"),
+    eveningPond: require("@/assets/audio/evening-pond.mp3"),
   },
   /** Cold-start boot + shared waiting loop (PR2 ops checkpoint 4). */
   startup: {

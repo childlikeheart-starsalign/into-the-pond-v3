@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 
 type DiaryPromptMultiselectProps = {
   question: string;
@@ -18,6 +19,7 @@ export function DiaryPromptMultiselect({
   embedded = false,
 }: DiaryPromptMultiselectProps) {
   const toggleOption = (option: string) => {
+    playPaperClick();
     if (selected.includes(option)) {
       onChange(selected.filter((item) => item !== option));
       return;

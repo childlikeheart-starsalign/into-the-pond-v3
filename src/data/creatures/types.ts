@@ -1,5 +1,6 @@
 export type ElementType = "fire" | "water" | "wind" | "electric" | "any";
 export type PoolTier = "common" | "rare" | "epic";
+export type CreatureSubTier = "uniform" | "common-rare" | "mid-rare" | "top-rare";
 export type RodType =
   | "basic"
   | "rare1"
@@ -19,6 +20,8 @@ export interface Creature {
   elementType: ElementType;
   rodRequired: RodType;
   peakWonderGate: number; // min peakWonder to unlock pool
+  /** Sheet C weight band within the rod pool. */
+  sub_tier: CreatureSubTier;
   lessonId: string; // for revisit routing
   moduleId: number;
   visualMetaphor: string;

@@ -22,6 +22,7 @@ import { LocalWellQuestion } from "@/src/db/models/LocalWellQuestion";
 import { buildLessonAccessRows } from "@/src/services/classroom/lessonAccess";
 import { isPlayableUserDoc } from "@/src/services/auth/sanctuaryPlayable";
 import { firestore } from "@/src/services/firebase/client";
+import { Sentry } from "@/src/services/sentry/init";
 import {
   CreatureDoc,
   DEFAULT_USER_DOC,
@@ -30,7 +31,6 @@ import {
   SubscriptionStatus,
   UserDoc,
 } from "@/src/services/firebase/types";
-import { Sentry } from "@/src/services/sentry/init";
 
 async function runSafeCacheTask(label: string, task: () => Promise<void>): Promise<void> {
   try {
@@ -196,18 +196,31 @@ async function upsertCompletedLessons(uid: string, completed: Record<string, boo
   });
 }
 
-export function subscribeAndCacheUserProfile(uid: string) {
-  return onSnapshot(doc(firestore, "users", uid), (snapshot) => {
-    void runSafeCacheTask("userProfile", async () => {
-      const data = snapshot.data() as UserDoc | undefined;
-      if (!data) return;
-      if (!isPlayableUserDoc(data)) return;
-      await upsertUserProfile(uid, data);
-      await upsertInventory(uid, data);
-      await upsertCompletedLessons(uid, data.completedLessons ?? {});
-      await rebuildLessonAccessCache(uid);
+function snapshotErrorHandler(flow: string) {
+  return (error: Error) => {
+    console.warn(`[offline-cache] ${flow} snapshot failed`, error);
+    Sentry.captureException(error, {
+      tags: { area: "db_sync", flow: `${flow}_snapshot` },
     });
-  });
+  };
+}
+
+export function subscribeAndCacheUserProfile(uid: string) {
+  return onSnapshot(
+    doc(firestore, "users", uid),
+    (snapshot) => {
+      void runSafeCacheTask("userProfile", async () => {
+        const data = snapshot.data() as UserDoc | undefined;
+        if (!data) return;
+        if (!isPlayableUserDoc(data)) return;
+        await upsertUserProfile(uid, data);
+        await upsertInventory(uid, data);
+        await upsertCompletedLessons(uid, data.completedLessons ?? {});
+        await rebuildLessonAccessCache(uid);
+      });
+    },
+    snapshotErrorHandler("userProfile"),
+  );
 }
 
 async function upsertWellQuestions(uid: string, snapshot: QuerySnapshot<DocumentData>) {
@@ -250,54 +263,62 @@ export function subscribeAndCacheWellQuestions(uid: string) {
     collection(firestore, "users", uid, "wellQuestions"),
     orderBy("createdAt", "desc"),
   );
-  return onSnapshot(ref, (snapshot) => {
-    void runSafeCacheTask("wellQuestions", async () => {
-      await upsertWellQuestions(uid, snapshot);
-    });
-  });
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      void runSafeCacheTask("wellQuestions", async () => {
+        await upsertWellQuestions(uid, snapshot);
+      });
+    },
+    snapshotErrorHandler("wellQuestions"),
+  );
 }
 
 export function subscribeAndCacheLessons(uid?: string) {
   const ref = query(collection(firestore, "lessons"), orderBy("order", "asc"));
-  return onSnapshot(ref, (snapshot) => {
-    void runSafeCacheTask("lessons", async () => {
-      await database.write(async () => {
-        const table = database.get<LocalLesson>("local_lessons");
-        for (const docSnap of snapshot.docs) {
-          const data = docSnap.data() as LessonDoc;
-          const existing = await table.query(Q.where("lesson_id", data.lessonId)).fetch();
-          const row = existing[0];
-          if (row) {
-            await row.update((entry) => {
-              entry.lessonOrder = data.order;
-              entry.module = data.module;
-              entry.title = data.title;
-              entry.content = data.content;
-              entry.videoUrl = data.videoUrl;
-              entry.commitmentMessage = data.commitmentMessage;
-              entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
-              entry.isPlaceholder = !!data.isPlaceholder;
-            });
-          } else {
-            await table.create((entry) => {
-              entry.lessonId = data.lessonId;
-              entry.lessonOrder = data.order;
-              entry.module = data.module;
-              entry.title = data.title;
-              entry.content = data.content;
-              entry.videoUrl = data.videoUrl;
-              entry.commitmentMessage = data.commitmentMessage;
-              entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
-              entry.isPlaceholder = !!data.isPlaceholder;
-            });
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      void runSafeCacheTask("lessons", async () => {
+        await database.write(async () => {
+          const table = database.get<LocalLesson>("local_lessons");
+          for (const docSnap of snapshot.docs) {
+            const data = docSnap.data() as LessonDoc;
+            const existing = await table.query(Q.where("lesson_id", data.lessonId)).fetch();
+            const row = existing[0];
+            if (row) {
+              await row.update((entry) => {
+                entry.lessonOrder = data.order;
+                entry.module = data.module;
+                entry.title = data.title;
+                entry.content = data.content;
+                entry.videoUrl = data.videoUrl;
+                entry.commitmentMessage = data.commitmentMessage;
+                entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
+                entry.isPlaceholder = !!data.isPlaceholder;
+              });
+            } else {
+              await table.create((entry) => {
+                entry.lessonId = data.lessonId;
+                entry.lessonOrder = data.order;
+                entry.module = data.module;
+                entry.title = data.title;
+                entry.content = data.content;
+                entry.videoUrl = data.videoUrl;
+                entry.commitmentMessage = data.commitmentMessage;
+                entry.diaryPromptsJson = JSON.stringify(data.diaryPrompts ?? []);
+                entry.isPlaceholder = !!data.isPlaceholder;
+              });
+            }
           }
+        });
+        if (uid) {
+          await rebuildLessonAccessCache(uid);
         }
       });
-      if (uid) {
-        await rebuildLessonAccessCache(uid);
-      }
-    });
-  });
+    },
+    snapshotErrorHandler("lessons"),
+  );
 }
 
 async function upsertDiaryEntries(uid: string, snapshot: QuerySnapshot<DocumentData>) {
@@ -366,12 +387,16 @@ export function subscribeAndCacheDiaryEntries(uid: string) {
     // Launch cap — see P7-A; pagination post-launch if needed.
     limit(100),
   );
-  return onSnapshot(ref, (snapshot) => {
-    void runSafeCacheTask("diaryEntries", async () => {
-      await upsertDiaryEntries(uid, snapshot);
-      await rebuildLessonAccessCache(uid);
-    });
-  });
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      void runSafeCacheTask("diaryEntries", async () => {
+        await upsertDiaryEntries(uid, snapshot);
+        await rebuildLessonAccessCache(uid);
+      });
+    },
+    snapshotErrorHandler("diaryEntries"),
+  );
 }
 
 async function upsertCreatures(uid: string, snapshot: QuerySnapshot<DocumentData>) {
@@ -416,9 +441,13 @@ async function upsertCreatures(uid: string, snapshot: QuerySnapshot<DocumentData
 
 export function subscribeAndCacheCreatures(uid: string) {
   const ref = query(collection(firestore, "users", uid, "creatures"), orderBy("caughtAt", "desc"));
-  return onSnapshot(ref, (snapshot) => {
-    void runSafeCacheTask("creatures", async () => {
-      await upsertCreatures(uid, snapshot);
-    });
-  });
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      void runSafeCacheTask("creatures", async () => {
+        await upsertCreatures(uid, snapshot);
+      });
+    },
+    snapshotErrorHandler("creatures"),
+  );
 }

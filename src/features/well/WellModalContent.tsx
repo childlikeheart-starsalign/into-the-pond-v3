@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, fontFamilies, layout, spacing } from "@/src/constants/theme";
+import { useActiveChild } from "@/src/features/childProfile/useActiveChild";
 import { SANCTUARY_STAGE_MODE, usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { useWellQuestion } from "@/src/hooks/useWellQuestion";
 import {
@@ -12,10 +13,12 @@ import { wellLoadErrorMessage } from "@/src/features/well/wellCopy";
 import { TodaysFocusCardEntry } from "@/src/features/well/TodaysFocusCardEntry";
 import { TodaysFocusFlipCard } from "@/src/features/well/TodaysFocusFlipCard";
 import { PreviewOnlyBanner } from "@/src/features/sanctuary/PreviewOnlyBanner";
+import { creditDevPreviewWonderIdempotent } from "@/src/features/sanctuary/devPreviewWonder";
 import { WellDeferLink } from "@/src/features/well/WellDeferLink";
 import { WellRerollButton } from "@/src/features/well/WellRerollButton";
 import { WellSceneBackground } from "@/src/features/well/WellSceneBackground";
 import type { WellVisualPhase } from "@/src/features/well/WellSceneJourney";
+import { firebaseAuth } from "@/src/services/firebase/client";
 
 type WellModalContentProps = {
   onClose: () => void;
@@ -23,7 +26,8 @@ type WellModalContentProps = {
 
 export function WellModalContent({ onClose }: WellModalContentProps) {
   const frame = usePortrait916Layout(SANCTUARY_STAGE_MODE);
-  const well = useWellQuestion(true);
+  const { childAwareId } = useActiveChild();
+  const well = useWellQuestion(true, childAwareId);
   const atlasAnchorRef = useRef<View>(null);
 
   const [phase, setPhase] = useState<WellVisualPhase>("establishing");
@@ -68,6 +72,18 @@ export function WellModalContent({ onClose }: WellModalContentProps) {
     async (headline?: string): Promise<boolean> => {
       const response = await well.submitReflection(well.draftText, headline);
       if (!response.success) return false;
+
+      if (response.previewOnly && response.wonderAwarded > 0 && well.question && __DEV__) {
+        const uid = firebaseAuth.currentUser?.uid;
+        if (uid) {
+          await creditDevPreviewWonderIdempotent(
+            uid,
+            response.wonderAwarded,
+            `well:${well.question.questionId}:${well.localDate}`,
+          );
+        }
+      }
+
       setSavedReflection(well.draftText.trim());
       setWonderAwarded(response.wonderAwarded);
       setReflectionPreviewOnly(response.previewOnly === true);

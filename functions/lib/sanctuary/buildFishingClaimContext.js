@@ -23,6 +23,7 @@ function buildResolveClaimInput(ctx) {
     currentWonderAtClaim: ctx.currentWonderAtClaim,
     caughtIds: ctx.caughtIds,
     creatureCatalog: filteredCatalog,
+    fishingPity: ctx.fishingPity,
     now: ctx.now,
   };
 }

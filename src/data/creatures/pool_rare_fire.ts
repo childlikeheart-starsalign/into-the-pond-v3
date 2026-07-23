@@ -8,6 +8,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "1.1",
     moduleId: 1,
     visualMetaphor:
@@ -25,6 +26,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "1.5",
     moduleId: 1,
     visualMetaphor: "A translucent fish with ember-glow edges, visible only when perfectly still",
@@ -40,6 +42,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "1.6",
     moduleId: 1,
     visualMetaphor: "A bold amber fish with spiny fins that flare visibly under pressure",
@@ -55,6 +58,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.3",
     moduleId: 2,
     visualMetaphor:
@@ -72,6 +76,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.6",
     moduleId: 2,
     visualMetaphor: "A sleek fish whose tail briefly illuminates the water behind it as it turns",
@@ -88,6 +93,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "3.4",
     moduleId: 3,
     visualMetaphor:
@@ -104,6 +110,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "3.6",
     moduleId: 3,
     visualMetaphor:
@@ -121,6 +128,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "3.9",
     moduleId: 3,
     visualMetaphor: "A fish with a blackened back and luminous belly, glowing upward from the dark",
@@ -136,6 +144,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.1",
     moduleId: 4,
     visualMetaphor:
@@ -152,6 +161,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.3",
     moduleId: 4,
     visualMetaphor:
@@ -168,6 +178,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.4",
     moduleId: 4,
     visualMetaphor:
@@ -184,6 +195,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor: "A golden fish that always orients toward the brightest point in the water",
@@ -199,6 +211,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.3",
     moduleId: 5,
     visualMetaphor: "A careful fish that tends small, contained embers rather than burning freely",
@@ -214,6 +227,7 @@ export const pool_rare_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "rare1",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.5",
     moduleId: 5,
     visualMetaphor:

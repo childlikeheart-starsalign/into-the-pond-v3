@@ -399,6 +399,15 @@ test("activeChildId remains client-writable under Track A + children rules", asy
   );
 });
 
+test("client cannot write hasCompletedPrologueOnboarding directly", async () => {
+  await seedOwnerProfile();
+  await assertFails(
+    updateDoc(doc(ownerDb(), "users", OWNER_UID), {
+      hasCompletedPrologueOnboarding: true,
+    }),
+  );
+});
+
 test("denies authenticated owner mixed safe and forbidden profile update", async () => {
   await seedOwnerProfile();
   await assertFails(
@@ -518,14 +527,14 @@ test("allows authenticated read of featureFlags doc", async () => {
   await assertSucceeds(getDoc(doc(ownerDb(), "featureFlags", "childMigrationDualRead")));
 });
 
-test("denies unauthenticated read of featureFlags doc", async () => {
+test("allows unauthenticated read of featureFlags doc (Gate Part 1)", async () => {
   await testEnv.withSecurityRulesDisabled(async (context) => {
-    await setDoc(doc(context.firestore(), "featureFlags", "createChildProfileUi"), {
+    await setDoc(doc(context.firestore(), "featureFlags", "newOnboardingEnabled"), {
       rolloutState: "all",
       allowlistUids: [],
     });
   });
-  await assertFails(getDoc(doc(unauthenticatedDb(), "featureFlags", "createChildProfileUi")));
+  await assertSucceeds(getDoc(doc(unauthenticatedDb(), "featureFlags", "newOnboardingEnabled")));
 });
 
 test("denies client write to featureFlags doc", async () => {

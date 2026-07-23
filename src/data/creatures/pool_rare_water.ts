@@ -8,6 +8,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "1.3",
     moduleId: 1,
     visualMetaphor:
@@ -25,6 +26,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "1.4",
     moduleId: 1,
     visualMetaphor: "A silver fish that mimics the posture and pace of whatever moves near it",
@@ -41,6 +43,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.3",
     moduleId: 2,
     visualMetaphor:
@@ -57,6 +60,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.5",
     moduleId: 2,
     visualMetaphor:
@@ -74,6 +78,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "2.7",
     moduleId: 2,
     visualMetaphor:
@@ -90,6 +95,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "3.7",
     moduleId: 3,
     visualMetaphor:
@@ -107,6 +113,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "3.8",
     moduleId: 3,
     visualMetaphor:
@@ -123,6 +130,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "3.9",
     moduleId: 3,
     visualMetaphor:
@@ -139,6 +147,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "common-rare",
     lessonId: "4.2",
     moduleId: 3,
     visualMetaphor: "A tall, patient fish that stands still in shallow water for long periods",
@@ -154,6 +163,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "4.5",
     moduleId: 4,
     visualMetaphor:
@@ -170,6 +180,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "mid-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor:
@@ -186,6 +197,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.2",
     moduleId: 5,
     visualMetaphor:
@@ -202,6 +214,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.4",
     moduleId: 5,
     visualMetaphor:
@@ -218,6 +231,7 @@ export const pool_rare_water: Creature[] = [
     elementType: "water",
     rodRequired: "rare2",
     peakWonderGate: 40,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor:

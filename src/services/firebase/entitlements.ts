@@ -2,6 +2,7 @@ import { doc, onSnapshot, Timestamp } from "firebase/firestore";
 
 import { firestore } from "@/src/services/firebase/client";
 import { requestSubscriptionSync } from "@/src/services/firebase/serverActions";
+import { Sentry } from "@/src/services/sentry/init";
 import {
   RodTier,
   SubscriptionStatus,
@@ -49,23 +50,32 @@ export function subscribeToUserSubscription(
   callback: (state: ReturnType<typeof toDerivedSubscriptionState>) => void,
 ) {
   let triggeredSync = false;
-  return onSnapshot(doc(firestore, "users", uid), (snapshot) => {
-    const data = snapshot.data() as UserDoc | undefined;
-    const rawStatus = data?.subscription?.subscriptionStatus ?? "free";
-    const rawRod = data?.activeRod ?? "basic";
-    const expectedRod: RodTier = rawStatus === "free" ? "basic" : rawStatus;
-    if (!triggeredSync && rawRod !== expectedRod) {
-      triggeredSync = true;
-      void requestSubscriptionSync(uid).finally(() => {
-        triggeredSync = false;
+  return onSnapshot(
+    doc(firestore, "users", uid),
+    (snapshot) => {
+      const data = snapshot.data() as UserDoc | undefined;
+      const rawStatus = data?.subscription?.subscriptionStatus ?? "free";
+      const rawRod = data?.activeRod ?? "basic";
+      const expectedRod: RodTier = rawStatus === "free" ? "basic" : rawStatus;
+      if (!triggeredSync && rawRod !== expectedRod) {
+        triggeredSync = true;
+        void requestSubscriptionSync(uid).finally(() => {
+          triggeredSync = false;
+        });
+      }
+      const raw = data?.subscription;
+      callback(
+        toDerivedSubscriptionState({
+          ...raw,
+          activeRod: data?.activeRod ?? "basic",
+        }),
+      );
+    },
+    (error) => {
+      console.warn("[entitlements] user subscription snapshot failed", error);
+      Sentry.captureException(error, {
+        tags: { area: "firebase", flow: "subscribe_user_subscription" },
       });
-    }
-    const raw = data?.subscription;
-    callback(
-      toDerivedSubscriptionState({
-        ...raw,
-        activeRod: data?.activeRod ?? "basic",
-      }),
-    );
-  });
+    },
+  );
 }

@@ -13,6 +13,7 @@ import {
   WILDCARD_ROD_ID,
 } from "@/shared/sanctuary/progression";
 import { collectCraft, equipRod, startCraft } from "@/src/services/firebase/serverActions";
+import { useFishingCraftSounds } from "@/src/features/fishing/useFishingCraftSounds";
 import {
   craftBenchCarouselRodIds,
   craftBenchNeedsAttention,
@@ -55,6 +56,8 @@ export function useRodProgression() {
     });
     return unsub;
   }, []);
+
+  const fishingSounds = useFishingCraftSounds();
 
   const selectedRodSummary = useCallback(
     (rodId: FishingRodId) => {
@@ -111,13 +114,14 @@ export function useRodProgression() {
       try {
         const result = await startCraft(uid, rodId);
         clearPendingRod(rodId);
+        fishingSounds.play("craftBegin");
         return result;
       } catch (error) {
         rollbackOptimisticRod(rodId);
         throw error;
       }
     },
-    [state.parts, state.storedWonder, uid],
+    [fishingSounds, state.parts, state.storedWonder, uid],
   );
 
   const optimisticCollectCraft = useCallback(
@@ -128,13 +132,14 @@ export function useRodProgression() {
       try {
         const result = await collectCraft(uid, rodId);
         clearPendingRod(rodId);
+        fishingSounds.play("craftReady");
         return result;
       } catch (error) {
         rollbackOptimisticRod(rodId);
         throw error;
       }
     },
-    [uid],
+    [fishingSounds, uid],
   );
 
   const optimisticEquipRod = useCallback(
@@ -146,13 +151,14 @@ export function useRodProgression() {
           collectedThisBenchSession: didCollectThisBenchSession(),
         });
         clearPendingRod(rodId);
+        fishingSounds.play("craftEquip");
         return result;
       } catch (error) {
         rollbackOptimisticRod(rodId);
         throw error;
       }
     },
-    [uid],
+    [fishingSounds, uid],
   );
 
   const carouselRodIds = useCallback(

@@ -36,47 +36,44 @@ There are **no creature sub-tiers** (common-rare / mid-rare / top-rare) in the c
 ```
 bonus = min(currentWonder / wonderDivisor, maxNoBait - base)
 baseChance = min(base + bonus, maxNoBait)
-if hasBait: chance = min(baseChance + baitBonus, maxWithBait)
+chance = min(baseChance + sheetDCatchBonus(baitTier), 1)
 ```
 
-| Profile      | base | divisor | maxNoBait | baitBonus | maxWithBait |
-| ------------ | ---- | ------- | --------- | --------- | ----------- |
-| common       | 0.55 | 600     | 0.70      | 0.00      | 0.70        |
-| rare element | 0.14 | 500     | 0.20      | 0.06      | 0.26        |
-| rare any     | 0.06 | 600     | 0.10      | 0.05      | 0.15        |
-| epic element | 0.03 | 700     | 0.07      | 0.05      | 0.12        |
+Sheet D catch bonuses: no bait +0; basic +5%; mid (`rare`) +12%; premium (`epic`) +20%. Legacy shared `baitBonus` / `maxWithBait` caps are **retired**.
 
-### Precomputed chances (CURRENT: all baits equivalent)
+| Profile      | base | divisor | maxNoBait |
+| ------------ | ---- | ------- | --------- |
+| common       | 0.55 | 600     | 0.70      |
+| rare element | 0.14 | 500     | 0.20      |
+| rare any     | 0.06 | 600     | 0.10      |
+| epic element | 0.03 | 700     | 0.07      |
 
-Today any bait ID (`bait_basic`, `bait_mid`, `bait_premium`) sets `hasBait = true` with the **same** bonus. Differentiated +5% / +12% / +20% is **TARGET only**.
+### Precomputed chances (Sheet D live)
 
-| Wonder | Basic     | Rare element (pool open) | Rare5 (pool open) | Epic (pool open) |
-| ------ | --------- | ------------------------ | ----------------- | ---------------- |
-| 0      | 55% / 55% | gate                     | gate              | gate             |
-| 25     | 59% / 59% | gate                     | gate              | gate             |
-| 45     | 63% / 63% | 20% / 26%                | gate              | gate             |
-| 65     | 70% / 70% | 20% / 26%                | 10% / 15%         | gate             |
-| 90     | 70% / 70% | 20% / 26%                | 15% / 15%         | 7% / 12%         |
+Example at 45W rare-element (baseChance capped at 20%): no bait 20%; basic 25%; mid 32%; premium 40%.
 
-_(first number = no bait, second = any bait)_
+**Pool opens when** `currentWonder >= effectiveWonderGate(peakWonderGate, baitTier)`:
 
-**Pool opens when:** basic ≥0; rare element ≥40; wildcard ≥65; epic ≥90.
+- Ladder: `[0, 40, 65, 90]`
+- **1.1 clamp:** base gate **40W** (rare-element) never drops — mid/premium stay at 40
+- Wildcard 65: mid → 40, premium → **0** (intentional Sheet D)
+- Epic 90: mid → 65, premium → **40**
 
 ---
 
-## Bait (CURRENT vs TARGET)
+## Bait (Sheet D — live)
 
-| Bait UI ID     | Tier  | CURRENT                    | TARGET (Task 5)                  |
-| -------------- | ----- | -------------------------- | -------------------------------- |
-| `bait_basic`   | basic | hasBait=true, shared bonus | +5% catch                        |
-| `bait_mid`     | rare  | same                       | +12%, remove 1 wonder gate tier  |
-| `bait_premium` | epic  | same                       | +20%, remove 2 wonder gate tiers |
+| Bait UI ID     | Domain tier | Catch% bonus | Gate tiers removed                          |
+| -------------- | ----------- | ------------ | ------------------------------------------- |
+| `bait_basic`   | basic       | +5%          | 0                                           |
+| `bait_mid`     | rare        | +12%         | 1 (rare-element 40W clamped — no unlock)    |
+| `bait_premium` | epic        | +20%         | 2 (wildcard may reach 0W; epic lands at 40) |
 
 ---
 
 ## Cast & ownership
 
-- Cast duration: **2 minutes** (`CAST_DURATION_MS`).
+- Cast duration: **2 hours** (`CAST_DURATION_MS` / `FISHING_CAST_DURATION_MS`).
 - `createCast` rejects if rod not owned: `playerRods/{domainRodId}.state` must be `ready` or `equipped` (**basic** exempt).
 - Locked rod → server error, no claim.
 
@@ -102,9 +99,8 @@ Firestore: `users/{uid}/playerRods/{domainRodId}` — see progression plan for f
 
 ---
 
-## Not implemented yet (Task 5)
+## Implemented (Phase 1 + Sheet D)
 
-- Weighted sub-tier selection
-- Pity after 10 chance misses
-- Epic top-rare dry streak (+15% per cast after 20)
-- Per-bait catch % and wonder gate tier removal
+- Weighted sub-tier selection (Sheet C)
+- Pity after 10 chance misses; epic top-rare dry streak (Sheet E)
+- Per-bait catch % and wonder gate tier removal (Sheet D) with rare-element **40W clamp** (open item 1.1)

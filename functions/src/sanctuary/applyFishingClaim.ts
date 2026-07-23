@@ -4,6 +4,7 @@ import { commitEconomyAction } from "./economy/commitEconomyAction";
 import { applyWonderEarnInMemory, buildEconomyLedgerEntry, fishingClaimKey } from "./economy";
 import type {
   FishingClaim,
+  FishingPityState,
   FishingRodId,
   WonderAccount,
   WonderSource,
@@ -33,14 +34,31 @@ export type ApplyFishingClaimInput = {
   claim: FishingClaim;
   rodUiId: string;
   castId: string;
+  /** Updated pity counters to persist on users/{uid}. */
+  nextFishingPity?: FishingPityState;
   /** When parent already read idempotency in the same tx. */
   idempotencyMiss?: { hit: false };
+  /** Daily counter reset fields deferred until the final user write. */
+  counterResetPatch?: Record<string, unknown>;
 };
 
 function fishingClaimWonderSource(claim: FishingClaim): WonderSource {
   if (claim.outcome === "duplicate") return "fishing_duplicate_consolation";
   if (claim.outcome === "miss") return "fishing_miss_consolation";
   return "fishing_catch";
+}
+
+function omitUndefined<T extends Record<string, unknown>>(value: T): Partial<T> {
+  return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+function fishingClaimLedgerMetadata(claim: FishingClaim): Record<string, unknown> {
+  return omitUndefined({
+    claimId: claim.id,
+    outcome: claim.outcome,
+    creatureTypeId: claim.creatureTypeId,
+    duplicate: claim.outcome === "duplicate",
+  });
 }
 
 function buildFishingClaimLedgerResult(input: {
@@ -65,12 +83,7 @@ function buildFishingClaimLedgerResult(input: {
   } = input;
   const wonderSource = fishingClaimWonderSource(claim);
   const idempotencyKey = fishingClaimKey(castId);
-  const metadata = {
-    claimId: claim.id,
-    outcome: claim.outcome,
-    creatureTypeId: claim.creatureTypeId,
-    duplicate: claim.outcome === "duplicate",
-  };
+  const metadata = fishingClaimLedgerMetadata(claim);
 
   if (claim.wonderAwarded > 0) {
     const { transaction } = applyWonderEarnInMemory(account, {
@@ -86,6 +99,7 @@ function buildFishingClaimLedgerResult(input: {
       source: wonderSource,
       transaction,
       idempotencyKey,
+      correlationId: castId,
       metadata,
       deltaMaterials: { feather: materials },
     });
@@ -112,6 +126,7 @@ function buildFishingClaimLedgerResult(input: {
     source: wonderSource,
     transaction,
     idempotencyKey,
+    correlationId: castId,
     metadata,
     deltaMaterials: { feather: materials },
   });
@@ -128,7 +143,17 @@ export async function applyFishingClaimInTransaction(
   tx: FirebaseFirestore.Transaction,
   input: ApplyFishingClaimInput,
 ): Promise<ReturnType<typeof toClientClaimSummary>> {
-  const { uid, userRef, data, claim, rodUiId, castId, idempotencyMiss } = input;
+  const {
+    uid,
+    userRef,
+    data,
+    claim,
+    rodUiId,
+    castId,
+    nextFishingPity,
+    idempotencyMiss,
+    counterResetPatch,
+  } = input;
   const rodId = uiRodIdToDomain(rodUiId) as FishingRodId;
   const idempotencyKey = fishingClaimKey(castId);
   const transactionId = `tx_${claim.id}`;
@@ -140,10 +165,12 @@ export async function applyFishingClaimInTransaction(
   const effectiveWonderAwarded = Math.min(claim.wonderAwarded, remainingCap);
   const cappedClaim = { ...claim, wonderAwarded: effectiveWonderAwarded };
 
-  const additionalUserPatch = {
+  const additionalUserPatch: Record<string, unknown> = {
+    ...(counterResetPatch ?? {}),
     activeCast: null,
     lastClaimedCastId: castId,
     fishingWonderToday: fishingWonderToday + effectiveWonderAwarded,
+    ...(nextFishingPity ? { fishingPity: nextFishingPity } : {}),
   };
 
   const claimSummary = {
@@ -185,7 +212,7 @@ export async function applyFishingClaimInTransaction(
     }
 
     tx.set(userRef.collection("fishingClaims").doc(claim.id), {
-      ...claim,
+      ...omitUndefined(claim as unknown as Record<string, unknown>),
       claimedAt: Timestamp.fromMillis(claim.claimedAt),
     });
 

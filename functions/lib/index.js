@@ -15,6 +15,7 @@ exports.nightlyAbandonedAuthCleanup =
   exports.getAccountDeletionStatus =
   exports.cancelAccountDeletion =
   exports.requestAccountDeletion =
+  exports.cancelCast =
   exports.claimCast =
   exports.createCast =
   exports.craftBait =
@@ -29,6 +30,10 @@ exports.nightlyAbandonedAuthCleanup =
   exports.rerollWellQuestion =
   exports.submitWellReflection =
   exports.getOrAssignTodaysQuestion =
+  exports.submitChildDeepCheck =
+  exports.submitChildQuickCheck =
+  exports.switchActiveChild =
+  exports.createChildProfile =
   exports.initializeSanctuary =
   exports.ensureWellState =
   exports.submitDiaryEntry =
@@ -48,8 +53,13 @@ const entitlements_1 = require("./entitlements");
 const revenuecat_1 = require("./revenuecat");
 const claimEncounter_1 = require("./sanctuary/claimEncounter");
 const createCastTransaction_1 = require("./sanctuary/createCastTransaction");
+const cancelCastTransaction_1 = require("./sanctuary/cancelCastTransaction");
 const ensureWellState_1 = require("./sanctuary/well/ensureWellState");
 const initializeSanctuary_1 = require("./auth/initializeSanctuary");
+const createChildProfile_1 = require("./auth/createChildProfile");
+const switchActiveChild_1 = require("./auth/switchActiveChild");
+const submitChildQuickCheck_1 = require("./auth/submitChildQuickCheck");
+const submitChildDeepCheck_1 = require("./auth/submitChildDeepCheck");
 const getOrAssignTodaysQuestion_1 = require("./sanctuary/well/getOrAssignTodaysQuestion");
 const rerollWellQuestion_1 = require("./sanctuary/well/rerollWellQuestion");
 const submitWellReflection_1 = require("./sanctuary/well/submitWellReflection");
@@ -63,6 +73,15 @@ const wellHelpers_1 = require("./sanctuary/well/wellHelpers");
 const baitCatalog_1 = require("./sanctuary/baitCatalog");
 /** Must match app `cloudFunctionsRegion` (default asia-east2). */
 (0, v2_1.setGlobalOptions)({ region: "asia-east2" });
+/**
+ * Gen2 Cloud Run IAM: public invoker so the Firebase client can reach the function;
+ * handlers still require `request.auth` for Firebase Auth.
+ */
+const MOBILE_CALLABLE_OPTS = {
+  memory: "256MiB",
+  timeoutSeconds: 60,
+  invoker: "public",
+};
 async function syncUserSubscriptionStatus(uid, appUserId) {
   const effectiveAppUserId = appUserId ?? uid;
   const subscriber = await (0, revenuecat_1.getRevenueCatSubscriber)(effectiveAppUserId);
@@ -76,7 +95,7 @@ async function syncUserSubscriptionStatus(uid, appUserId) {
   await init_1.db.collection("users").doc(uid).set({ subscription, activeRod }, { merge: true });
   return { subscription, activeRod, appUserId: effectiveAppUserId, subscriber };
 }
-exports.verifyPurchase = (0, https_1.onCall)(async (request) => {
+exports.verifyPurchase = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new https_1.HttpsError("unauthenticated", "Authentication required");
@@ -140,7 +159,7 @@ exports.verifyPurchase = (0, https_1.onCall)(async (request) => {
   });
   return { success: true };
 });
-exports.syncSubscriptionStatus = (0, https_1.onCall)(async (request) => {
+exports.syncSubscriptionStatus = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -182,7 +201,7 @@ function diaryContentIdempotencySeed(uid, source, depth, answers, lessonId) {
     `${uid}:${source}:${depth}:${answers.join("|")}:${lessonId ?? ""}`,
   );
 }
-exports.submitDiaryEntry = (0, https_1.onCall)(async (request) => {
+exports.submitDiaryEntry = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -300,13 +319,13 @@ exports.submitDiaryEntry = (0, https_1.onCall)(async (request) => {
 });
 const LEGACY_WELL_MESSAGE =
   "This version of the app is out of date. Please update to continue using the Well.";
-exports.ensureWellState = (0, https_1.onCall)(async (request) => {
+exports.ensureWellState = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
-  return (0, ensureWellState_1.ensureWellStateCallable)(uid);
+  return (0, ensureWellState_1.ensureWellStateCallable)(uid, request.data ?? {});
 });
-exports.initializeSanctuary = (0, https_1.onCall)(async (request) => {
+exports.initializeSanctuary = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   const rawRequestId = request.data?.requestId;
   if (typeof rawRequestId !== "string" || rawRequestId.trim() === "") {
@@ -321,7 +340,35 @@ exports.initializeSanctuary = (0, https_1.onCall)(async (request) => {
     request.auth?.token?.email ?? null,
   );
 });
-exports.getOrAssignTodaysQuestion = (0, https_1.onCall)(async (request) => {
+/** Sealed multi-child profile create/append — does not touch economy paths. */
+exports.createChildProfile = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
+  await (0, guards_1.assertAccountActive)(uid);
+  return (0, createChildProfile_1.createChildProfileCallable)(uid, request.data ?? {});
+});
+/** Switch active child + stamp lastVisitedAt / enrich childrenSummary identity fields. */
+exports.switchActiveChild = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
+  await (0, guards_1.assertAccountActive)(uid);
+  return (0, switchActiveChild_1.switchActiveChildCallable)(uid, request.data ?? {});
+});
+/** Persist Quick Check for an existing sealed child (Sanctuary switcher re-entry). */
+exports.submitChildQuickCheck = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
+  await (0, guards_1.assertAccountActive)(uid);
+  return (0, submitChildQuickCheck_1.submitChildQuickCheckCallable)(uid, request.data ?? {});
+});
+/** Persist Deep Check for an existing sealed child (axes + trail, capped at 5). */
+exports.submitChildDeepCheck = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
+  await (0, guards_1.assertAccountActive)(uid);
+  return (0, submitChildDeepCheck_1.submitChildDeepCheckCallable)(uid, request.data ?? {});
+});
+exports.getOrAssignTodaysQuestion = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -330,13 +377,13 @@ exports.getOrAssignTodaysQuestion = (0, https_1.onCall)(async (request) => {
     request.data ?? {},
   );
 });
-exports.submitWellReflection = (0, https_1.onCall)(async (request) => {
+exports.submitWellReflection = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
   return (0, submitWellReflection_1.submitWellReflectionCallable)(uid, request.data ?? {});
 });
-exports.rerollWellQuestion = (0, https_1.onCall)(async (request) => {
+exports.rerollWellQuestion = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -346,7 +393,7 @@ exports.rerollWellQuestion = (0, https_1.onCall)(async (request) => {
   }
   return (0, rerollWellQuestion_1.rerollWellQuestionCallable)(uid, request.data ?? {});
 });
-exports.startCraft = (0, https_1.onCall)(async (request) => {
+exports.startCraft = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -355,7 +402,7 @@ exports.startCraft = (0, https_1.onCall)(async (request) => {
     rodId: payload.rodId,
   });
 });
-exports.collectCraft = (0, https_1.onCall)(async (request) => {
+exports.collectCraft = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -364,7 +411,7 @@ exports.collectCraft = (0, https_1.onCall)(async (request) => {
     rodId: payload.rodId,
   });
 });
-exports.equipRod = (0, https_1.onCall)(async (request) => {
+exports.equipRod = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -374,7 +421,7 @@ exports.equipRod = (0, https_1.onCall)(async (request) => {
     collectedThisBenchSession: payload.collectedThisBenchSession,
   });
 });
-exports.completeLessonReflection = (0, https_1.onCall)(async (request) => {
+exports.completeLessonReflection = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -391,25 +438,25 @@ exports.completeLessonReflection = (0, https_1.onCall)(async (request) => {
     ritualId: payload.ritualId,
   });
 });
-exports.getRodProgression = (0, https_1.onCall)(async (request) => {
+exports.getRodProgression = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
   return (0, craftCallables_1.handleGetRodProgression)(uid);
 });
 /** @deprecated Legacy free-text Well flow — stubbed for old app versions */
-exports.createWellQuestion = (0, https_1.onCall)(async (request) => {
+exports.createWellQuestion = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   if (!request.auth?.uid)
     throw new https_1.HttpsError("unauthenticated", "Authentication required");
   throw new https_1.HttpsError("failed-precondition", LEGACY_WELL_MESSAGE);
 });
 /** @deprecated Legacy free-text Well flow — stubbed for old app versions */
-exports.answerWellQuestion = (0, https_1.onCall)(async (request) => {
+exports.answerWellQuestion = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   if (!request.auth?.uid)
     throw new https_1.HttpsError("unauthenticated", "Authentication required");
   throw new https_1.HttpsError("failed-precondition", LEGACY_WELL_MESSAGE);
 });
-exports.completePractice = (0, https_1.onCall)(async (request) => {
+exports.completePractice = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -506,7 +553,7 @@ exports.completePractice = (0, https_1.onCall)(async (request) => {
     return economyCommit.result;
   });
 });
-exports.craftBait = (0, https_1.onCall)(async (request) => {
+exports.craftBait = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -632,7 +679,7 @@ exports.craftBait = (0, https_1.onCall)(async (request) => {
     return economyCommit.result;
   });
 });
-exports.createCast = (0, https_1.onCall)(async (request) => {
+exports.createCast = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -661,7 +708,7 @@ exports.createCast = (0, https_1.onCall)(async (request) => {
     }),
   );
 });
-exports.claimCast = (0, https_1.onCall)(async (request) => {
+exports.claimCast = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
   await (0, guards_1.assertAccountActive)(uid);
@@ -671,6 +718,24 @@ exports.claimCast = (0, https_1.onCall)(async (request) => {
   try {
     const { claimSummary } = await (0, claimEncounter_1.executeClaimCast)(uid, userRef);
     return { success: true, claim: claimSummary };
+  } catch (error) {
+    if (error instanceof https_1.HttpsError) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    throw new https_1.HttpsError("internal", message);
+  }
+});
+exports.cancelCast = (0, https_1.onCall)(MOBILE_CALLABLE_OPTS, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new https_1.HttpsError("unauthenticated", "Authentication required");
+  await (0, guards_1.assertAccountActive)(uid);
+  await (0, guards_1.assertActiveRodOrThrow)(uid, { minRod: "basic" });
+  const userRef = init_1.db.collection("users").doc(uid);
+  try {
+    return await init_1.db.runTransaction((tx) =>
+      (0, cancelCastTransaction_1.runCancelCastInTransaction)({ tx, userRef, uid }),
+    );
   } catch (error) {
     if (error instanceof https_1.HttpsError) {
       throw error;

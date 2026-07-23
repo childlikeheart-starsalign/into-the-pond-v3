@@ -87,6 +87,21 @@ export async function runSignInClassificationSelfTest(): Promise<void> {
     "empty fetch + callable unavailable → attempt sign-in (degraded)",
   );
 
+  const permissionDeniedCallable = await isEmailRegisteredForPasswordSignIn("a@b.c", {
+    fetchSignInMethods: async () => [],
+    checkEmailRegistered: async () => {
+      const error = new Error("permission-denied") as Error & { code: string };
+      error.code = "functions/permission-denied";
+      throw error;
+    },
+    signIn: async () => ({}) as never,
+  });
+  expectEqual(
+    permissionDeniedCallable,
+    true,
+    "empty fetch + callable permission-denied → attempt sign-in (degraded)",
+  );
+
   const unregisteredViaCallable = await isEmailRegisteredForPasswordSignIn("a@b.c", {
     fetchSignInMethods: async () => [],
     checkEmailRegistered: async () => false,
@@ -105,11 +120,43 @@ export async function runSignInClassificationSelfTest(): Promise<void> {
   });
   expectEqual(blockedFetchUsesCallable, true, "blocked fetch falls back to callable");
 
+  const iosClientBlockedSkipsToSignIn = await isEmailRegisteredForPasswordSignIn("a@b.c", {
+    fetchSignInMethods: async () => {
+      const error = new Error("ios blocked") as Error & { code: string };
+      error.code = "auth/requests-from-this-ios-client-application-<empty>-are-blocked.";
+      throw error;
+    },
+    checkEmailRegistered: async () => {
+      throw new Error("callable should not run when ios client blocked");
+    },
+    signIn: async () => ({}) as never,
+  });
+  expectEqual(
+    iosClientBlockedSkipsToSignIn,
+    true,
+    "ios client blocked → skip enumeration, attempt sign-in",
+  );
+
+  const iosBlockedSignIn = await signInWithEmailForLoginScreen("a@b.c", "secret", {
+    fetchSignInMethods: async () => {
+      const error = new Error("ios blocked") as Error & { code: string };
+      error.code = "auth/requests-from-this-ios-client-application-<empty>-are-blocked.";
+      throw error;
+    },
+    checkEmailRegistered: async () => {
+      throw new Error("callable should not run");
+    },
+    signIn: async () => ({ user: { uid: "u1" } }) as never,
+  });
+  expectEqual(iosBlockedSignIn.user.uid, "u1", "ios blocked enumeration still signs in");
+
   const emailMapped = mapSignInScreenError(new SignInEmailNotFoundError());
   expectEqual(emailMapped.emailError, AUTH_INVALID_EMAIL_FORMAT, "email error mapped");
   expectEqual(emailMapped.passwordError, null, "no password error");
+  expectEqual(emailMapped.generalError, null, "no general error");
 
   const passwordMapped = mapSignInScreenError(new SignInWrongPasswordError());
   expectEqual(passwordMapped.passwordError, AUTH_WRONG_PASSWORD, "password error mapped");
   expectEqual(passwordMapped.emailError, null, "no email error");
+  expectEqual(passwordMapped.generalError, null, "no general error");
 }

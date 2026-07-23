@@ -1,0 +1,182 @@
+{
+  "sheet": "epic_fire",
+  "source": "epic_fire_creatures_100-112-a64a4675-007e-447d-aaf9-faaa3c85300d.png",
+  "paper": [
+    215,
+    187,
+    141
+  ],
+  "count": 13,
+  "exports": [
+    {
+      "name": "magma_elder",
+      "displayName": "Magma Elder",
+      "sourceRect": {
+        "left": 0,
+        "top": 45,
+        "width": 280,
+        "height": 230,
+        "cx": 140,
+        "cy": 160
+      },
+      "visiblePixels": 30712
+    },
+    {
+      "name": "pyrefish",
+      "displayName": "Pyrefish",
+      "sourceRect": {
+        "left": 185,
+        "top": 46,
+        "width": 262,
+        "height": 224,
+        "cx": 316,
+        "cy": 158
+      },
+      "visiblePixels": 26385
+    },
+    {
+      "name": "solarfin_sovereign",
+      "displayName": "Solarfin Sovereign",
+      "sourceRect": {
+        "left": 354,
+        "top": 44,
+        "width": 300,
+        "height": 236,
+        "cx": 504,
+        "cy": 162
+      },
+      "visiblePixels": 29415
+    },
+    {
+      "name": "crucible_fish",
+      "displayName": "Crucible Fish",
+      "sourceRect": {
+        "left": 565,
+        "top": 45,
+        "width": 262,
+        "height": 230,
+        "cx": 696,
+        "cy": 160
+      },
+      "visiblePixels": 24472
+    },
+    {
+      "name": "phoenix_ray",
+      "displayName": "Phoenix Ray",
+      "sourceRect": {
+        "left": 738,
+        "top": 29,
+        "width": 280,
+        "height": 250,
+        "cx": 878,
+        "cy": 154
+      },
+      "visiblePixels": 28245
+    },
+    {
+      "name": "deep_ember",
+      "displayName": "Deep Ember",
+      "sourceRect": {
+        "left": 0,
+        "top": 236,
+        "width": 268,
+        "height": 236,
+        "cx": 134,
+        "cy": 354
+      },
+      "visiblePixels": 25905
+    },
+    {
+      "name": "furnace_elder",
+      "displayName": "Furnace Elder",
+      "sourceRect": {
+        "left": 170,
+        "top": 244,
+        "width": 280,
+        "height": 212,
+        "cx": 310,
+        "cy": 350
+      },
+      "visiblePixels": 21923
+    },
+    {
+      "name": "corona_wraith",
+      "displayName": "Corona Wraith",
+      "sourceRect": {
+        "left": 355,
+        "top": 256,
+        "width": 294,
+        "height": 212,
+        "cx": 502,
+        "cy": 362
+      },
+      "visiblePixels": 23584
+    },
+    {
+      "name": "inferno_calm",
+      "displayName": "Inferno Calm",
+      "sourceRect": {
+        "left": 555,
+        "top": 260,
+        "width": 274,
+        "height": 192,
+        "cx": 692,
+        "cy": 356
+      },
+      "visiblePixels": 22266
+    },
+    {
+      "name": "forge_sovereign",
+      "displayName": "Forge Sovereign",
+      "sourceRect": {
+        "left": 733,
+        "top": 241,
+        "width": 291,
+        "height": 230,
+        "cx": 878.5,
+        "cy": 356
+      },
+      "visiblePixels": 27371
+    },
+    {
+      "name": "stellar_drifter",
+      "displayName": "Stellar Drifter",
+      "sourceRect": {
+        "left": 0,
+        "top": 439,
+        "width": 405,
+        "height": 198,
+        "cx": 202.5,
+        "cy": 538
+      },
+      "visiblePixels": 37652
+    },
+    {
+      "name": "radiance_keeper",
+      "displayName": "Radiance Keeper",
+      "sourceRect": {
+        "left": 210,
+        "top": 481,
+        "width": 216,
+        "height": 154,
+        "cx": 318,
+        "cy": 558
+      },
+      "visiblePixels": 12849
+    },
+    {
+      "name": "prime_flame",
+      "displayName": "Prime Flame",
+      "sourceRect": {
+        "left": 299,
+        "top": 439,
+        "width": 294,
+        "height": 198,
+        "cx": 446,
+        "cy": 538
+      },
+      "visiblePixels": 27072
+    }
+  ],
+  "review": []
+}

@@ -2,9 +2,9 @@
  * Seed / update Firestore allowlist feature flags (Admin SDK).
  *
  * Usage (requires FIREBASE_SERVICE_ACCOUNT_PATH in functions/.env.local for real writes):
- *   npx tsx scripts/seed-feature-flags.ts --flag=createChildProfileUi --state=off
- *   npx tsx scripts/seed-feature-flags.ts --flag=createChildProfileUi --state=off --dry-run
- *   npx tsx scripts/seed-feature-flags.ts --flag=createChildProfileUi --state=allowlist --uids=UID1
+ *   npx tsx scripts/seed-feature-flags.ts --flag=childResultPeek --state=off
+ *   npx tsx scripts/seed-feature-flags.ts --flag=childResultPeek --state=off --dry-run
+ *   npx tsx scripts/seed-feature-flags.ts --flag=childResultPeek --state=allowlist --uids=UID1
  *   npx tsx scripts/seed-feature-flags.ts --all-flags-confirm --state=off
  *
  * Do NOT add real user UIDs without explicit confirmation.
@@ -121,8 +121,12 @@ async function main() {
   }
 
   const functionsRequire = createRequire(path.join(root, "functions/package.json"));
-  const { cert, initializeApp } = functionsRequire("firebase-admin/app") as typeof import("firebase-admin/app");
-  const { getFirestore } = functionsRequire("firebase-admin/firestore") as typeof import("firebase-admin/firestore");
+  const { cert, initializeApp } = functionsRequire(
+    "firebase-admin/app",
+  ) as typeof import("firebase-admin/app");
+  const { getFirestore } = functionsRequire(
+    "firebase-admin/firestore",
+  ) as typeof import("firebase-admin/firestore");
 
   const keyPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH?.trim();
   if (!keyPath) {

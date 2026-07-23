@@ -12,7 +12,7 @@ exports.ACCOUNT_DELETION_PAYLOAD_VERSION = 1;
 /** PII subcollections removed immediately on deletion request (Phase 1). */
 exports.PII_SUBCOLLECTIONS = ["diaryEntries", "childAtlas", "wellState", "wellQuestions"];
 function isAccountDeletionEnabled() {
-  return process.env.ACCOUNT_DELETION_ENABLED !== "false";
+  return process.env.ACCOUNT_DELETION_ENABLED === "true";
 }
 function accountDeletionIdempotencyKey(requestId) {
   return `account_deletion:${requestId.trim()}`;

@@ -84,6 +84,13 @@ function main() {
     assertSame("CLIENT_SAFE_USER_CREATE_KEYS", rulesClientSafeKeys, registryClientSafeKeys);
   }
 
+  const rulesClientUpdateKeys = extractStringArray(rulesSource, "clientSafeUserUpdateKeys");
+  const registryClientUpdateKeys = extractTsConstArray(
+    registrySource,
+    "CLIENT_SAFE_USER_UPDATE_KEYS",
+  );
+  assertSame("CLIENT_SAFE_USER_UPDATE_KEYS", rulesClientUpdateKeys, registryClientUpdateKeys);
+
   console.log(
     `Validated firestore.rules ↔ economyFieldRegistry (${registryEconomyKeys.length} economy fields, ${registrySubcols.length} subcollections)`,
   );

@@ -3,6 +3,9 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "database": {
     "rules": "database.rules.json"
   },
@@ -10,9 +13,26 @@
     "firestore": {
       "port": 8080
     },
+    "database": {
+      "port": 9000
+    },
     "ui": {
       "enabled": false
     }
+  },
+  "hosting": {
+    "public": "hosting",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/delete-account",
+        "destination": "/delete-account/index.html"
+      },
+      {
+        "source": "/delete-account/**",
+        "destination": "/delete-account/index.html"
+      }
+    ]
   },
   "functions": [
     {

@@ -8,27 +8,72 @@ import {
   loadActiveFishingCast,
   startFishingCast,
 } from "@/src/features/fishing/fishingCastStorage";
+import { mergeServerCastWithLocalCache } from "@/src/features/fishing/mergeServerCastCache";
 import { getUserProgress } from "@/src/services/firebase/progress";
 import {
   claimCast,
+  cancelCast,
   createCast,
   type ServerClaimSummary,
 } from "@/src/services/firebase/serverActions";
+import { CANCEL_CAST_GRACE_MS } from "@/shared/sanctuary/fishing/castTiming";
+import {
+  cancelCastReadyNotification,
+  scheduleCastReadyNotification,
+  syncCastReadyNotificationsWithServer,
+} from "@/src/features/fishing/castReadyNotification";
+import { firebaseAuth } from "@/src/services/firebase/client";
 import { Sentry } from "@/src/services/sentry/init";
 
 export type { ServerClaimSummary };
 
 const STORAGE_KEY = "fishing:server-cast";
+const PENDING_REQUEST_KEY = "fishing:server-cast-pending-request";
+
+type PendingCastRequest = {
+  requestId: string;
+  rodId: string;
+  baitId: string;
+};
+
+async function loadPendingCastRequest(): Promise<PendingCastRequest | null> {
+  const raw = await AsyncStorage.getItem(PENDING_REQUEST_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<PendingCastRequest>;
+    if (!parsed.requestId || !parsed.rodId || !parsed.baitId) return null;
+    return {
+      requestId: parsed.requestId,
+      rodId: parsed.rodId,
+      baitId: parsed.baitId,
+    };
+  } catch {
+    await AsyncStorage.removeItem(PENDING_REQUEST_KEY);
+    return null;
+  }
+}
+
+async function persistPendingCastRequest(pending: PendingCastRequest): Promise<void> {
+  await AsyncStorage.setItem(PENDING_REQUEST_KEY, JSON.stringify(pending));
+}
+
+async function clearPendingCastRequest(): Promise<void> {
+  await AsyncStorage.removeItem(PENDING_REQUEST_KEY);
+}
 
 export type ServerFishingCast = {
   castId: string;
   readyAt: number;
+  /** Server create time (ms) — grace window for cancel. */
+  createdAtMs?: number;
   rodIdAtCast: string;
   baitIdAtCast: string;
   /** Stable id for createCast idempotency on retry. */
   requestId?: string;
   /** Dev-only fallback when Cloud Functions are not deployed. */
   mode?: "server" | "local";
+  /** Pond overlay copy — client cache only (survives remount). */
+  castingLabel?: string;
 };
 
 export type StartServerCastResult =
@@ -58,22 +103,52 @@ function isFunctionsUnavailable(error: unknown): boolean {
   );
 }
 
+/** DEV-only local cast path — off unless explicitly opted in (avoids silent fake success). */
+function isLocalCastAllowed(): boolean {
+  return __DEV__ && process.env.EXPO_PUBLIC_FISHING_ALLOW_LOCAL_CAST === "1";
+}
+
+function shouldForceServerClaim(): boolean {
+  return __DEV__ && process.env.EXPO_PUBLIC_FISHING_FORCE_SERVER_CLAIM === "1";
+}
+
 function isAlreadyActiveError(error: unknown): boolean {
-  return (
-    error instanceof FirebaseError &&
-    error.code === "functions/failed-precondition" &&
-    error.message === "A cast is already active"
-  );
+  if (!error || typeof error !== "object") return false;
+  const message = "message" in error ? String((error as { message?: unknown }).message) : "";
+  if (message !== "A cast is already active") return false;
+  if (error instanceof FirebaseError) {
+    return error.code === "functions/failed-precondition";
+  }
+  const code = "code" in error ? String((error as { code?: unknown }).code) : "";
+  return code === "failed-precondition" || code === "functions/failed-precondition";
 }
 
 async function persistServerCast(cast: ServerFishingCast): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cast));
 }
 
+function parseCastingLabel(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+/** Merge client-only fields (e.g. castingLabel) into the cached cast. */
+export async function updateCachedCast(
+  patch: Pick<ServerFishingCast, "castingLabel">,
+): Promise<ServerFishingCast | null> {
+  const current = await loadServerCast();
+  if (!current) return null;
+  const next: ServerFishingCast = {
+    ...current,
+    castingLabel: parseCastingLabel(patch.castingLabel) ?? current.castingLabel,
+  };
+  await persistServerCast(next);
+  return next;
+}
+
 export async function loadServerCast(): Promise<ServerFishingCast | null> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   if (!raw) {
-    if (!__DEV__) {
+    if (!isLocalCastAllowed()) {
       await clearActiveFishingCast();
       return null;
     }
@@ -96,9 +171,11 @@ export async function loadServerCast(): Promise<ServerFishingCast | null> {
       readyAt: parsed.readyAt,
       rodIdAtCast: parsed.rodIdAtCast ?? "basic",
       baitIdAtCast: parsed.baitIdAtCast ?? "bait_basic",
+      requestId: typeof parsed.requestId === "string" ? parsed.requestId : undefined,
       mode: parsed.mode ?? "server",
+      castingLabel: parseCastingLabel(parsed.castingLabel),
     };
-    if (!__DEV__ && cast.mode === "local") {
+    if (cast.mode === "local" && !isLocalCastAllowed()) {
       await clearServerCast();
       return null;
     }
@@ -111,6 +188,7 @@ export async function loadServerCast(): Promise<ServerFishingCast | null> {
 
 export async function clearServerCast(): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEY);
+  await clearPendingCastRequest();
   await clearActiveFishingCast();
 }
 
@@ -123,6 +201,12 @@ export function getServerCastStatus(
   return { active: true, cast, remainingMs, ready: remainingMs === 0 };
 }
 
+/** Client display only — server enforces CANCEL_CAST_GRACE_MS against createdAt. */
+export function isWithinCancelGrace(cast: ServerFishingCast | null, now = Date.now()): boolean {
+  if (!cast?.createdAtMs) return false;
+  return now - cast.createdAtMs <= CANCEL_CAST_GRACE_MS;
+}
+
 async function fetchActiveCastFromServer(uid: string): Promise<ServerFishingCast | null> {
   const userDoc = await getUserProgress(uid);
   const activeCast = userDoc?.activeCast;
@@ -131,6 +215,7 @@ async function fetchActiveCastFromServer(uid: string): Promise<ServerFishingCast
   return {
     castId: activeCast.castId,
     readyAt: activeCast.readyTimestamp.toMillis(),
+    createdAtMs: activeCast.createdAt?.toMillis?.(),
     rodIdAtCast: activeCast.rodType ?? "basic",
     baitIdAtCast: activeCast.baitUsed ?? "random_bait",
     mode: "server",
@@ -144,7 +229,12 @@ export async function reconcileServerCastCache(uid: string): Promise<ServerFishi
   const hadDesync = (localCast?.castId ?? null) !== (serverCast?.castId ?? null);
 
   if (serverCast) {
-    await persistServerCast(serverCast);
+    const merged = mergeServerCastWithLocalCache(localCast, serverCast);
+    await persistServerCast(merged);
+    void syncCastReadyNotificationsWithServer({
+      activeCastId: merged.castId,
+      readyAt: merged.readyAt,
+    });
     if (hadDesync) {
       Sentry.addBreadcrumb({
         category: "cast_reconciliation",
@@ -152,9 +242,10 @@ export async function reconcileServerCastCache(uid: string): Promise<ServerFishi
         level: "info",
       });
     }
-    return serverCast;
+    return merged;
   }
   await clearServerCast();
+  void syncCastReadyNotificationsWithServer({ activeCastId: null });
   if (hadDesync) {
     Sentry.addBreadcrumb({
       category: "cast_reconciliation",
@@ -182,6 +273,7 @@ async function startLocalCast(input: {
   const cast: ServerFishingCast = {
     castId: `local_${legacy.castStartTime}`,
     readyAt: legacy.castStartTime + FISHING_CAST_DURATION_MS,
+    createdAtMs: legacy.castStartTime,
     rodIdAtCast: input.rodId,
     baitIdAtCast: input.baitId,
     mode: "local",
@@ -201,15 +293,30 @@ export async function startServerCast(
   uid: string,
   input: { rodId: string; baitId: string },
 ): Promise<StartServerCastResult> {
+  const existingServer = await fetchActiveCastFromServer(uid);
+  if (existingServer) {
+    await persistServerCast(existingServer);
+    return { status: "already_active", cast: existingServer };
+  }
+
   const persisted = await loadServerCast();
+  const pending = await loadPendingCastRequest();
   const requestId =
-    persisted?.requestId &&
-    persisted.rodIdAtCast === input.rodId &&
-    persisted.baitIdAtCast === input.baitId
-      ? persisted.requestId
-      : createCastRequestId();
+    pending && pending.rodId === input.rodId && pending.baitId === input.baitId
+      ? pending.requestId
+      : persisted?.requestId &&
+          persisted.rodIdAtCast === input.rodId &&
+          persisted.baitIdAtCast === input.baitId
+        ? persisted.requestId
+        : createCastRequestId();
 
   try {
+    await persistPendingCastRequest({
+      requestId,
+      rodId: input.rodId,
+      baitId: input.baitId,
+    });
+
     const result = await createCast(uid, {
       rodType: input.rodId,
       baitUsed: input.baitId,
@@ -222,12 +329,15 @@ export async function startServerCast(
     const cast: ServerFishingCast = {
       castId: result.castId,
       readyAt: result.readyAt,
+      createdAtMs: result.createdAt ?? Date.now(),
       rodIdAtCast: input.rodId,
       baitIdAtCast: input.baitId,
       requestId,
       mode: "server",
     };
     await persistServerCast(cast);
+    await clearPendingCastRequest();
+    void scheduleCastReadyNotification({ castId: cast.castId, readyAt: cast.readyAt });
     return { status: "started", cast };
   } catch (error) {
     if (isAlreadyActiveError(error)) {
@@ -248,9 +358,9 @@ export async function startServerCast(
       return { status: "already_active", cast: existing };
     }
 
-    if (__DEV__ && isFunctionsUnavailable(error)) {
+    if (isLocalCastAllowed() && isFunctionsUnavailable(error)) {
       console.warn(
-        "[Fishing] Cloud Function createCast not found — using local dev cast. Deploy functions to asia-east2.",
+        "[Fishing] Cloud Function createCast unavailable — using local cast (EXPO_PUBLIC_FISHING_ALLOW_LOCAL_CAST=1).",
         error,
       );
       const localResult = await startLocalCast(input);
@@ -269,16 +379,12 @@ export async function startServerCast(
   }
 }
 
-function shouldForceServerClaim(): boolean {
-  return __DEV__ && process.env.EXPO_PUBLIC_FISHING_FORCE_SERVER_CLAIM === "1";
-}
-
 export async function claimServerCast(
   uid: string,
   cast: ServerFishingCast,
 ): Promise<ServerClaimSummary | null> {
   if (cast.mode === "local") {
-    if (!__DEV__) {
+    if (!isLocalCastAllowed()) {
       await clearServerCast();
       throw new FishingServiceError(
         "Local fishing sessions are unavailable.",
@@ -289,13 +395,23 @@ export async function claimServerCast(
       await import("@/src/features/fishing/resolveDevFishingClaim");
     const summary = await resolveDevFishingClaim(uid, cast);
     await clearServerCast();
+    await cancelCastReadyNotification(cast.castId);
     return summary;
+  }
+
+  const authUser = firebaseAuth.currentUser;
+  if (!authUser) {
+    throw new FirebaseError("functions/unauthenticated", "unauthenticated");
+  }
+  if (authUser.uid !== uid) {
+    throw new FirebaseError("functions/unauthenticated", "unauthenticated");
   }
 
   try {
     const result = await claimCast(uid, {});
     if (!result.success || !result.claim) return null;
     await clearServerCast();
+    await cancelCastReadyNotification(cast.castId);
     return result.claim;
   } catch (error) {
     if (error instanceof FirebaseError && error.code === "functions/failed-precondition") {
@@ -303,15 +419,77 @@ export async function claimServerCast(
         const retry = await claimCast(uid, {});
         if (retry.success && retry.claim) {
           await clearServerCast();
+          await cancelCastReadyNotification(cast.castId);
           return retry.claim;
         }
       } catch {
-        // fall through to reconcile / rethrow
+        // fall through — do not clear local cast on ambiguous failure
       }
+      // Reconcile only; leave local cast until caller decides from classification.
       await reconcileServerCastCache(uid);
     }
-    if (__DEV__ && !shouldForceServerClaim() && isFunctionsUnavailable(error)) {
+    if (isLocalCastAllowed() && !shouldForceServerClaim() && isFunctionsUnavailable(error)) {
       return claimServerCast(uid, { ...cast, mode: "local" });
+    }
+    throw error;
+  }
+}
+
+export type CancelServerCastResult = {
+  success: true;
+  castId: string;
+  baitRefunded: boolean;
+};
+
+/**
+ * Cancel within grace window. Reconcile from server on ambiguous failure —
+ * same discipline as claim.
+ */
+export async function cancelServerCast(
+  uid: string,
+  cast: ServerFishingCast,
+): Promise<CancelServerCastResult> {
+  if (cast.mode === "local") {
+    if (!isLocalCastAllowed()) {
+      throw new FishingServiceError(
+        "Local fishing sessions are unavailable.",
+        "local-session-unavailable",
+      );
+    }
+    await clearServerCast();
+    await cancelCastReadyNotification(cast.castId);
+    return { success: true, castId: cast.castId, baitRefunded: false };
+  }
+
+  const authUser = firebaseAuth.currentUser;
+  if (!authUser) {
+    throw new FirebaseError("functions/unauthenticated", "unauthenticated");
+  }
+  if (authUser.uid !== uid) {
+    throw new FirebaseError("functions/unauthenticated", "unauthenticated");
+  }
+
+  try {
+    const result = await cancelCast(uid);
+    if (!result.success || !result.castId) {
+      throw new FishingServiceError("Could not recall this cast.", "cancel-failed");
+    }
+    await clearServerCast();
+    await cancelCastReadyNotification(result.castId);
+    return {
+      success: true,
+      castId: result.castId,
+      baitRefunded: result.baitRefunded === true,
+    };
+  } catch (error) {
+    // Reconcile — if server already cleared, unlock pond.
+    try {
+      const reconciled = await reconcileServerCastCache(uid);
+      if (!reconciled) {
+        await cancelCastReadyNotification(cast.castId);
+      }
+    } catch {
+      // leave cache; caller classifies
     }
     throw error;
   }

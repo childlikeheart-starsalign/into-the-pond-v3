@@ -43,6 +43,7 @@ import {
 import { routes } from "@/src/navigation/routes";
 import { firebaseAuth, firestore } from "@/src/services/firebase/client";
 import { completeLessonReflection } from "@/src/services/firebase/serverActions";
+import { playClosingTheJournal } from "@/src/services/audio/playClosingTheJournal";
 import { Sentry } from "@/src/services/sentry/init";
 import type { ExportEntryData } from "@/utils/exportHelpers";
 
@@ -636,8 +637,9 @@ export function DiaryEntryScreen({ lessonId }: DiaryEntryScreenProps) {
       answers,
       source: "lesson",
     })
-      .then(() =>
-        addReflectionBloom(lesson.id, `diary-${lesson.id}`)
+      .then(() => {
+        void playClosingTheJournal();
+        return addReflectionBloom(lesson.id, `diary-${lesson.id}`)
           .then((bloom) => {
             setPendingArrivalBloomId(bloom.id);
             return refreshSanctuaryCultivation();
@@ -647,8 +649,8 @@ export function DiaryEntryScreen({ lessonId }: DiaryEntryScreenProps) {
             Sentry.captureException(error, {
               tags: { area: "diary", flow: "sanctuary_bloom" },
             });
-          }),
-      )
+          });
+      })
       .catch((error) => {
         console.warn("[DiaryEntry] failed to complete lesson reflection", error);
         Sentry.captureException(error, {

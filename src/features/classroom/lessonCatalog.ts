@@ -1,7 +1,7 @@
 import type { LessonItem } from "@/src/features/classroom/types";
 
-/** Placeholder MP4 until curriculum CDN URLs are wired. */
-const SAMPLE_VIDEO_URI =
+/** Placeholder MP4 until Firestore-synced URLs are available. */
+export const SAMPLE_VIDEO_URI =
   "https://storage.googleapis.com/exoplayer-test-media-1/mp4/android-screens-10s.mp4";
 
 function lesson(

@@ -5,6 +5,7 @@ exports.deriveCastIdFromRequestId = deriveCastIdFromRequestId;
 exports.runCreateCastInTransaction = runCreateCastInTransaction;
 const firestore_1 = require("firebase-admin/firestore");
 const https_1 = require("firebase-functions/v2/https");
+const castTiming_1 = require("./castTiming");
 const dailyCounters_1 = require("./dailyCounters");
 const economy_1 = require("./economy");
 const commitEconomyAction_1 = require("./economy/commitEconomyAction");
@@ -12,19 +13,35 @@ const resolveCallableIdempotency_1 = require("./economy/resolveCallableIdempoten
 const playerRodHelpers_1 = require("./progression/playerRodHelpers");
 const fishingPermissionService_1 = require("./progression/fishingPermissionService");
 const rodCatalog_1 = require("./rodCatalog");
-/** Production cast duration (2 hours). Keep in sync with client FISHING_CAST_DURATION_MS. */
-exports.CAST_DURATION_MS = 2 * 60 * 60 * 1000;
+/** Re-export for callers / tests — single source is castTiming.ts. */
+var castTiming_2 = require("./castTiming");
+Object.defineProperty(exports, "CAST_DURATION_MS", {
+  enumerable: true,
+  get: function () {
+    return castTiming_2.CAST_DURATION_MS;
+  },
+});
 const CONSUMABLE_BAIT_IDS = new Set(["feather_bait", "scale_bait", "glimmerdust_bait"]);
+/** UI bait ids (FishingModal) → inventory keys. Free default bait_basic does not deduct. */
+const UI_BAIT_TO_INVENTORY_KEY = {
+  bait_mid: "scale_bait",
+  bait_premium: "glimmerdust_bait",
+  feather_bait: "feather_bait",
+  scale_bait: "scale_bait",
+  glimmerdust_bait: "glimmerdust_bait",
+};
 function resolveBaitInventoryPatch(baitUsed, inventory) {
   const normalized = (baitUsed ?? "").trim();
-  if (!normalized || normalized === "random_bait") {
+  // Free default UI bait and legacy random_bait — no inventory deduction.
+  if (!normalized || normalized === "random_bait" || normalized === "bait_basic") {
     return { patch: undefined, baitDeducted: false };
   }
-  if (!CONSUMABLE_BAIT_IDS.has(normalized)) {
+  const inventoryKey = UI_BAIT_TO_INVENTORY_KEY[normalized];
+  if (!inventoryKey || !CONSUMABLE_BAIT_IDS.has(inventoryKey)) {
     throw new https_1.HttpsError("failed-precondition", "Unknown bait type");
   }
   const baits = inventory?.baits ?? {};
-  const balance = baits[normalized] ?? 0;
+  const balance = baits[inventoryKey] ?? 0;
   if (balance < 1) {
     throw new https_1.HttpsError("failed-precondition", "Insufficient bait");
   }
@@ -33,7 +50,7 @@ function resolveBaitInventoryPatch(baitUsed, inventory) {
       ...inventory,
       baits: {
         ...baits,
-        [normalized]: balance - 1,
+        [inventoryKey]: balance - 1,
       },
     },
     baitDeducted: true,
@@ -57,13 +74,20 @@ async function runCreateCastInTransaction(input) {
   }
   const userSnap = await tx.get(userRef);
   const data = userSnap.data() ?? {};
-  (0, dailyCounters_1.applyOperationalCounterResetsInTransaction)(tx, userRef, data);
+  // Defer counter reset into the final user write — commitEconomyAction still reads.
+  const counterResetPatch = (0, dailyCounters_1.buildOperationalCounterResetPatch)(data);
   const activeCast = data.activeCast;
   if (activeCast?.castId) {
     if (activeCast.castId === castId) {
       const readyAt =
-        activeCast.readyTimestamp?.toMillis() ?? Date.now() + exports.CAST_DURATION_MS;
-      const response = { success: true, castId, readyAt };
+        activeCast.readyTimestamp?.toMillis() ?? Date.now() + castTiming_1.CAST_DURATION_MS;
+      const existingCreatedAt = activeCast.createdAt?.toMillis?.();
+      const response = {
+        success: true,
+        castId,
+        readyAt,
+        createdAt: existingCreatedAt ?? Date.now(),
+      };
       await (0, commitEconomyAction_1.commitEconomyAction)({
         tx,
         userRef,
@@ -86,6 +110,7 @@ async function runCreateCastInTransaction(input) {
               reconciledActiveCast: true,
             },
           }),
+          additionalUserPatch: { ...counterResetPatch },
           response,
         }),
       });
@@ -101,12 +126,13 @@ async function runCreateCastInTransaction(input) {
       throw new https_1.HttpsError("failed-precondition", "You do not own this rod yet");
     }
   }
-  const readyAt = Date.now() + exports.CAST_DURATION_MS;
+  const readyAt = Date.now() + castTiming_1.CAST_DURATION_MS;
+  const createdAtMs = Date.now();
   const { patch: inventoryPatch, baitDeducted } = resolveBaitInventoryPatch(
     baitUsed,
     data.inventory,
   );
-  const response = { success: true, castId, readyAt };
+  const response = { success: true, castId, readyAt, createdAt: createdAtMs };
   await (0, commitEconomyAction_1.commitEconomyAction)({
     tx,
     userRef,
@@ -116,13 +142,16 @@ async function runCreateCastInTransaction(input) {
     idempotencyMiss: { hit: false },
     build: () => {
       const additionalUserPatch = {
+        ...counterResetPatch,
         activeCast: {
           castId,
           readyTimestamp: firestore_1.Timestamp.fromMillis(readyAt),
+          createdAt: firestore_1.Timestamp.fromMillis(createdAtMs),
           rodType,
           baitUsed,
           baitTier: (0, rodCatalog_1.uiBaitIdToTier)(baitUsed),
           domainRodId,
+          baitDeducted,
         },
       };
       if (inventoryPatch) {

@@ -53,6 +53,37 @@ Open PostHog **Live events** before testing. Event names are **direct-renamed** 
 - [ ] Equip a ready rod — `rod_equipped` (server-side via `equipRod`)
 - [ ] Complete a lesson — `lesson_completed` (server-side)
 
+## Manual client checklist — fishing claim ceremony
+
+Open PostHog **Live events** before testing. Filter: `fishing_claim` OR `pond_ripple` OR `claim_celebration`.
+
+Prerequisites: dev client signed in, `EXPO_PUBLIC_POSTHOG_API_KEY` set, analytics opt-out off. Use backdate path from [`.qa/live-sanctuary-claim-qa.md`](../.qa/live-sanctuary-claim-qa.md) §2 for claim without 2h wait.
+
+Automated contract check: `npm run verify:fishing-ceremony-qa`
+
+### Always-on ring (shipped)
+
+Sanctuary always renders `CatalogRarityRing`; `ringUiEnabled: true` on all three events. The Firestore flag `catalogRarityRingUi` may be seeded `all` for consistency but does not gate the UI.
+
+Expect **3** events on a full claim (backdate path):
+
+- [ ] `fishing_claim_resolved` — `ringUiEnabled: true`
+- [ ] `pond_ripple_complete` after ring (~2s) — `caughtTier`, `subscriptionTier`, `ringUiEnabled: true`
+- [ ] `claim_celebration_dismissed` on Continue — `ringUiEnabled: true`, `dwellMs` > 0
+
+`caughtTier`: miss → `empty`; common/rare/epic map from `outcomeToDisplayTier`.
+
+### Audio (Sanctuary cast/claim)
+
+- [ ] Cast accept → splash (`cast-splash.mp3`) then looping ambient (`pond-waiting-ambient.mp3`)
+- [ ] Claim resolve → ambient stops; outcome sting (`claim-catch` / `claim-duplicate` / `claim-miss-chance`)
+- [ ] Wonder-gate miss SFX (`claim-miss-wonder-gate.mp3`) when claim summary has `metadata.reason: "wonder_gate"` (wired via `toClientClaimSummary`)
+
+### Controls
+
+- [ ] Analytics opt-out ON → no new fishing/ripple/dismiss events; opt-in → events resume
+- [ ] Event payloads contain no email, child names, or spirit message text
+
 ## Server-originated events
 
 These fire from Cloud Functions via `posthog-node` (`functions/src/analytics/posthogServer.ts`). Skipped when `users/{uid}.analyticsOptOut === true`.

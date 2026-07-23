@@ -1,0 +1,182 @@
+{
+  "sheet": "epic_water",
+  "source": "epic_water_creatures_113-125-60e0b128-36e3-4ddf-ad0a-e4433c9eb236.png",
+  "paper": [
+    207,
+    187,
+    144
+  ],
+  "count": 13,
+  "exports": [
+    {
+      "name": "abyssal_calm",
+      "displayName": "Abyssal Calm",
+      "sourceRect": {
+        "left": 8,
+        "top": 48,
+        "width": 268,
+        "height": 212,
+        "cx": 142,
+        "cy": 154
+      },
+      "visiblePixels": 23923
+    },
+    {
+      "name": "tidal_elder",
+      "displayName": "Tidal Elder",
+      "sourceRect": {
+        "left": 193,
+        "top": 48,
+        "width": 262,
+        "height": 212,
+        "cx": 324,
+        "cy": 154
+      },
+      "visiblePixels": 23915
+    },
+    {
+      "name": "origin_leviathan",
+      "displayName": "Origin Leviathan",
+      "sourceRect": {
+        "left": 368,
+        "top": 33,
+        "width": 268,
+        "height": 230,
+        "cx": 502,
+        "cy": 148
+      },
+      "visiblePixels": 27311
+    },
+    {
+      "name": "deep_tide",
+      "displayName": "Deep Tide",
+      "sourceRect": {
+        "left": 577,
+        "top": 48,
+        "width": 238,
+        "height": 212,
+        "cx": 696,
+        "cy": 154
+      },
+      "visiblePixels": 18811
+    },
+    {
+      "name": "ancient_mirror",
+      "displayName": "Ancient Mirror",
+      "sourceRect": {
+        "left": 736,
+        "top": 48,
+        "width": 268,
+        "height": 212,
+        "cx": 870,
+        "cy": 154
+      },
+      "visiblePixels": 23707
+    },
+    {
+      "name": "source_swimmer",
+      "displayName": "Source Swimmer",
+      "sourceRect": {
+        "left": 14,
+        "top": 232,
+        "width": 256,
+        "height": 212,
+        "cx": 142,
+        "cy": 338
+      },
+      "visiblePixels": 23232
+    },
+    {
+      "name": "bedrock_blue",
+      "displayName": "Bedrock Blue",
+      "sourceRect": {
+        "left": 193,
+        "top": 227,
+        "width": 262,
+        "height": 218,
+        "cx": 324,
+        "cy": 336
+      },
+      "visiblePixels": 21703
+    },
+    {
+      "name": "estuary_sage",
+      "displayName": "Estuary Sage",
+      "sourceRect": {
+        "left": 367,
+        "top": 253,
+        "width": 274,
+        "height": 186,
+        "cx": 504,
+        "cy": 346
+      },
+      "visiblePixels": 21674
+    },
+    {
+      "name": "pressure_drifter",
+      "displayName": "Pressure Drifter",
+      "sourceRect": {
+        "left": 561,
+        "top": 231,
+        "width": 262,
+        "height": 218,
+        "cx": 692,
+        "cy": 340
+      },
+      "visiblePixels": 21152
+    },
+    {
+      "name": "void_swimmer",
+      "displayName": "Void Swimmer",
+      "sourceRect": {
+        "left": 711,
+        "top": 224,
+        "width": 294,
+        "height": 236,
+        "cx": 858,
+        "cy": 342
+      },
+      "visiblePixels": 23639
+    },
+    {
+      "name": "undertow_sage",
+      "displayName": "Undertow Sage",
+      "sourceRect": {
+        "left": 0,
+        "top": 376,
+        "width": 183,
+        "height": 276,
+        "cx": 91.5,
+        "cy": 514
+      },
+      "visiblePixels": 23223
+    },
+    {
+      "name": "stillwater_elder",
+      "displayName": "Stillwater Elder",
+      "sourceRect": {
+        "left": 98,
+        "top": 439,
+        "width": 280,
+        "height": 198,
+        "cx": 238,
+        "cy": 538
+      },
+      "visiblePixels": 23533
+    },
+    {
+      "name": "first_tide",
+      "displayName": "First Tide",
+      "sourceRect": {
+        "left": 285,
+        "top": 434,
+        "width": 306,
+        "height": 204,
+        "cx": 438,
+        "cy": 536
+      },
+      "visiblePixels": 27233
+    }
+  ],
+  "review": []
+}

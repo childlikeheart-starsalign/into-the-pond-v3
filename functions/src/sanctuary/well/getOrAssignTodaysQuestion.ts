@@ -8,8 +8,10 @@ import {
 import type { WellBankQuestion } from "./types";
 import {
   parseLocalDate,
+  parseOptionalChildId,
   recordWellAnalytics,
   requireUid,
+  resolveBirthDateForWell,
   userRef,
   wellStateRef,
 } from "./wellHelpers";
@@ -33,6 +35,7 @@ export type GetOrAssignTodaysQuestionResponse =
 export async function handleGetOrAssignTodaysQuestion(
   uid: string,
   localDate: string,
+  childId?: string | null,
 ): Promise<GetOrAssignTodaysQuestionResponse> {
   const parsedDate = parseLocalDate(localDate);
   if (!parsedDate) {
@@ -55,12 +58,10 @@ export async function handleGetOrAssignTodaysQuestion(
     const userSnap = await tx.get(userRef(uid));
     const userData = (userSnap.data() ?? {}) as Record<string, unknown>;
     applyOperationalCounterResetsInTransaction(tx, userRef(uid), userData);
-    const wellStateSnap = await tx.get(wellStateRef(uid));
-    const userProfile = userData as { childBirthDate?: string } | undefined;
+    const wellStateSnap = await tx.get(wellStateRef(uid, childId));
 
-    const birthDate = userProfile?.childBirthDate
-      ? parseBirthDate(userProfile.childBirthDate)
-      : null;
+    const birthRaw = await resolveBirthDateForWell(tx, uid, childId);
+    const birthDate = birthRaw ? parseBirthDate(birthRaw) : null;
     if (!birthDate) {
       return { success: false as const, error: "MISSING_BIRTH_DATE" as const };
     }
@@ -72,7 +73,7 @@ export async function handleGetOrAssignTodaysQuestion(
     const finalState = statePatch ? { ...wellState, ...statePatch } : wellState;
 
     if (statePatch) {
-      tx.set(wellStateRef(uid), finalState, { merge: true });
+      tx.set(wellStateRef(uid, childId), finalState, { merge: true });
     }
 
     const response = {
@@ -121,8 +122,12 @@ export async function handleGetOrAssignTodaysQuestion(
 
 export function getOrAssignTodaysQuestionCallable(
   authUid: string | undefined,
-  data: { localDate?: unknown },
+  data: { localDate?: unknown; childId?: unknown },
 ): Promise<GetOrAssignTodaysQuestionResponse> {
   const uid = requireUid(authUid);
-  return handleGetOrAssignTodaysQuestion(uid, String(data.localDate ?? ""));
+  return handleGetOrAssignTodaysQuestion(
+    uid,
+    String(data.localDate ?? ""),
+    parseOptionalChildId(data.childId),
+  );
 }

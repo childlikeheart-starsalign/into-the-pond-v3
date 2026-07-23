@@ -12,6 +12,17 @@ function fishingClaimWonderSource(claim) {
   if (claim.outcome === "miss") return "fishing_miss_consolation";
   return "fishing_catch";
 }
+function omitUndefined(value) {
+  return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined));
+}
+function fishingClaimLedgerMetadata(claim) {
+  return omitUndefined({
+    claimId: claim.id,
+    outcome: claim.outcome,
+    creatureTypeId: claim.creatureTypeId,
+    duplicate: claim.outcome === "duplicate",
+  });
+}
 function buildFishingClaimLedgerResult(input) {
   const {
     uid,
@@ -25,12 +36,7 @@ function buildFishingClaimLedgerResult(input) {
   } = input;
   const wonderSource = fishingClaimWonderSource(claim);
   const idempotencyKey = (0, economy_1.fishingClaimKey)(castId);
-  const metadata = {
-    claimId: claim.id,
-    outcome: claim.outcome,
-    creatureTypeId: claim.creatureTypeId,
-    duplicate: claim.outcome === "duplicate",
-  };
+  const metadata = fishingClaimLedgerMetadata(claim);
   if (claim.wonderAwarded > 0) {
     const { transaction } = (0, economy_1.applyWonderEarnInMemory)(account, {
       source: wonderSource,
@@ -44,6 +50,7 @@ function buildFishingClaimLedgerResult(input) {
       source: wonderSource,
       transaction,
       idempotencyKey,
+      correlationId: castId,
       metadata,
       deltaMaterials: { feather: materials },
     });
@@ -67,6 +74,7 @@ function buildFishingClaimLedgerResult(input) {
     source: wonderSource,
     transaction,
     idempotencyKey,
+    correlationId: castId,
     metadata,
     deltaMaterials: { feather: materials },
   });
@@ -78,7 +86,17 @@ function buildFishingClaimLedgerResult(input) {
 }
 /** Persistence only — no probability logic. Ledger commit is the causal anchor (Invariant 4). */
 async function applyFishingClaimInTransaction(tx, input) {
-  const { uid, userRef, data, claim, rodUiId, castId, idempotencyMiss } = input;
+  const {
+    uid,
+    userRef,
+    data,
+    claim,
+    rodUiId,
+    castId,
+    nextFishingPity,
+    idempotencyMiss,
+    counterResetPatch,
+  } = input;
   const rodId = (0, rodCatalog_1.uiRodIdToDomain)(rodUiId);
   const idempotencyKey = (0, economy_1.fishingClaimKey)(castId);
   const transactionId = `tx_${claim.id}`;
@@ -88,9 +106,11 @@ async function applyFishingClaimInTransaction(tx, input) {
   const effectiveWonderAwarded = Math.min(claim.wonderAwarded, remainingCap);
   const cappedClaim = { ...claim, wonderAwarded: effectiveWonderAwarded };
   const additionalUserPatch = {
+    ...(counterResetPatch ?? {}),
     activeCast: null,
     lastClaimedCastId: castId,
     fishingWonderToday: fishingWonderToday + effectiveWonderAwarded,
+    ...(nextFishingPity ? { fishingPity: nextFishingPity } : {}),
   };
   const claimSummary = {
     ...(0, fishingClaimPresentation_1.toClientClaimSummary)(claim),
@@ -128,7 +148,7 @@ async function applyFishingClaimInTransaction(tx, input) {
       });
     }
     tx.set(userRef.collection("fishingClaims").doc(claim.id), {
-      ...claim,
+      ...omitUndefined(claim),
       claimedAt: firestore_1.Timestamp.fromMillis(claim.claimedAt),
     });
     const analyticsRef = userRef.collection("sanctuaryAnalytics").doc();

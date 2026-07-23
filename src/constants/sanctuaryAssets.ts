@@ -12,6 +12,14 @@ export const SANCTUARY_TIME_OF_DAY_ORDER: SanctuaryTimeOfDay[] = [
   "night",
 ];
 
+/** Human-readable time-of-day for journal margin / header furniture. */
+export function formatSanctuaryTimeOfDayLabel(timeOfDay: SanctuaryTimeOfDay): string {
+  if (timeOfDay === "morning") return "Morning";
+  if (timeOfDay === "afternoon") return "Afternoon";
+  if (timeOfDay === "lateAfternoon") return "Late afternoon";
+  return "Night";
+}
+
 /** Avatar pose keys cycled in SanctuaryAvatar. */
 export const SANCTUARY_AVATAR_POSES = ["standing", "sitting", "fishing", "fishingLeft"] as const;
 export type SanctuaryAvatarPose = (typeof SANCTUARY_AVATAR_POSES)[number];

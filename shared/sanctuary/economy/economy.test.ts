@@ -125,10 +125,11 @@ test("idempotencyDocId sanitizes unsafe characters", () => {
 });
 
 test("callable idempotency key builders are stable", async () => {
-  const { castCreateKey, craftCollectKey, wellRerollKey, purchaseVerifyKey } =
+  const { castCreateKey, castCancelKey, craftCollectKey, wellRerollKey, purchaseVerifyKey } =
     await import("./callableIdempotencyKeys");
 
   assert.equal(castCreateKey("req-1"), "cast_create:req-1");
+  assert.equal(castCancelKey("cast_1"), "cast_cancel:cast_1");
   assert.equal(craftCollectKey("rare_fire"), "craft_collect:rare_fire");
   assert.equal(wellRerollKey("2026-06-22", "abc"), "well_reroll:2026-06-22:abc");
   assert.equal(purchaseVerifyKey("tx_99"), "purchase_verify:tx_99");

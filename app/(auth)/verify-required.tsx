@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AppState,
@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SanctuaryBreathingOverlay } from "@/src/components/auth/SanctuaryBreathingOverlay";
 import {
   AUTH_OPENING_GATE_ERROR,
+  AUTH_SIGN_IN_NEEDS_VERIFY,
   AUTH_VERIFY_REFRESH_A11Y,
   AUTH_VERIFY_RESEND_SUCCESS,
   AUTH_VERIFY_RETURN_SIGNUP,
@@ -58,14 +59,23 @@ const STATUS_LINE_HEIGHT = 24;
 const STILL_WAITING_FONT_SIZE = Math.round(STATUS_FONT_SIZE * 0.7);
 const STILL_WAITING_LINE_HEIGHT = Math.round(STATUS_LINE_HEIGHT * 0.7);
 
+function paramValue(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
 export default function VerifyRequiredScreen() {
   const { height: windowHeight } = useWindowDimensions();
   const { unlockGateForSession } = useAuthBoot();
   const frame = usePortrait916Layout("cover");
+  const params = useLocalSearchParams<{ from?: string | string[] }>();
+  const fromSignIn = paramValue(params.from) === "signin";
   const [resendBusy, setResendBusy] = useState(false);
   const [refreshBusy, setRefreshBusy] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(60);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(
+    fromSignIn ? AUTH_SIGN_IN_NEEDS_VERIFY : null,
+  );
   const [statusIsStillWaiting, setStatusIsStillWaiting] = useState(false);
   const [statusIsError, setStatusIsError] = useState(false);
   const dwellTrackedRef = useRef(false);
@@ -74,6 +84,13 @@ export default function VerifyRequiredScreen() {
   useEffect(() => {
     trackAuthVerifyPending();
   }, []);
+
+  useEffect(() => {
+    if (!fromSignIn) return;
+    setStatusMessage(AUTH_SIGN_IN_NEEDS_VERIFY);
+    setStatusIsStillWaiting(false);
+    setStatusIsError(false);
+  }, [fromSignIn]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

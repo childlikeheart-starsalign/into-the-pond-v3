@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, ImageBackground, LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
 import Svg, { Line, Path } from "react-native-svg";
 
+import { FieldNoteBorder } from "@/src/components/sanctuary/SanctuaryFieldNote";
 import { ATLAS_PAPER_TEXTURE } from "@/src/features/childAtlas/atlasAssets";
 import { fontFamilies } from "@/src/constants/theme";
 
@@ -11,7 +12,6 @@ export type FishingLockTooltipVariant = "bait" | "rod";
 const PARCHMENT = "#F6EBD7";
 const HEADING_INK = "#544D46";
 const BODY_INK = "#6A645D";
-const INK_STROKE = "rgba(75, 67, 60, 0.19)";
 
 const FIELD_NOTE_SCALE = 0.7;
 const s = (value: number) => value * FIELD_NOTE_SCALE;
@@ -49,52 +49,9 @@ const FIELD_NOTE_COPY = {
 
 type FishingLockTooltipProps = {
   variant: FishingLockTooltipVariant;
+  /** Optional override for body copy (e.g. out-of-stock bait). */
+  body?: string;
 };
-
-function buildIrregularBorderPath(width: number, height: number): string {
-  if (width <= 0 || height <= 0) return "";
-
-  const inset = 1;
-  const x = inset;
-  const y = inset;
-  const w = width - inset * 2;
-  const h = height - inset * 2;
-  const rTL = 2;
-  const rTR = 5;
-  const rBR = 4;
-  const rBL = 3;
-  const wobble = 0.35;
-
-  return [
-    `M ${x + rTL} ${y + wobble}`,
-    `L ${x + w - rTR - wobble * 0.5} ${y}`,
-    `Q ${x + w + wobble * 0.3} ${y + wobble} ${x + w} ${y + rTR}`,
-    `L ${x + w - wobble * 0.5} ${y + h - rBR}`,
-    `Q ${x + w - wobble} ${y + h + wobble * 0.2} ${x + w - rBR} ${y + h}`,
-    `L ${x + rBL + wobble} ${y + h - wobble * 0.5}`,
-    `Q ${x - wobble * 0.2} ${y + h} ${x} ${y + h - rBL}`,
-    `L ${x + wobble * 0.5} ${y + rTL}`,
-    `Q ${x} ${y - wobble * 0.2} ${x + rTL} ${y}`,
-    "Z",
-  ].join(" ");
-}
-
-function FieldNoteBorder({ width, height }: { width: number; height: number }) {
-  if (width <= 0 || height <= 0) return null;
-
-  return (
-    <Svg width={width} height={height} style={styles.borderSvg} pointerEvents="none">
-      <Path
-        d={buildIrregularBorderPath(width, height)}
-        fill="none"
-        stroke={INK_STROKE}
-        strokeWidth={1}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
 
 function FoldedPaperTab() {
   const tabWidth = s(7);
@@ -119,11 +76,14 @@ function FoldedPaperTab() {
   );
 }
 
-export function FishingLockTooltip({ variant }: FishingLockTooltipProps) {
+export function FishingLockTooltip({ variant, body }: FishingLockTooltipProps) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(DRIFT_PX)).current;
   const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
-  const copy = FIELD_NOTE_COPY[variant];
+  const copy = {
+    heading: FIELD_NOTE_COPY[variant].heading,
+    body: body ?? FIELD_NOTE_COPY[variant].body,
+  };
 
   useEffect(() => {
     opacity.setValue(0);
@@ -140,7 +100,7 @@ export function FishingLockTooltip({ variant }: FishingLockTooltipProps) {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [opacity, translateY, variant]);
+  }, [opacity, translateY, variant, body]);
 
   const handleCardLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -283,27 +243,21 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     alignSelf: "stretch",
   },
-  borderSvg: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-  },
   heading: {
     color: HEADING_INK,
-    fontFamily: fontFamilies.handwritten,
-    fontSize: s(16.5),
-    lineHeight: s(19),
+    fontFamily: fontFamilies.headingSemi,
+    fontSize: s(13),
+    lineHeight: s(16),
+    letterSpacing: -0.02 * s(13),
     textAlign: "left",
     alignSelf: "stretch",
     marginBottom: s(2),
-    opacity: 0.9,
   },
   body: {
     color: BODY_INK,
-    fontFamily: fontFamilies.headingRegular,
-    fontSize: s(12.5),
-    lineHeight: s(17.5),
-    letterSpacing: -0.02 * s(12.5),
+    fontFamily: fontFamilies.body,
+    fontSize: s(11),
+    lineHeight: s(15),
     textAlign: "left",
     alignSelf: "stretch",
   },

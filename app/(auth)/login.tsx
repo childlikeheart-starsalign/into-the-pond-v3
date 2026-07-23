@@ -26,6 +26,7 @@ import { normRectToStyle, signInHitRects } from "@/src/constants/signInArtboard"
 import { useSignInArrival } from "@/src/contexts/SignInArrivalContext";
 import { useAppleSignIn } from "@/src/hooks/auth/useAppleSignIn";
 import { useGoogleSignIn } from "@/src/hooks/auth/useGoogleSignIn";
+import { useAuthSoftDenyOnError } from "@/src/hooks/useAuthSoftDenyOnError";
 import { SANCTUARY_STAGE_MODE, usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import { AnalyticsPrivacySection } from "@/src/features/gate/components/AnalyticsPrivacySection";
@@ -40,6 +41,8 @@ import {
   signInWithEmailForLoginScreen,
 } from "@/src/services/firebase/signInClassification";
 import { maybeMarkCelebrationForReturningUser } from "@/src/services/onboarding/maybeMarkCelebrationForReturningUser";
+import { playAuthSoftDeny } from "@/src/services/audio/authSounds";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 import { Sentry } from "@/src/services/sentry/init";
 
 const signInMedia = media.auth.signIn;
@@ -104,9 +107,11 @@ export function SignInScreen() {
     setGeneralError(null);
     if (!isEmailFormatValid) {
       setEmailError(AUTH_INVALID_EMAIL_FORMAT);
+      void playAuthSoftDeny();
       return;
     }
 
+    playPaperClick();
     Keyboard.dismiss();
     startArtboard();
 
@@ -119,7 +124,7 @@ export function SignInScreen() {
 
       if (!result.user.emailVerified) {
         cancel();
-        router.replace(routes.verifyRequired);
+        router.replace({ pathname: "/verify-required", params: { from: "signin" } });
         return;
       }
 
@@ -135,14 +140,14 @@ export function SignInScreen() {
       Sentry.captureException(e, { tags: { area: "auth", flow: "sign_in_email" } });
       const code =
         e && typeof e === "object" && "code" in e ? String((e as { code?: string }).code) : "";
-      trackAuthSigninFailed({ errorCode: code || "unknown", authMethod: "email" });
       const mapped = mapSignInScreenError(e);
+      trackAuthSigninFailed({ errorCode: code || "unknown", authMethod: "email" });
       if (mapped.emailError) {
         setEmailError(mapped.emailError);
       } else if (mapped.passwordError) {
         setPasswordError(mapped.passwordError);
       } else {
-        setGeneralError(AUTH_UNKNOWN_ERROR);
+        setGeneralError(mapped.generalError ?? AUTH_UNKNOWN_ERROR);
       }
       cancel();
     }
@@ -153,6 +158,7 @@ export function SignInScreen() {
     setEmailError(null);
     setPasswordError(null);
     setGeneralError(null);
+    playPaperClick();
     Keyboard.dismiss();
     startArtboard();
 
@@ -172,7 +178,7 @@ export function SignInScreen() {
 
       if (!result.user.emailVerified) {
         cancel();
-        router.replace(routes.verifyRequired);
+        router.replace({ pathname: "/verify-required", params: { from: "signin" } });
         return;
       }
 
@@ -196,6 +202,7 @@ export function SignInScreen() {
     setEmailError(null);
     setPasswordError(null);
     setGeneralError(null);
+    playPaperClick();
     Keyboard.dismiss();
     startArtboard();
 
@@ -215,7 +222,7 @@ export function SignInScreen() {
 
       if (!result.user.emailVerified) {
         cancel();
-        router.replace(routes.verifyRequired);
+        router.replace({ pathname: "/verify-required", params: { from: "signin" } });
         return;
       }
 
@@ -265,6 +272,8 @@ export function SignInScreen() {
   };
 
   const inputsLocked = signInArrivalActive || appleLoading || googleLoading;
+
+  useAuthSoftDenyOnError([emailError, passwordError, generalError, appleError, googleError]);
 
   return (
     <AuthArtboardScreen

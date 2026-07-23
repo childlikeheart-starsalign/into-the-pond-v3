@@ -14,7 +14,17 @@ export const FEATURE_FLAG_NAMES = {
   createChildProfileUi: "createChildProfileUi",
   /** New split-prologue dialogue onboarding (Gate → /prologue → signup → Part 2). */
   newOnboardingEnabled: "newOnboardingEnabled",
+  /**
+   * Child switcher result peek (view without switch).
+   * Default off — do not flip in feature PRs; allowlist is a separate ops action.
+   */
+  childResultPeek: "childResultPeek",
+  /**
+   * Pond Ripple CatalogRarityRing claim ceremony.
+   * Default off — allowlist only after Lifetime=3 product confirm (on9);
+   * do not flip to `all` in feature PRs. Seed: `--flag=catalogRarityRingUi --state=off`.
+   */
+  catalogRarityRingUi: "catalogRarityRingUi",
 } as const;
 
-export type KnownFeatureFlagName =
-  (typeof FEATURE_FLAG_NAMES)[keyof typeof FEATURE_FLAG_NAMES];
+export type KnownFeatureFlagName = (typeof FEATURE_FLAG_NAMES)[keyof typeof FEATURE_FLAG_NAMES];

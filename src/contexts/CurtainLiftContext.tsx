@@ -19,6 +19,11 @@ import {
   type SanctuarySceneLayer,
 } from "@/src/constants/curtainLift";
 import { prefetchSanctuaryScene } from "@/src/services/sanctuary/prefetchSanctuaryScene";
+import {
+  maybePlaySanctuaryFirstRevealTheme,
+  stopSanctuaryFirstRevealTheme,
+} from "@/src/services/audio/sanctuaryThemeSound";
+import { firebaseAuth } from "@/src/services/firebase/client";
 
 export type CurtainPhase = "idle" | "video" | "bridge" | "reveal";
 
@@ -89,6 +94,7 @@ export function CurtainLiftProvider({ children }: { children: ReactNode }) {
     bridgeCompleteRef.current = false;
     revealStartedRef.current = false;
     videoOpacity.setValue(1);
+    void stopSanctuaryFirstRevealTheme();
     callback?.();
   }, [curtainOpacity, sanctuaryRevealOpacity, videoOpacity]);
 
@@ -173,6 +179,8 @@ export function CurtainLiftProvider({ children }: { children: ReactNode }) {
     videoOpacity.setValue(0);
 
     const reduceMotion = await AccessibilityInfo.isReduceMotionEnabled();
+    const uid = firebaseAuth.currentUser?.uid;
+    void maybePlaySanctuaryFirstRevealTheme(uid, { skipForReduceMotion: reduceMotion });
     const duration = reduceMotion ? 0 : CURTAIN_REVEAL_FADE_MS;
 
     if (duration === 0) {

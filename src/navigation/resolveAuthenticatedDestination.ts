@@ -24,6 +24,29 @@ export type AuthDestinationInput = {
   /** Signed-out only: true after user taps key on Gate this session. */
   gateUnlockedThisSession?: boolean;
   deletionStatus?: DeletionStatus;
+  /**
+   * Flag B (plan §6–8): when create-child-profile UI is on, first-run accounts
+   * with zero childrenSummary entries route here before narrative.
+   * Leave undefined / ready:false while summary is still loading.
+   */
+  childProfile?: {
+    flagEnabled: boolean;
+    ready: boolean;
+    needsCreate: boolean;
+  };
+  /**
+   * New split-prologue onboarding. Incomplete Part 2 routes to
+   * /prologue-continuation before childProfile.needsCreate.
+   * Legacy users with hasCompletedDay1Narrative never enter this branch.
+   */
+  newOnboarding?: {
+    flagEnabled: boolean;
+    ready: boolean;
+    /** True when Part 2 still needs to run for this account. */
+    needsContinuation: boolean;
+    /** Legacy completion — treat as onboarding-complete without backfill. */
+    legacyComplete: boolean;
+  };
 };
 
 const AUTH_ENTRY_PATHS = new Set([
@@ -36,9 +59,12 @@ const AUTH_ENTRY_PATHS = new Set([
   "/verify-required",
   "/email-verified",
   "/deletion-pending",
+  "/create-child-profile",
+  "/prologue",
+  "/prologue-continuation",
 ]);
 
-const SIGNED_OUT_AUTH_PATHS = new Set(["/signup", "/login", "/forgot-password"]);
+const SIGNED_OUT_AUTH_PATHS = new Set(["/signup", "/login", "/forgot-password", "/prologue"]);
 
 const AUTH_ACTION_PATHS = new Set(["/finish-email", "/reset-password"]);
 
@@ -74,7 +100,13 @@ export function resolveAuthenticatedDestination(input: AuthDestinationInput): Hr
     pendingAuthDeepLink = null,
     gateUnlockedThisSession = false,
     deletionStatus = "active",
+    childProfile,
+    newOnboarding,
   } = input;
+
+  if (__DEV__ && pathname === "/archetype-map-fixture") {
+    return null;
+  }
 
   if (uid && emailVerified && !sanctuaryInitialized) {
     if (getAuthInitPhase() === "initializing") {
@@ -148,6 +180,26 @@ export function resolveAuthenticatedDestination(input: AuthDestinationInput): Hr
     return routes.emailVerified;
   }
 
+  // New onboarding Part 2 — before Flag B needsCreate (legacy complete bypasses).
+  if (newOnboarding?.flagEnabled && !newOnboarding.legacyComplete) {
+    if (!newOnboarding.ready) {
+      return null;
+    }
+    if (newOnboarding.needsContinuation) {
+      return pathEquals(pathname, routes.prologueContinuation) ? null : routes.prologueContinuation;
+    }
+  }
+
+  // Flag B first-run: sealed Create Child Profile before Day 1 narrative (plan §6).
+  if (childProfile?.flagEnabled) {
+    if (!childProfile.ready) {
+      return null;
+    }
+    if (childProfile.needsCreate) {
+      return pathEquals(pathname, routes.createChildProfile) ? null : routes.createChildProfile;
+    }
+  }
+
   const needsArchetype = sync?.needsArchetype ?? narrative.needsArchetype;
   const needsBirthDate = sync?.needsBirthDate ?? narrative.needsBirthDate;
   const needsNarrative = sync?.needsNarrative ?? narrative.needsNarrative;
@@ -157,12 +209,20 @@ export function resolveAuthenticatedDestination(input: AuthDestinationInput): Hr
     return null;
   }
 
-  if (needsArchetype || needsBirthDate || needsNarrative) {
+  // When new onboarding completed Part 2, skip legacy narrative gate.
+  const skipLegacyNarrative =
+    newOnboarding?.flagEnabled === true &&
+    (newOnboarding.legacyComplete || !newOnboarding.needsContinuation);
+
+  if (!skipLegacyNarrative && (needsArchetype || needsBirthDate || needsNarrative)) {
     return pathEquals(pathname, routes.narrativeOnboarding) ? null : routes.narrativeOnboarding;
   }
 
   const shouldLeaveAuthOrNarrative =
-    isAuthEntryPath(pathname) || pathEquals(pathname, routes.narrativeOnboarding);
+    isAuthEntryPath(pathname) ||
+    pathEquals(pathname, routes.narrativeOnboarding) ||
+    pathEquals(pathname, routes.createChildProfile) ||
+    pathEquals(pathname, routes.prologueContinuation);
 
   if (shouldLeaveAuthOrNarrative) {
     return routes.sanctuary;

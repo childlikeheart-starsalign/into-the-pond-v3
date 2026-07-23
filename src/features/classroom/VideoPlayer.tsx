@@ -40,6 +40,7 @@ export function VideoPlayerModal({ video, onClose, onContinueToReflection }: Vid
   const [durationMillis, setDurationMillis] = useState(0);
   const [isSavingCompletion, setIsSavingCompletion] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const hideControlsSoon = useCallback(() => {
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -68,6 +69,7 @@ export function VideoPlayerModal({ video, onClose, onContinueToReflection }: Vid
     setLeaveSheetVisible(false);
     setIsSavingCompletion(false);
     setSaveError(null);
+    setLoadError(null);
     setIsPlaying(true);
     setPositionMillis(0);
     setDurationMillis(0);
@@ -94,8 +96,17 @@ export function VideoPlayerModal({ video, onClose, onContinueToReflection }: Vid
 
   const handlePlaybackStatus = useCallback(
     (status: AVPlaybackStatus) => {
-      if (!status.isLoaded) return;
+      if (!status.isLoaded) {
+        if ("error" in status && status.error) {
+          setLoadError("Video failed to load. Check your connection or try again.");
+          if (__DEV__) {
+            console.warn("[Classroom] video load failed", status.error);
+          }
+        }
+        return;
+      }
 
+      setLoadError(null);
       const currentPosition = status.positionMillis ?? 0;
       const currentDuration = status.durationMillis ?? 0;
       setPositionMillis(currentPosition);
@@ -173,10 +184,15 @@ export function VideoPlayerModal({ video, onClose, onContinueToReflection }: Vid
               progressUpdateIntervalMillis={250}
               accessibilityLabel={`Video for ${lesson.title}`}
             />
+            {loadError ? (
+              <View style={styles.errorOverlay}>
+                <Text style={styles.emptyText}>{loadError}</Text>
+              </View>
+            ) : null}
           </Pressable>
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No video URL configured.</Text>
+            <Text style={styles.emptyText}>{loadError ?? "No video URL configured."}</Text>
           </View>
         )}
 
@@ -259,6 +275,13 @@ const styles = StyleSheet.create({
   video: {
     flex: 1,
     alignSelf: "stretch",
+  },
+  errorOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: spacing.inner,
+    backgroundColor: "rgba(31, 26, 23, 0.72)",
   },
   emptyState: {
     flex: 1,

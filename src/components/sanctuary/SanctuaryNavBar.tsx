@@ -5,6 +5,7 @@ import { Image, Pressable, StyleSheet, View, type ImageSourcePropType } from "re
 import { SANCTUARY_NAV_TABS, type SanctuaryNavTab } from "@/src/constants/sanctuaryAssets";
 import { NAV_ICON_LAYOUT } from "@/src/constants/sanctuaryNavLayout";
 import { routes } from "@/src/navigation/routes";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 
 const TAB_ROUTES = {
   net: routes.net,
@@ -73,9 +74,12 @@ export function SanctuaryNavBar({ embedded = false }: { embedded?: boolean }) {
 
   const navigate = useCallback(
     (id: SanctuaryNavTab["id"]) => {
+      if (id !== activeTab) {
+        playPaperClick();
+      }
       router.replace(TAB_ROUTES[id]);
     },
-    [router],
+    [router, activeTab],
   );
 
   return (

@@ -1,13 +1,14 @@
-import { config } from "firebase-functions";
-
-const runtimeConfig = config();
-
+/**
+ * Runtime settings for Cloud Functions v2.
+ * Prefer process.env — `functions.config()` throws at module load on Functions v2
+ * and breaks every callable healthcheck (including createCast).
+ */
 export const SETTINGS = {
   revenueCat: {
-    apiKey: runtimeConfig.revenuecat?.secret_key ?? "",
-    entitlementPro: runtimeConfig.revenuecat?.entitlement_pro ?? "into_the_pond_pro",
-    entitlementWooden: runtimeConfig.revenuecat?.entitlement_wooden ?? "wooden_rod",
-    entitlementFiberglass: runtimeConfig.revenuecat?.entitlement_fiberglass ?? "fiberglass_rod",
-    entitlementLifetime: runtimeConfig.revenuecat?.entitlement_lifetime ?? "lifetime_keeper",
+    apiKey: process.env.REVENUECAT_SECRET_KEY ?? process.env.REVENUECAT_API_KEY ?? "",
+    entitlementPro: process.env.REVENUECAT_ENTITLEMENT_PRO ?? "into_the_pond_pro",
+    entitlementWooden: process.env.REVENUECAT_ENTITLEMENT_WOODEN ?? "wooden_rod",
+    entitlementFiberglass: process.env.REVENUECAT_ENTITLEMENT_FIBERGLASS ?? "fiberglass_rod",
+    entitlementLifetime: process.env.REVENUECAT_ENTITLEMENT_LIFETIME ?? "lifetime_keeper",
   },
 };

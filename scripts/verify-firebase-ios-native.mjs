@@ -90,27 +90,6 @@ if (!fs.existsSync(googleServicePlistPath)) {
   );
 }
 
-// #region agent log
-const debugPayload = {
-  sessionId: "9a93e5",
-  runId: "pre-fix",
-  hypothesisId: "H3",
-  location: "verify-firebase-ios-native.mjs:bundle-resources",
-  message: "firebase ios plist bundle check",
-  data: {
-    plistOnDisk: true,
-    plistInPbxResources: pbxproj.includes("GoogleService-Info.plist in Resources"),
-    pbxprojPath: path.relative(repoRoot, pbxprojPath),
-  },
-  timestamp: Date.now(),
-};
-fetch("http://127.0.0.1:7331/ingest/f0a22a23-9c52-461e-a2e7-e25d9388c16a", {
-  method: "POST",
-  headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9a93e5" },
-  body: JSON.stringify(debugPayload),
-}).catch(() => {});
-// #endregion
-
 const requiredSpmProducts = [
   "FirebaseAnalytics",
   "FirebaseAuth",

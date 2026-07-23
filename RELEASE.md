@@ -79,15 +79,16 @@ See [`docs/responsive-qa.md`](docs/responsive-qa.md).
 
 ## Account deletion (required for store)
 
-- [ ] Signed-in: Sanctuary Gate → scroll to **Delete account** → confirm sheet → sign out
-- [ ] Re-login during 30-day grace → **Deletion pending** screen → **Cancel deletion** restores profile
-- [ ] Signed-out: login footer **Delete account** opens `https://intothepond.app/delete-account` (unchecked until page is hosted)
-- [ ] Web form returns generic success (no email enumeration)
+- [x] Signed-in: Sanctuary Gate → scroll to **Delete account** → confirm sheet → sign out
+- [ ] Re-login during 30-day grace → **Deletion pending** → **Keep my sanctuary** restores profile
+- [ ] Signed-out: login footer **Delete account** opens `https://intothepond.app/delete-account`
+- [ ] Web: email form → Resend confirmation → confirm link → pending; unknown email still shows generic success
+- [ ] Paste `https://intothepond.app/delete-account` into App Store Connect / Play Console
 - [ ] `npm run test:firestore-rules` includes `deletion_requests` deny tests
 
 **Policy:** Profile and journal content removed immediately on request. 30-day grace to cancel; permanent purge after. Subscriptions must be cancelled separately in App Store / Google Play. Financial records retained without PII per privacy policy.
 
-Deploy env: set `ACCOUNT_DELETION_SECRET` in functions `.env` before enabling deletion in production.
+Deploy env: inject `ACCOUNT_DELETION_SECRET`, `ACCOUNT_DELETION_ENABLED=true`, `RESEND_API_KEY`, and `RESEND_FROM_EMAIL` into `functions/.env.into-the-pond` for deploy, then scrub (see `functions/.env.example` and [`docs/firebase-hosting-delete-account.md`](docs/firebase-hosting-delete-account.md)).
 
 ## iOS privacy manifest
 

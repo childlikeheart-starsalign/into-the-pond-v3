@@ -83,7 +83,8 @@ function assertActiveCastReadyForClaim(cast, castId) {
 async function executeClaimCastInTransaction(tx, uid, userRef) {
   const userSnap = await tx.get(userRef);
   const data = userSnap.data() ?? {};
-  (0, dailyCounters_1.applyOperationalCounterResetsInTransaction)(tx, userRef, data);
+  // Defer counter reset into applyFishingClaim's final user write — more reads follow.
+  const counterResetPatch = (0, dailyCounters_1.buildOperationalCounterResetPatch)(data);
   const castId = resolveClaimCastId(data);
   if (!castId) {
     throw new https_1.HttpsError("failed-precondition", "No active cast to claim");
@@ -109,7 +110,7 @@ async function executeClaimCastInTransaction(tx, uid, userRef) {
   const creaturesSnap = await tx.get(userRef.collection("creatures"));
   const caughtIds = new Set(creaturesSnap.docs.map((doc) => doc.id));
   const currentWonderAtClaim = data.currentWonder ?? data.totalWonder ?? 0;
-  const claim = (0, buildFishingClaimContext_1.resolveFishingClaimFromContext)({
+  const claimResult = (0, buildFishingClaimContext_1.resolveFishingClaimFromContext)({
     claimId: fishingClaimDocId(castId),
     encounterId: castId,
     userId: uid,
@@ -119,15 +120,18 @@ async function executeClaimCastInTransaction(tx, uid, userRef) {
     currentWonderAtClaim,
     caughtIds,
     creatureCatalog: creatureCatalog_1.CREATURE_REFS,
+    fishingPity: data.fishingPity,
   });
   const claimSummary = await (0, applyFishingClaim_1.applyFishingClaimInTransaction)(tx, {
     uid,
     userRef,
     data,
-    claim,
+    claim: claimResult.claim,
     rodUiId: cast.rodType ?? "basic",
     castId,
+    nextFishingPity: claimResult.nextFishingPity,
     idempotencyMiss: { hit: false },
+    counterResetPatch,
   });
   return { claimSummary };
 }

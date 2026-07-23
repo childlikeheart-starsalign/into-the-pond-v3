@@ -12,6 +12,7 @@ exports.practiceKey = practiceKey;
 exports.baitCraftKey = baitCraftKey;
 exports.diaryKey = diaryKey;
 exports.castCreateKey = castCreateKey;
+exports.castCancelKey = castCancelKey;
 exports.wellAssignKey = wellAssignKey;
 exports.wellRerollKey = wellRerollKey;
 exports.purchaseVerifyKey = purchaseVerifyKey;
@@ -45,6 +46,9 @@ function diaryKey(requestId) {
 }
 function castCreateKey(requestId) {
   return `cast_create:${requestId}`;
+}
+function castCancelKey(castId) {
+  return `cast_cancel:${castId}`;
 }
 function wellAssignKey(localDate) {
   return `well_assign:${localDate}`;

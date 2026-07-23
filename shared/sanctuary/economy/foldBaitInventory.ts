@@ -40,7 +40,25 @@ function isConsumableBaitKey(value: string): value is ConsumableBaitKey {
   return (CONSUMABLE_BAIT_KEYS as readonly string[]).includes(value);
 }
 
-/** Replay bait stacks from ledger audit rows (bait_craft + cast_create). */
+/** UI / legacy bait ids → inventory keys (mirrors createCast deduction). */
+const UI_BAIT_TO_INVENTORY_KEY: Record<string, ConsumableBaitKey> = {
+  bait_mid: "scale_bait",
+  bait_premium: "glimmerdust_bait",
+  feather_bait: "feather_bait",
+  scale_bait: "scale_bait",
+  glimmerdust_bait: "glimmerdust_bait",
+};
+
+export function inventoryKeyFromCastBaitUsed(baitUsed: string): ConsumableBaitKey | null {
+  const normalized = baitUsed.trim();
+  if (!normalized || normalized === "random_bait" || normalized === "bait_basic") {
+    return null;
+  }
+  const key = UI_BAIT_TO_INVENTORY_KEY[normalized];
+  return key && isConsumableBaitKey(key) ? key : null;
+}
+
+/** Replay bait stacks from ledger audit rows (bait_craft + cast_create + cast_cancel). */
 export function foldBaitInventoryFromLedger(
   entries: EconomyLedgerEntry[],
 ): Record<ConsumableBaitKey, number> {
@@ -57,9 +75,18 @@ export function foldBaitInventoryFromLedger(
 
     if (entry.actionType === "cast_create" && metadata.baitDeducted === true) {
       const baitUsed = typeof metadata.baitUsed === "string" ? metadata.baitUsed.trim() : "";
-      if (baitUsed && baitUsed !== "random_bait" && isConsumableBaitKey(baitUsed)) {
-        baits[baitUsed] -= 1;
-      }
+      const key = inventoryKeyFromCastBaitUsed(baitUsed);
+      if (key) baits[key] -= 1;
+      continue;
+    }
+
+    if (entry.actionType === "cast_cancel" && metadata.baitRefunded === true) {
+      const baitUsed = typeof metadata.baitUsed === "string" ? metadata.baitUsed.trim() : "";
+      const key =
+        (typeof metadata.baitKey === "string" && isConsumableBaitKey(metadata.baitKey)
+          ? metadata.baitKey
+          : null) ?? inventoryKeyFromCastBaitUsed(baitUsed);
+      if (key) baits[key] += 1;
     }
   }
 

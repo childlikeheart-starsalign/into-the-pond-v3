@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { doc, updateDoc } from "firebase/firestore";
 
 import { posthog } from "@/src/services/analytics/posthogClient";
-import { firebaseAuth, firestore } from "@/src/services/firebase/client";
+import { firebaseAuth } from "@/src/services/firebase/client";
+import { setDocument } from "@/src/services/firebase/firestore";
 
 const STORAGE_KEY = "@itp/analytics_opt_out";
 
@@ -43,7 +43,7 @@ async function syncAnalyticsOptOutToUserDoc(optOut: boolean): Promise<void> {
   const uid = firebaseAuth.currentUser?.uid;
   if (!uid) return;
   try {
-    await updateDoc(doc(firestore, "users", uid), { analyticsOptOut: optOut });
+    await setDocument("users", uid, { analyticsOptOut: optOut });
   } catch {
     /* Firestore may be unavailable offline — client opt-out still applies */
   }

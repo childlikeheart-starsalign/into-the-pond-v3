@@ -1,0 +1,195 @@
+{
+  "sheet": "rare_fire",
+  "source": "rare_fire_creatures_30-43-97a3cb65-d822-425d-8266-6cea0ccc30f5.png",
+  "paper": [
+    228,
+    198,
+    157
+  ],
+  "count": 14,
+  "exports": [
+    {
+      "name": "ember_darter",
+      "displayName": "Ember Darter",
+      "sourceRect": {
+        "left": 32,
+        "top": 45,
+        "width": 224,
+        "height": 154,
+        "cx": 144,
+        "cy": 122
+      },
+      "visiblePixels": 7514
+    },
+    {
+      "name": "cinder_veil",
+      "displayName": "Cinder Veil",
+      "sourceRect": {
+        "left": 162,
+        "top": 51,
+        "width": 212,
+        "height": 134,
+        "cx": 268,
+        "cy": 118
+      },
+      "visiblePixels": 13380
+    },
+    {
+      "name": "flare_scout",
+      "displayName": "Flare Scout",
+      "sourceRect": {
+        "left": 326,
+        "top": 54,
+        "width": 188,
+        "height": 116,
+        "cx": 420,
+        "cy": 112
+      },
+      "visiblePixels": 10585
+    },
+    {
+      "name": "hearthfin",
+      "displayName": "Hearthfin",
+      "sourceRect": {
+        "left": 474,
+        "top": 46,
+        "width": 212,
+        "height": 160,
+        "cx": 580,
+        "cy": 126
+      },
+      "visiblePixels": 17238
+    },
+    {
+      "name": "scorchtail",
+      "displayName": "Scorchtail",
+      "sourceRect": {
+        "left": 628,
+        "top": 53,
+        "width": 224,
+        "height": 122,
+        "cx": 740,
+        "cy": 114
+      },
+      "visiblePixels": 12776
+    },
+    {
+      "name": "soot_drifter",
+      "displayName": "Soot Drifter",
+      "sourceRect": {
+        "left": 0,
+        "top": 276,
+        "width": 227,
+        "height": 128,
+        "cx": 113.5,
+        "cy": 340
+      },
+      "visiblePixels": 14627
+    },
+    {
+      "name": "forge_wraith",
+      "displayName": "Forge Wraith",
+      "sourceRect": {
+        "left": 177,
+        "top": 285,
+        "width": 238,
+        "height": 122,
+        "cx": 296,
+        "cy": 346
+      },
+      "visiblePixels": 12403
+    },
+    {
+      "name": "cinderback",
+      "displayName": "Cinderback",
+      "sourceRect": {
+        "left": 351,
+        "top": 263,
+        "width": 250,
+        "height": 154,
+        "cx": 476,
+        "cy": 340
+      },
+      "visiblePixels": 15891
+    },
+    {
+      "name": "heatwave_glide",
+      "displayName": "Heatwave Glide",
+      "sourceRect": {
+        "left": 558,
+        "top": 268,
+        "width": 212,
+        "height": 148,
+        "cx": 664,
+        "cy": 342
+      },
+      "visiblePixels": 13434
+    },
+    {
+      "name": "tinder_swift",
+      "displayName": "Tinder Swift",
+      "sourceRect": {
+        "left": 750,
+        "top": 270,
+        "width": 256,
+        "height": 140,
+        "cx": 878,
+        "cy": 340
+      },
+      "visiblePixels": 15458
+    },
+    {
+      "name": "ashwing",
+      "displayName": "Ashwing",
+      "sourceRect": {
+        "left": 0,
+        "top": 479,
+        "width": 221,
+        "height": 134,
+        "cx": 110.5,
+        "cy": 546
+      },
+      "visiblePixels": 12892
+    },
+    {
+      "name": "solstice_runner",
+      "displayName": "Solstice Runner",
+      "sourceRect": {
+        "left": 186,
+        "top": 468,
+        "width": 212,
+        "height": 148,
+        "cx": 292,
+        "cy": 542
+      },
+      "visiblePixels": 13038
+    },
+    {
+      "name": "blaze_tender",
+      "displayName": "Blaze Tender",
+      "sourceRect": {
+        "left": 342,
+        "top": 464,
+        "width": 280,
+        "height": 148,
+        "cx": 482,
+        "cy": 538
+      },
+      "visiblePixels": 17416
+    },
+    {
+      "name": "coal_sentinel",
+      "displayName": "Coal Sentinel",
+      "sourceRect": {
+        "left": 555,
+        "top": 471,
+        "width": 274,
+        "height": 134,
+        "cx": 692,
+        "cy": 538
+      },
+      "visiblePixels": 15650
+    }
+  ],
+  "review": []
+}

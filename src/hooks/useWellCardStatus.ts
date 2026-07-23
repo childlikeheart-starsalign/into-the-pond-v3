@@ -10,6 +10,7 @@ import {
   type WellCardStatus,
 } from "@/src/features/well/wellCardStatus";
 import { firestore } from "@/src/services/firebase/client";
+import { Sentry } from "@/src/services/sentry/init";
 
 export type UseWellCardStatusResult = {
   status: WellCardStatus | null;
@@ -31,13 +32,28 @@ export function useWellCardStatus(
       setAsked(false);
       return;
     }
-    void getWellAskedFlag(uid, localDate, questionId).then(setAsked);
+    let mounted = true;
+    void getWellAskedFlag(uid, localDate, questionId).then((flag) => {
+      if (mounted) setAsked(flag);
+    });
+    return () => {
+      mounted = false;
+    };
   }, [uid, localDate, questionId, tick]);
 
   useEffect(() => {
     if (!uid) return;
     const ref = doc(firestore, "users", uid, "wellState", "current");
-    const unsub = onSnapshot(ref, () => setTick((t) => t + 1));
+    const unsub = onSnapshot(
+      ref,
+      () => setTick((t) => t + 1),
+      (error) => {
+        console.warn("[WellCardStatus] wellState snapshot failed", error);
+        Sentry.captureException(error, {
+          tags: { area: "well", flow: "well_card_status_snapshot" },
+        });
+      },
+    );
     return unsub;
   }, [uid]);
 

@@ -2,17 +2,17 @@
 
 ## Configuration status
 
-| Step                                    | Status      | Notes                                                                                                               |
-| --------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------- |
-| 1. Sentry org/project created           | Done        | `childlike-heart` / `react-native`                                                                                  |
-| 2. Org/project placeholders replaced    | Done        | [`app.config.js`](../app.config.js) (deduped plugin), [`eas.json`](../eas.json) `production.env`                    |
-| 3. EAS env vars for DSN + auth token    | Done        | `EXPO_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` on `@childlike-heart/into-the-pond-v3` production env                |
-| 4. EAS project linked                   | Done        | `extra.eas.projectId` in [`app.json`](../app.json); `owner: childlike-heart` in [`app.config.js`](../app.config.js) |
-| 5a. iOS export encryption (`infoPlist`) | Done        | `ITSAppUsesNonExemptEncryption: false` in [`app.json`](../app.json) — fixes EAS encryption prompt crash             |
-| 5. Production iOS build                 | **Blocked** | **Apple Developer Program not enrolled** for the Apple ID used in EAS (`fungchj@gmail.com`)                         |
-| 6. Sentry release + source maps         | Pending     | Blocked on step 5                                                                                                   |
-| 7. Test crash + symbolicated stack      | Pending     | Deep-link route after TestFlight install; remove route only after dashboard proof                                   |
-| 8. Crash route removed                  | Pending     | [`app/sentry-verification-crash.tsx`](../app/sentry-verification-crash.tsx) still present                           |
+| Step                                    | Status    | Notes                                                                                                                                             |
+| --------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Sentry org/project created           | Done      | `childlike-heart` / `react-native`                                                                                                                |
+| 2. Org/project placeholders replaced    | Done      | [`app.config.js`](../app.config.js) (deduped plugin), [`eas.json`](../eas.json) `production.env`                                                  |
+| 3. EAS env vars for DSN + auth token    | Done      | `EXPO_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` on `@childlike-heart/into-the-pond-v3` production env                                              |
+| 4. EAS project linked                   | Done      | `extra.eas.projectId` in [`app.json`](../app.json); `owner: childlike-heart` in [`app.config.js`](../app.config.js)                               |
+| 5a. iOS export encryption (`infoPlist`) | Done      | `ITSAppUsesNonExemptEncryption: false` in [`app.json`](../app.json) — fixes EAS encryption prompt crash                                           |
+| 5. Production iOS build                 | **Ready** | Apple Developer Program **Active** (`fungchj@gmail.com`, team `77T4Z7QUTV`). Run production credentials + build when ready for TestFlight/Sentry. |
+| 6. Sentry release + source maps         | Pending   | Blocked on step 5                                                                                                                                 |
+| 7. Test crash + symbolicated stack      | Pending   | Deep-link route after TestFlight install; remove route only after dashboard proof                                                                 |
+| 8. Crash route removed                  | Pending   | [`app/sentry-verification-crash.tsx`](../app/sentry-verification-crash.tsx) still present                                                         |
 
 Local (gitignored): `EXPO_PUBLIC_SENTRY_DSN` in `.env`; `SENTRY_AUTH_TOKEN` in `.env.local`. Do not commit real values.
 
@@ -20,7 +20,7 @@ Local (gitignored): `EXPO_PUBLIC_SENTRY_DSN` in `.env`; `SENTRY_AUTH_TOKEN` in `
 
 - **EAS CLI:** use `npx eas-cli`, not global `eas` (not installed on this machine).
 - **Secrets:** live only in `.env`, `.env.local`, and EAS production env — never in [`app.json`](../app.json), [`eas.json`](../eas.json), or git commits. If EAS init writes secrets into `app.json`, revert before committing (keep placeholders + `extra.eas.projectId` only).
-- **Apple Developer Program:** required before steps 5–8. Currently **not enrolled** — production build and TestFlight verification are deferred.
+- **Apple Developer Program:** Membership **Active** for `fungchj@gmail.com` (team `77T4Z7QUTV`). Preview iOS credentials already work; production build (steps 5–8) still needs an explicit production EAS run.
 - **Auth token:** org-scoped token in `.env.local` (`sntrys_…`) is used for EAS source-map upload. A user auth token (`sntryu_…`) pasted in chat returned 403 and should be **revoked** in Sentry → Settings → Auth Tokens. Do not paste tokens into chat or committed files.
 
 ## Token rotation (manual)
@@ -37,9 +37,9 @@ npx eas-cli env:create production \
   --visibility secret --scope project --environment production --non-interactive --force
 ```
 
-## Unblock production build (after Apple Developer enrollment)
+## Unblock production build
 
-When [developer.apple.com/account](https://developer.apple.com/account) shows **Membership: Active**, run in your Mac terminal (TTY required for Apple prompts):
+Membership is **Active**. When ready for TestFlight / Sentry verification, run in your Mac terminal (TTY required for Apple prompts):
 
 ```bash
 cd ~/Documents/into-the-pond-v3

@@ -53,22 +53,6 @@ const plistFilePath = `${projectName}/GoogleService-Info.plist`;
 const project = getPbxproj(repoRoot);
 const alreadyLinked = project.hasFile(plistFilePath);
 
-// #region agent log
-fetch("http://127.0.0.1:7331/ingest/f0a22a23-9c52-461e-a2e7-e25d9388c16a", {
-  method: "POST",
-  headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9a93e5" },
-  body: JSON.stringify({
-    sessionId: "9a93e5",
-    runId: "link-plist",
-    hypothesisId: "H3",
-    location: "link-firebase-ios-plist.mjs",
-    message: "plist bundle link status",
-    data: { projectName, plistFilePath, alreadyLinked },
-    timestamp: Date.now(),
-  }),
-}).catch(() => {});
-// #endregion
-
 if (alreadyLinked) {
   console.log("link-firebase-ios-plist: OK (already in Copy Bundle Resources)");
   process.exit(0);

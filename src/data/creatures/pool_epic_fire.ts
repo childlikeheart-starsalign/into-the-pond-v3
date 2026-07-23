@@ -8,6 +8,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "4.3",
     moduleId: 4,
     visualMetaphor:
@@ -25,6 +26,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "4.4",
     moduleId: 4,
     visualMetaphor:
@@ -41,6 +43,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.2",
     moduleId: 5,
     visualMetaphor:
@@ -58,6 +61,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "3.4",
     moduleId: 3,
     visualMetaphor:
@@ -74,6 +78,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "4.1",
     moduleId: 4,
     visualMetaphor: "A flat, manta-shaped fire creature that rises from darkness at the pond floor",
@@ -89,6 +94,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "3.1",
     moduleId: 3,
     visualMetaphor:
@@ -105,6 +111,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "4.2",
     moduleId: 4,
     visualMetaphor:
@@ -121,6 +128,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor:
@@ -138,6 +146,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "1.6",
     moduleId: 1,
     visualMetaphor:
@@ -154,6 +163,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.5",
     moduleId: 5,
     visualMetaphor:
@@ -170,6 +180,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "3.9",
     moduleId: 3,
     visualMetaphor:
@@ -186,6 +197,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.3",
     moduleId: 5,
     visualMetaphor: "A fish that stores light from the surface and releases it slowly in darkness",
@@ -201,6 +213,7 @@ export const pool_epic_fire: Creature[] = [
     elementType: "fire",
     rodRequired: "epic1",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor:

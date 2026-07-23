@@ -1,0 +1,169 @@
+{
+  "sheet": "epic_electric",
+  "source": "epic_electric_creatures_138-149-bf1713ed-8c5d-401a-ad21-bf54e79c7df4.png",
+  "paper": [
+    205,
+    182,
+    143
+  ],
+  "count": 12,
+  "exports": [
+    {
+      "name": "lightning_elder",
+      "displayName": "Lightning Elder",
+      "sourceRect": {
+        "left": 34,
+        "top": 60,
+        "width": 224,
+        "height": 154,
+        "cx": 146,
+        "cy": 137
+      },
+      "visiblePixels": 12442
+    },
+    {
+      "name": "aurora_wraith",
+      "displayName": "Aurora Wraith",
+      "sourceRect": {
+        "left": 296,
+        "top": 41,
+        "width": 224,
+        "height": 154,
+        "cx": 408,
+        "cy": 118
+      },
+      "visiblePixels": 23500
+    },
+    {
+      "name": "network_elder",
+      "displayName": "Network Elder",
+      "sourceRect": {
+        "left": 537,
+        "top": 48,
+        "width": 224,
+        "height": 154,
+        "cx": 649,
+        "cy": 125
+      },
+      "visiblePixels": 25606
+    },
+    {
+      "name": "deep_circuit",
+      "displayName": "Deep Circuit",
+      "sourceRect": {
+        "left": 703,
+        "top": 38,
+        "width": 318,
+        "height": 204,
+        "cx": 862,
+        "cy": 140
+      },
+      "visiblePixels": 31067
+    },
+    {
+      "name": "quiet_charge",
+      "displayName": "Quiet Charge",
+      "sourceRect": {
+        "left": 0,
+        "top": 244,
+        "width": 316,
+        "height": 192,
+        "cx": 158,
+        "cy": 340
+      },
+      "visiblePixels": 28751
+    },
+    {
+      "name": "grid_sovereign",
+      "displayName": "Grid Sovereign",
+      "sourceRect": {
+        "left": 204,
+        "top": 227,
+        "width": 336,
+        "height": 218,
+        "cx": 372,
+        "cy": 336
+      },
+      "visiblePixels": 27501
+    },
+    {
+      "name": "field_sovereign",
+      "displayName": "Field Sovereign",
+      "sourceRect": {
+        "left": 401,
+        "top": 231,
+        "width": 394,
+        "height": 218,
+        "cx": 598,
+        "cy": 340
+      },
+      "visiblePixels": 31035
+    },
+    {
+      "name": "arc_sovereign",
+      "displayName": "Arc Sovereign",
+      "sourceRect": {
+        "left": 668,
+        "top": 226,
+        "width": 336,
+        "height": 224,
+        "cx": 836,
+        "cy": 338
+      },
+      "visiblePixels": 28854
+    },
+    {
+      "name": "coherence_fish",
+      "displayName": "Coherence Fish",
+      "sourceRect": {
+        "left": 0,
+        "top": 435,
+        "width": 295,
+        "height": 198,
+        "cx": 147.5,
+        "cy": 534
+      },
+      "visiblePixels": 27499
+    },
+    {
+      "name": "resonant_sovereign",
+      "displayName": "Resonant Sovereign",
+      "sourceRect": {
+        "left": 182,
+        "top": 435,
+        "width": 344,
+        "height": 198,
+        "cx": 354,
+        "cy": 534
+      },
+      "visiblePixels": 29062
+    },
+    {
+      "name": "deep_signal",
+      "displayName": "Deep Signal",
+      "sourceRect": {
+        "left": 419,
+        "top": 413,
+        "width": 274,
+        "height": 230,
+        "cx": 556,
+        "cy": 528
+      },
+      "visiblePixels": 25017
+    },
+    {
+      "name": "zenith_sovereign",
+      "displayName": "Zenith Sovereign",
+      "sourceRect": {
+        "left": 602,
+        "top": 434,
+        "width": 280,
+        "height": 204,
+        "cx": 742,
+        "cy": 536
+      },
+      "visiblePixels": 24274
+    }
+  ],
+  "review": []
+}

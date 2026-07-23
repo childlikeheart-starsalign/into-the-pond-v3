@@ -8,6 +8,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "4.5",
     moduleId: 4,
     visualMetaphor: "A fish of absolute depth-blue that creates stillness in everything it passes",
@@ -24,6 +25,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.4",
     moduleId: 5,
     visualMetaphor:
@@ -40,6 +42,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor: "The oldest water creature — so large the pond accommodates itself around it",
@@ -56,6 +59,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "1.3",
     moduleId: 1,
     visualMetaphor:
@@ -72,6 +76,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "1.4",
     moduleId: 1,
     visualMetaphor: "A fish so old its scales reflect not what is in front of it but what was",
@@ -87,6 +92,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "2.3",
     moduleId: 2,
     visualMetaphor: "A fish that swims against all currents toward the source — upstream, always",
@@ -102,6 +108,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "2.7",
     moduleId: 2,
     visualMetaphor:
@@ -119,6 +126,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "3.8",
     moduleId: 3,
     visualMetaphor:
@@ -135,6 +143,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "4.1",
     moduleId: 4,
     visualMetaphor: "A deep-water fish built for pressure, more itself the deeper it goes",
@@ -150,6 +159,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor:
@@ -166,6 +176,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.2",
     moduleId: 5,
     visualMetaphor:
@@ -182,6 +193,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.6",
     moduleId: 5,
     visualMetaphor:
@@ -199,6 +211,7 @@ export const pool_epic_water: Creature[] = [
     elementType: "water",
     rodRequired: "epic2",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor:

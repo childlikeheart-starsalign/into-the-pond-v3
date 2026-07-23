@@ -85,6 +85,7 @@ const MANIFEST = [
   ...[
     "encounterEngine.ts",
     "fishingClaimPresentation.ts",
+    "fishingOutcomeMessages.ts",
     "castMapping.ts",
     "buildFishingClaimContext.ts",
   ].map((file) => ({
@@ -144,6 +145,12 @@ const MANIFEST = [
     dest: path.join(FUNCTIONS_SRC, "well", file),
     expectHeader: "sync-well-module.js",
   })),
+  {
+    label: "childProfile-tierAccess",
+    src: path.join(ROOT, "shared", "childProfile", "tierAccess.ts"),
+    dest: path.join(__dirname, "..", "src", "childProfile", "tierAccess.ts"),
+    expectHeader: "sync-child-profile-module.js",
+  },
 ];
 
 // economy synced files (excluding hand-written)

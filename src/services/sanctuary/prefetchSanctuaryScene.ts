@@ -42,11 +42,14 @@ export type PrefetchSanctuarySceneResult = {
 export async function prefetchSanctuaryScene(): Promise<PrefetchSanctuarySceneResult> {
   const manifest = getSanctuaryPrefetchManifest();
 
-  const [background, mood, avatar, tabStrip, ...navIconResults] = await Promise.all([
+  const [background, mood, avatar, tabStrip, header, ...navIconResults] = await Promise.all([
     prefetchSource(manifest.background),
     prefetchSource(manifest.mood),
     prefetchSource(manifest.avatar),
     prefetchSource(manifest.tabStrip),
+    Promise.all(manifest.headerSources.map((source) => prefetchSource(source))).then((results) =>
+      results.every(Boolean),
+    ),
     ...manifest.navIcons.map((icon) => prefetchSource(icon)),
   ]);
 
@@ -56,6 +59,7 @@ export async function prefetchSanctuaryScene(): Promise<PrefetchSanctuarySceneRe
     mood,
     avatar,
     tabStrip,
+    header,
     navIcons: navIconsOk,
   };
 

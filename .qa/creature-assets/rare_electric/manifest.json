@@ -1,0 +1,200 @@
+{
+  "sheet": "rare_electric",
+  "source": "rare_creatures_electric_72-85-cb0f08e6-8cd7-479b-843d-1b50c84f569a.png",
+  "paper": [
+    224,
+    198,
+    154
+  ],
+  "count": 14,
+  "exports": [
+    {
+      "name": "spark_mote",
+      "displayName": "Spark Mote",
+      "sourceRect": {
+        "left": 39,
+        "top": 50,
+        "width": 222,
+        "height": 154,
+        "cx": 150,
+        "cy": 127
+      },
+      "visiblePixels": 8101
+    },
+    {
+      "name": "signal_dart",
+      "displayName": "Signal Dart",
+      "sourceRect": {
+        "left": 188,
+        "top": 54,
+        "width": 200,
+        "height": 116,
+        "cx": 288,
+        "cy": 112
+      },
+      "visiblePixels": 11347
+    },
+    {
+      "name": "arc_scout",
+      "displayName": "Arc Scout",
+      "sourceRect": {
+        "left": 346,
+        "top": 54,
+        "width": 212,
+        "height": 116,
+        "cx": 452,
+        "cy": 112
+      },
+      "visiblePixels": 13026
+    },
+    {
+      "name": "volt_tender",
+      "displayName": "Volt Tender",
+      "sourceRect": {
+        "left": 504,
+        "top": 52,
+        "width": 200,
+        "height": 128,
+        "cx": 604,
+        "cy": 116
+      },
+      "visiblePixels": 11774
+    },
+    {
+      "name": "resonance_fish",
+      "displayName": "Resonance Fish",
+      "sourceRect": {
+        "left": 651,
+        "top": 54,
+        "width": 206,
+        "height": 116,
+        "cx": 754,
+        "cy": 112
+      },
+      "visiblePixels": 12440
+    },
+    {
+      "name": "charge_keeper",
+      "displayName": "Charge Keeper",
+      "sourceRect": {
+        "left": 0,
+        "top": 229,
+        "width": 246,
+        "height": 166,
+        "cx": 123,
+        "cy": 312
+      },
+      "visiblePixels": 17366
+    },
+    {
+      "name": "field_weaver",
+      "displayName": "Field Weaver",
+      "sourceRect": {
+        "left": 171,
+        "top": 244,
+        "width": 274,
+        "height": 148,
+        "cx": 308,
+        "cy": 318
+      },
+      "visiblePixels": 17500
+    },
+    {
+      "name": "ground_pulse",
+      "displayName": "Ground Pulse",
+      "sourceRect": {
+        "left": 365,
+        "top": 242,
+        "width": 262,
+        "height": 160,
+        "cx": 496,
+        "cy": 322
+      },
+      "visiblePixels": 18626
+    },
+    {
+      "name": "arc_tender",
+      "displayName": "Arc Tender",
+      "sourceRect": {
+        "left": 554,
+        "top": 239,
+        "width": 256,
+        "height": 154,
+        "cx": 682,
+        "cy": 316
+      },
+      "visiblePixels": 17845
+    },
+    {
+      "name": "static_keeper",
+      "displayName": "Static Keeper",
+      "sourceRect": {
+        "left": 705,
+        "top": 267,
+        "width": 224,
+        "height": 154,
+        "cx": 817,
+        "cy": 344
+      },
+      "visiblePixels": 12072
+    },
+    {
+      "name": "fuse_swimmer",
+      "displayName": "Fuse Swimmer",
+      "sourceRect": {
+        "left": 0,
+        "top": 444,
+        "width": 253,
+        "height": 148,
+        "cx": 126.5,
+        "cy": 518
+      },
+      "visiblePixels": 17954
+    },
+    {
+      "name": "bright_node",
+      "displayName": "Bright Node",
+      "sourceRect": {
+        "left": 171,
+        "top": 441,
+        "width": 274,
+        "height": 166,
+        "cx": 308,
+        "cy": 524
+      },
+      "visiblePixels": 19965
+    },
+    {
+      "name": "current_arrow",
+      "displayName": "Current Arrow",
+      "sourceRect": {
+        "left": 370,
+        "top": 442,
+        "width": 256,
+        "height": 160,
+        "cx": 498,
+        "cy": 522
+      },
+      "visiblePixels": 17707
+    },
+    {
+      "name": "zenith_mote",
+      "displayName": "Zenith Mote",
+      "sourceRect": {
+        "left": 583,
+        "top": 443,
+        "width": 118,
+        "height": 154,
+        "cx": 642,
+        "cy": 520
+      },
+      "visiblePixels": 9148
+    }
+  ],
+  "review": [
+    {
+      "file": "spark_mote.png",
+      "reason": "Fully translucent watercolor wash — inspect on dark UI surfaces"
+    }
+  ]
+}

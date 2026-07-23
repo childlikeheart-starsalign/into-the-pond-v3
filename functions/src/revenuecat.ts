@@ -3,7 +3,7 @@ import { RevenueCatSubscriber } from "./types";
 
 export async function getRevenueCatSubscriber(appUserId: string) {
   if (!SETTINGS.revenueCat.apiKey) {
-    throw new Error("Missing revenuecat.secret_key runtime config");
+    throw new Error("Missing REVENUECAT_SECRET_KEY (or REVENUECAT_API_KEY) runtime env");
   }
   const response = await fetch(
     `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`,

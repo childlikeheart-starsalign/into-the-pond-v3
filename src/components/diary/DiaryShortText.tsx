@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, fontFamilies, spacing } from "@/src/constants/theme";
 
@@ -11,8 +10,6 @@ type DiaryShortTextProps = {
 };
 
 export function DiaryShortText({ value, maxLength, placeholder, onChange }: DiaryShortTextProps) {
-  const inputRef = useRef<TextInput>(null);
-
   return (
     <View style={styles.wrap}>
       <View style={styles.notebook}>
@@ -21,7 +18,6 @@ export function DiaryShortText({ value, maxLength, placeholder, onChange }: Diar
         <View style={styles.ruleTwo} />
         <View style={styles.ruleThree} />
         <TextInput
-          ref={inputRef}
           accessibilityLabel="Short reflection"
           style={styles.input}
           value={value}
@@ -33,17 +29,7 @@ export function DiaryShortText({ value, maxLength, placeholder, onChange }: Diar
           placeholderTextColor={colors.textSecondary}
         />
       </View>
-      <View style={styles.footer}>
-        <Text style={styles.hint}>Saved as you write</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Focus field for voice dictation"
-          style={styles.voiceButton}
-          onPress={() => inputRef.current?.focus()}
-        >
-          <Text style={styles.voiceLabel}>Speak</Text>
-        </Pressable>
-      </View>
+      <Text style={styles.hint}>Your observations are quietly kept.</Text>
     </View>
   );
 }
@@ -104,30 +90,9 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     backgroundColor: "transparent",
   },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   hint: {
     fontFamily: fontFamilies.body,
     fontSize: 13,
-    color: colors.textSecondary,
-  },
-  voiceButton: {
-    minHeight: 48,
-    minWidth: 48,
-    paddingHorizontal: 14,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface,
-  },
-  voiceLabel: {
-    fontFamily: fontFamilies.bodySemi,
-    fontSize: 14,
     color: colors.textSecondary,
   },
 });

@@ -30,6 +30,7 @@ import { media } from "@/src/constants/media";
 import { normRectToStyle, signUpHitRects } from "@/src/constants/signUpArtboard";
 import { useAppleSignIn } from "@/src/hooks/auth/useAppleSignIn";
 import { useGoogleSignIn } from "@/src/hooks/auth/useGoogleSignIn";
+import { useAuthSoftDenyOnError } from "@/src/hooks/useAuthSoftDenyOnError";
 import { SANCTUARY_STAGE_MODE, usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
 import { routes } from "@/src/navigation/routes";
 import {
@@ -44,6 +45,8 @@ import {
   signUpWithEmail,
 } from "@/src/services/firebase/auth";
 import { mapSignupError } from "@/src/services/firebase/mapSignupError";
+import { playAuthSoftDeny, playAuthWelcome } from "@/src/services/audio/authSounds";
+import { playPaperClick } from "@/src/services/audio/playPaperClick";
 import { Sentry } from "@/src/services/sentry/init";
 
 const signUpMedia = media.auth.signUp;
@@ -124,19 +127,23 @@ export default function SignUpScreen() {
 
     if (!isEmailFormatValid) {
       setEmailError(AUTH_INVALID_EMAIL_FORMAT);
+      void playAuthSoftDeny();
       return;
     }
 
     if (password.length < 6) {
       setPasswordError("Password must be at least 6 characters");
+      void playAuthSoftDeny();
       return;
     }
 
+    playPaperClick();
     setSubmitting(true);
     try {
       setInitialAuthMethod("email");
       trackAuthSignupSubmitted("email");
       await signUpWithEmail(email.trim(), password);
+      void playAuthWelcome();
       try {
         await sendEmailVerificationForCurrentUser();
         router.replace(routes.verifyRequired);
@@ -168,12 +175,15 @@ export default function SignUpScreen() {
     setPasswordError(null);
     setGeneralError(null);
     setSendFailure(false);
+    playPaperClick();
     trackAuthSignupStarted({ authMethod: "apple", focusedField: "oauth_apple" });
     trackAuthSignupSubmitted("apple");
     setInitialAuthMethod("apple");
     const result = await appleSignIn();
     if (!result) {
       trackAuthSignupFailed({ errorCode: "apple/canceled", authMethod: "apple" });
+    } else {
+      void playAuthWelcome();
     }
   }, [appleSignIn, clearError]);
 
@@ -183,12 +193,15 @@ export default function SignUpScreen() {
     setPasswordError(null);
     setGeneralError(null);
     setSendFailure(false);
+    playPaperClick();
     trackAuthSignupStarted({ authMethod: "google", focusedField: "oauth_google" });
     trackAuthSignupSubmitted("google");
     setInitialAuthMethod("google");
     const result = await googleSignIn();
     if (!result) {
       trackAuthSignupFailed({ errorCode: "google/canceled", authMethod: "google" });
+    } else {
+      void playAuthWelcome();
     }
   }, [clearGoogleError, googleSignIn]);
 
@@ -247,6 +260,8 @@ export default function SignUpScreen() {
     lineHeight: 20,
     color: colors.textPrimary,
   };
+
+  useAuthSoftDenyOnError([emailError, passwordError, generalError, appleError, googleError]);
 
   return (
     <AuthArtboardScreen

@@ -1,7 +1,6 @@
 import PostHog from "posthog-react-native";
 
 import { env } from "@/src/config/env";
-import { loadAnalyticsOptOutPreference } from "@/src/services/analytics/analyticsOptOut";
 
 const apiKey = env.posthog.apiKey;
 
@@ -17,5 +16,3 @@ export const posthog = apiKey
       captureAppLifecycleEvents: true,
     })
   : null;
-
-void loadAnalyticsOptOutPreference();

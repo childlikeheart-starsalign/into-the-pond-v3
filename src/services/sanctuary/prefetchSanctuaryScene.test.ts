@@ -7,12 +7,13 @@ function expectEqual<T>(actual: T, expected: T, message: string) {
 }
 
 export function runPrefetchSanctuarySceneSelfTest(): void {
-  expectEqual(SANCTUARY_SCENE_LAYERS.length, 4, "scene layer count");
-  expectEqual(CRITICAL_PREFETCH_LAYERS.length, 4, "critical prefetch layer count");
+  expectEqual(SANCTUARY_SCENE_LAYERS.length, 5, "scene layer count");
+  expectEqual(CRITICAL_PREFETCH_LAYERS.length, 5, "critical prefetch layer count");
   expectEqual(
     CRITICAL_PREFETCH_LAYERS.join(","),
     SANCTUARY_SCENE_LAYERS.join(","),
     "critical prefetch matches scene layers",
   );
   expectEqual(CRITICAL_PREFETCH_LAYERS.includes("background"), true, "background is critical");
+  expectEqual(CRITICAL_PREFETCH_LAYERS.includes("header"), true, "header is critical");
 }

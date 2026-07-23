@@ -1,6 +1,14 @@
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { ImageBackground, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,8 +27,11 @@ import {
 } from "@/src/constants/classroomAssets";
 import { colors, fontFamilies, handwrittenPrompt } from "@/src/constants/theme";
 import { getLessonForChapterRow } from "@/src/features/classroom/lessonCatalog";
+import { resolveLessonPlaybackUrl } from "@/src/features/classroom/lessonVideoUrl";
+import { mergeLessonVideoUrl } from "@/src/features/classroom/mergeLessonVideoUrl";
 import { PaywallModal } from "@/src/features/classroom/PaywallModal";
 import { useLessonNavigation } from "@/src/features/classroom/useLessonNavigation";
+import { useLessonVideoUrls } from "@/src/features/classroom/useLessonVideoUrls";
 import { VideoPlayerModal } from "@/src/features/classroom/VideoPlayer";
 import { WellTopBar } from "@/src/features/well/WellTopBar";
 import { useSanctuaryTimeOfDay } from "@/src/hooks/useSanctuaryTimeOfDay";
@@ -43,10 +54,12 @@ export function ClassroomScreen() {
   const insets = useSafeAreaInsets();
   const frame = usePortrait916Layout("contain");
   const menuSceneShift = frame.height > 0 ? frame.height * CLASSROOM_MENU_SCENE_TOP_SHIFT : 0;
+  const syncedVideoUrls = useLessonVideoUrls();
   const { handleLessonPress, paywallVisible, closePaywall, video, closeVideo } =
     useLessonNavigation();
   const [view, setView] = useState<ClassroomView>("open");
   const [selectedModule, setSelectedModule] = useState(1);
+  const [isResolvingLesson, setIsResolvingLesson] = useState(false);
 
   useEffect(() => {
     setClassroomView(view);
@@ -77,11 +90,20 @@ export function ClassroomScreen() {
   const openLessonRow = useCallback(
     (lessonIndex: number) => {
       const lesson = getLessonForChapterRow(selectedModule, lessonIndex);
-      if (lesson) {
-        handleLessonPress(lesson);
-      }
+      if (!lesson || isResolvingLesson) return;
+
+      void (async () => {
+        setIsResolvingLesson(true);
+        try {
+          const merged = mergeLessonVideoUrl(lesson, syncedVideoUrls);
+          const resolved = await resolveLessonPlaybackUrl(merged);
+          handleLessonPress(resolved);
+        } finally {
+          setIsResolvingLesson(false);
+        }
+      })();
     },
-    [handleLessonPress, selectedModule],
+    [handleLessonPress, isResolvingLesson, selectedModule, syncedVideoUrls],
   );
 
   const lessonModals = (
@@ -241,6 +263,11 @@ export function ClassroomScreen() {
   return (
     <>
       <View style={styles.screenRoot}>{screenContent}</View>
+      {isResolvingLesson ? (
+        <View style={styles.resolvingOverlay} pointerEvents="none">
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : null}
       {lessonModals}
     </>
   );
@@ -249,6 +276,12 @@ export function ClassroomScreen() {
 const styles = StyleSheet.create({
   screenRoot: {
     flex: 1,
+  },
+  resolvingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(31, 26, 23, 0.2)",
   },
   openScene: {
     flex: 1,

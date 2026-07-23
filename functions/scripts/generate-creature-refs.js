@@ -6,7 +6,7 @@ const poolsDir = path.join(ROOT, "src", "data", "creatures");
 const outPath = path.join(__dirname, "../src/sanctuary/creatureRefs.generated.ts");
 
 const re =
-  /creatureTypeId:\s*"([^"]+)".*?displayName:\s*"([^"]+)".*?poolTier:\s*"([^"]+)".*?elementType:\s*"([^"]+)".*?rodRequired:\s*"([^"]+)".*?peakWonderGate:\s*(\d+)/gs;
+  /creatureTypeId:\s*"([^"]+)".*?displayName:\s*"([^"]+)".*?poolTier:\s*"([^"]+)".*?elementType:\s*"([^"]+)".*?rodRequired:\s*"([^"]+)".*?peakWonderGate:\s*(\d+).*?sub_tier:\s*"([^"]+)"/gs;
 
 const refs = [];
 const poolFiles = fs
@@ -24,6 +24,7 @@ for (const file of poolFiles) {
       elementType: match[4],
       rodRequired: match[5],
       peakWonderGate: Number(match[6]),
+      sub_tier: match[7],
     });
   }
 }

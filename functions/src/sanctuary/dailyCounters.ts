@@ -31,13 +31,11 @@ export function buildDailyResetPatch(
   };
 }
 
-/** Lazy UTC daily counter reset — Invariant 4 exempt; no ledger row. */
-export function applyOperationalCounterResetsInTransaction(
-  tx: FirebaseFirestore.Transaction,
-  userRef: FirebaseFirestore.DocumentReference,
+/** Compute lazy UTC daily counter reset patch and mirror into `data` (no tx write). */
+export function buildOperationalCounterResetPatch(
   data: Record<string, unknown>,
   now: Date = new Date(),
-) {
+): Record<string, unknown> {
   const questionReset = buildDailyResetPatch(
     data,
     "dailyQuestionCount",
@@ -54,9 +52,25 @@ export function applyOperationalCounterResetsInTransaction(
     ...(questionReset ?? {}),
     ...(fishingReset ?? {}),
   };
+  if (Object.keys(patch).length === 0) return {};
+  Object.assign(data, patch);
+  return patch;
+}
+
+/**
+ * Lazy UTC daily counter reset — Invariant 4 exempt; no ledger row.
+ * Prefer merging `buildOperationalCounterResetPatch` into a later user write when the
+ * same transaction still needs more reads (Firestore forbids read-after-write).
+ */
+export function applyOperationalCounterResetsInTransaction(
+  tx: FirebaseFirestore.Transaction,
+  userRef: FirebaseFirestore.DocumentReference,
+  data: Record<string, unknown>,
+  now: Date = new Date(),
+) {
+  const patch = buildOperationalCounterResetPatch(data, now);
   if (Object.keys(patch).length === 0) return;
   tx.set(userRef, patch, { merge: true });
-  Object.assign(data, patch);
 }
 
 export function utcDateKey(now: Date = new Date()): string {

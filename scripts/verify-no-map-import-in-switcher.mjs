@@ -22,6 +22,8 @@ const MAP_MODULE = "ArchetypeResultMap";
 function isAllowlisted(relativePath) {
   const p = relativePath.replace(/\\/g, "/");
   if (p.startsWith("src/components/archetype/")) return true;
+  if (p === "app/archetype-map-fixture.tsx") return true;
+  if (p === "src/components/dialogue/ArchetypeResultCardFront.tsx") return true;
   if (p.includes("/archetype/") && /\.(test|spec)\.(ts|tsx|js|mjs)$/.test(p)) return true;
   if (p === `src/constants/archetypeMapCopy.ts`) return false;
   return false;
@@ -66,7 +68,7 @@ if (hits.length > 0) {
     console.error(`  • ${h}`);
   }
   console.error(
-    "\nAllowlist: src/components/archetype/** and archetype unit tests only.",
+    "\nAllowlist: src/components/archetype/**, app/archetype-map-fixture.tsx, src/components/dialogue/ArchetypeResultCardFront.tsx, and archetype unit tests only.",
   );
   process.exit(1);
 }

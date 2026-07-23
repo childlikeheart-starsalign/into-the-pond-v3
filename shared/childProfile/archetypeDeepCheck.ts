@@ -1,0 +1,226 @@
+/**
+ * Shared Deep Check scoring — continuous Expression (A) + Driver (B) axes.
+ * Maps to DisplayArchetypeName via resolveDisplayArchetypeFromAxes.
+ *
+ * `recentDeepChecks` Firestore field holds a **shared** QC+DC map trail
+ * (newest-first, capped) despite the historical field name.
+ */
+
+import { axesFromDisplayArchetype, resolveDisplayArchetypeFromAxes } from "./archetypeCaptionBank";
+import {
+  isDisplayArchetypeName,
+  type DisplayArchetypeName,
+  type QuickCheckArchetype,
+} from "./archetypeQuickCheck";
+
+/** Must match Deep Check UI scenario count. */
+export const DEEP_CHECK_SCENARIO_COUNT = 5;
+
+/** Max map-trail points retained per child (Quick + Deep shared). */
+export const DEEP_CHECK_HISTORY_CAP = 5;
+
+/** Alias — same cap as DEEP_CHECK_HISTORY_CAP (shared QC+DC trail). */
+export const MAP_CHECK_HISTORY_CAP = DEEP_CHECK_HISTORY_CAP;
+
+export type MapCheckSource = "quick" | "deep";
+
+export type DeepCheckAxisPair = {
+  /** Axis A — Expression: 0 inward … 100 outward */
+  expression: number;
+  /** Axis B — Driver: 0 overwhelmed … 100 testing */
+  driver: number;
+};
+
+export type DeepCheckScoreResult = {
+  axisA: number;
+  axisB: number;
+  displayArchetypeName: DisplayArchetypeName;
+  primaryArchetype: QuickCheckArchetype;
+};
+
+/**
+ * One point on the denormalized map trail (`recentDeepChecks` in Firestore).
+ * Shared by Quick Check (preset axes) and Deep Check (scored axes).
+ */
+export type RecentDeepCheckPoint = {
+  axisA: number;
+  axisB: number;
+  /** ISO timestamp */
+  completedAt: string;
+  /** Missing on legacy deep-only docs → treat as "deep". */
+  source?: MapCheckSource;
+};
+
+/** Alias for clarity — same shape as RecentDeepCheckPoint. */
+export type RecentMapCheckPoint = RecentDeepCheckPoint;
+
+export function clampAxis(value: number): number {
+  if (!Number.isFinite(value)) return 50;
+  return Math.min(100, Math.max(0, value));
+}
+
+export function normalizeMapCheckSource(source: unknown): MapCheckSource {
+  return source === "quick" ? "quick" : "deep";
+}
+
+export function isDeepCheckAxisPair(value: unknown): value is DeepCheckAxisPair {
+  if (!value || typeof value !== "object") return false;
+  const v = value as DeepCheckAxisPair;
+  return (
+    typeof v.expression === "number" &&
+    Number.isFinite(v.expression) &&
+    typeof v.driver === "number" &&
+    Number.isFinite(v.driver)
+  );
+}
+
+/** Discrete archetype for child.archetype / narrative compatibility. */
+export function primaryArchetypeFromDisplay(
+  displayName: DisplayArchetypeName,
+): QuickCheckArchetype {
+  switch (displayName) {
+    case "Still Pond":
+      return "wall";
+    case "Quiet Storm":
+      return "storm";
+    case "Storm Child":
+      return "spark";
+    case "Ember Child":
+      return "spark";
+    case "Weather Child":
+      return "wall";
+  }
+}
+
+/**
+ * Average five Expression/Driver pairs → axes + display name.
+ */
+export function scoreDeepCheck(answers: readonly DeepCheckAxisPair[]): DeepCheckScoreResult {
+  if (answers.length !== DEEP_CHECK_SCENARIO_COUNT) {
+    throw new Error(`deepCheckAnswers must contain exactly ${DEEP_CHECK_SCENARIO_COUNT} pairs`);
+  }
+  let sumA = 0;
+  let sumB = 0;
+  for (const pair of answers) {
+    sumA += clampAxis(pair.expression);
+    sumB += clampAxis(pair.driver);
+  }
+  const axisA = Math.round((sumA / DEEP_CHECK_SCENARIO_COUNT) * 10) / 10;
+  const axisB = Math.round((sumB / DEEP_CHECK_SCENARIO_COUNT) * 10) / 10;
+  const displayArchetypeName = resolveDisplayArchetypeFromAxes(axisA, axisB);
+  return {
+    axisA,
+    axisB,
+    displayArchetypeName,
+    primaryArchetype: primaryArchetypeFromDisplay(displayArchetypeName),
+  };
+}
+
+/** Prepend a point and keep newest-first, capped (shared QC+DC trail). */
+export function prependRecentDeepCheck(
+  existing: readonly RecentDeepCheckPoint[] | null | undefined,
+  next: RecentDeepCheckPoint,
+  cap = MAP_CHECK_HISTORY_CAP,
+): RecentDeepCheckPoint[] {
+  const prior = Array.isArray(existing) ? existing : [];
+  return [next, ...prior].slice(0, cap);
+}
+
+/** Raw archetypeChecks doc fields used to rebuild the map trail. */
+export type ArchetypeCheckTrailInput = {
+  type?: unknown;
+  axisA?: unknown;
+  axisB?: unknown;
+  displayArchetypeName?: unknown;
+  createdAt?: unknown;
+  completedAt?: unknown;
+};
+
+function completedAtFromCheck(raw: ArchetypeCheckTrailInput): string | null {
+  if (typeof raw.completedAt === "string" && raw.completedAt.trim()) {
+    return raw.completedAt.trim();
+  }
+  const created = raw.createdAt;
+  if (created && typeof created === "object" && "toDate" in created) {
+    const d = (created as { toDate: () => Date }).toDate();
+    if (d instanceof Date && !Number.isNaN(d.getTime())) return d.toISOString();
+  }
+  if (typeof created === "string" && created.trim()) return created.trim();
+  return null;
+}
+
+/**
+ * Map one archetypeChecks doc → trail point, or null if unusable.
+ */
+export function mapArchetypeCheckToTrailPoint(
+  raw: ArchetypeCheckTrailInput,
+): RecentDeepCheckPoint | null {
+  const completedAt = completedAtFromCheck(raw);
+  if (!completedAt) return null;
+
+  if (raw.type === "deep") {
+    if (typeof raw.axisA !== "number" || typeof raw.axisB !== "number") return null;
+    if (!Number.isFinite(raw.axisA) || !Number.isFinite(raw.axisB)) return null;
+    return {
+      axisA: raw.axisA,
+      axisB: raw.axisB,
+      completedAt,
+      source: "deep",
+    };
+  }
+
+  if (raw.type === "quick") {
+    if (!isDisplayArchetypeName(raw.displayArchetypeName)) return null;
+    const axes = axesFromDisplayArchetype(raw.displayArchetypeName);
+    return {
+      axisA: axes.axisA,
+      axisB: axes.axisB,
+      completedAt,
+      source: "quick",
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Rebuild newest-first trail from archetypeChecks (already newest-first)
+ * plus the point being written in this submit (not yet in the query).
+ */
+export function rebuildRecentMapChecks(args: {
+  /** Newest-first existing checks (excluding the in-flight write). */
+  existingChecksNewestFirst: readonly ArchetypeCheckTrailInput[];
+  /** The check being persisted in this submit. */
+  newest: RecentDeepCheckPoint;
+  cap?: number;
+}): RecentDeepCheckPoint[] {
+  const cap = args.cap ?? MAP_CHECK_HISTORY_CAP;
+  const fromExisting: RecentDeepCheckPoint[] = [];
+  for (const raw of args.existingChecksNewestFirst) {
+    const point = mapArchetypeCheckToTrailPoint(raw);
+    if (point) fromExisting.push(point);
+  }
+  return [args.newest, ...fromExisting].slice(0, cap);
+}
+
+export function parseRecentDeepChecks(raw: unknown): RecentDeepCheckPoint[] {
+  if (!Array.isArray(raw)) return [];
+  const out: RecentDeepCheckPoint[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const p = item as RecentDeepCheckPoint;
+    if (
+      typeof p.axisA === "number" &&
+      typeof p.axisB === "number" &&
+      typeof p.completedAt === "string"
+    ) {
+      out.push({
+        axisA: p.axisA,
+        axisB: p.axisB,
+        completedAt: p.completedAt,
+        source: normalizeMapCheckSource(p.source),
+      });
+    }
+  }
+  return out;
+}

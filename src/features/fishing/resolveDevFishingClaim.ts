@@ -14,18 +14,28 @@ import type {
   ServerClaimSummary,
   ServerFishingCast,
 } from "@/src/features/fishing/fishingServerCast";
+import { creditDevPreviewWonderIdempotent } from "@/src/features/sanctuary/devPreviewWonder";
 import { getUserProgress } from "@/src/services/firebase/progress";
 import { firestore } from "@/src/services/firebase/client";
+import type { FishingPityState } from "../../../shared/sanctuary/types";
 import { resolveFishingClaimFromContext, toClientClaimSummary } from "../../../shared/sanctuary";
 
-async function loadCurrentWonderForPreview(uid: string): Promise<number> {
+type PreviewEconomySnapshot = {
+  currentWonder: number;
+  fishingPity?: FishingPityState | null;
+};
+
+async function loadPreviewEconomySnapshot(uid: string): Promise<PreviewEconomySnapshot> {
   try {
     const userDoc = await getUserProgress(uid);
     if (userDoc) {
-      return userDoc.currentWonder ?? userDoc.totalWonder ?? 0;
+      return {
+        currentWonder: userDoc.currentWonder ?? userDoc.totalWonder ?? 0,
+        fishingPity: userDoc.fishingPity ?? null,
+      };
     }
   } catch (error) {
-    console.warn("[Fishing] DEV preview could not read Firestore wonder", error);
+    console.warn("[Fishing] DEV preview could not read Firestore economy snapshot", error);
   }
 
   try {
@@ -35,13 +45,13 @@ async function loadCurrentWonderForPreview(uid: string): Promise<number> {
       .fetch();
     const profile = rows[0];
     if (profile?.currentWonder != null) {
-      return profile.currentWonder;
+      return { currentWonder: profile.currentWonder, fishingPity: null };
     }
   } catch (error) {
     console.warn("[Fishing] DEV preview could not read local wonder", error);
   }
 
-  return 0;
+  return { currentWonder: 0, fishingPity: null };
 }
 
 async function loadCaughtIdsForPreview(uid: string): Promise<Set<string>> {
@@ -71,10 +81,12 @@ export async function resolveDevFishingClaim(
 ): Promise<ServerClaimSummary> {
   console.warn("[Fishing] DEV preview — outcome not persisted. Deploy functions for real claims.");
 
-  const currentWonderAtClaim = await loadCurrentWonderForPreview(uid);
+  const { currentWonder: currentWonderAtClaim, fishingPity } =
+    await loadPreviewEconomySnapshot(uid);
   const caughtIds = await loadCaughtIdsForPreview(uid);
 
-  const claim = resolveFishingClaimFromContext({
+  // Read-only pity for roll fidelity — never write nextFishingPity (previewOnly).
+  const { claim } = resolveFishingClaimFromContext({
     claimId: `dev_claim_${Date.now()}`,
     encounterId: cast.castId,
     userId: uid,
@@ -84,10 +96,17 @@ export async function resolveDevFishingClaim(
     currentWonderAtClaim,
     caughtIds,
     creatureCatalog: CREATURE_REFS,
+    fishingPity,
   });
 
-  return {
+  const summary = {
     ...toClientClaimSummary(claim),
-    previewOnly: true,
+    previewOnly: true as const,
   };
+
+  if (summary.wonderAwarded > 0) {
+    await creditDevPreviewWonderIdempotent(uid, summary.wonderAwarded, `fishing:${cast.castId}`);
+  }
+
+  return summary;
 }

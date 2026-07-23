@@ -16,6 +16,7 @@ function filterCreaturesByRodPermission(rodId, catalog) {
     const tierRank = POOL_TIER_RANK[creature.poolTier];
     if (tierRank > maxRank) return false;
     if (permission.elements.includes("any")) return true;
+    if (creature.elementType === "any") return rodId === "rare_wildcard";
     return permission.elements.includes(creature.elementType);
   });
 }

@@ -10,18 +10,23 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { doc, getDoc } from "firebase/firestore";
 
 import { PreparingSanctuaryOverlay } from "@/src/components/auth/PreparingSanctuaryOverlay";
 import { AUTH_OPENING_GATE_ERROR } from "@/src/constants/authCopy";
 import { emailVerifiedHitRects, normRectToStyle } from "@/src/constants/emailVerifiedArtboard";
 import { media } from "@/src/constants/media";
 import { colors, fontFamilies } from "@/src/constants/theme";
+import { useChildProfileFeatureFlags } from "@/src/features/childProfile/featureFlags";
+import { useActiveChild } from "@/src/features/childProfile/useActiveChild";
 import { useNarrativeOnboarding } from "@/src/hooks/useNarrativeOnboarding";
 import { usePortrait916Layout } from "@/src/hooks/usePortrait916Layout";
+import { resolveNewOnboardingRouting } from "@/src/navigation/newOnboardingRouting";
 import { navigateAfterEmailVerified } from "@/src/navigation/navigateAfterEmailVerified";
 import { routes } from "@/src/navigation/routes";
 import { getSyncNarrativeNeeds } from "@/src/services/onboarding/narrativeOnboardingStorage";
-import { firebaseAuth } from "@/src/services/firebase/client";
+import { firebaseAuth, firestore } from "@/src/services/firebase/client";
+import type { UserDoc } from "@/src/services/firebase/types";
 import { Sentry } from "@/src/services/sentry/init";
 
 const DANGER_SOFT = "#B86A6A";
@@ -35,6 +40,8 @@ export default function EmailVerifiedScreen() {
 
   const uid = firebaseAuth.currentUser?.uid ?? null;
   const narrativeOnboarding = useNarrativeOnboarding();
+  const childProfileFlags = useChildProfileFeatureFlags();
+  const activeChild = useActiveChild();
 
   const artboardWidth = frame.width;
   const artboardHeight = frame.height;
@@ -63,6 +70,25 @@ export default function EmailVerifiedScreen() {
     }
 
     try {
+      let hasCompletedPrologueOnboarding = false;
+      let hasCompletedDay1Narrative = false;
+      try {
+        const snap = await getDoc(doc(firestore, "users", uid));
+        if (snap.exists()) {
+          const data = snap.data() as UserDoc;
+          hasCompletedPrologueOnboarding = data.hasCompletedPrologueOnboarding === true;
+          hasCompletedDay1Narrative = data.hasCompletedDay1Narrative === true;
+        }
+      } catch {
+        /* fall through with defaults */
+      }
+      const { legacyComplete, needsContinuation } = resolveNewOnboardingRouting({
+        newOnboardingEnabled: childProfileFlags.newOnboardingEnabled,
+        hasCompletedDay1Narrative,
+        hasCompletedPrologueOnboarding,
+        existingChildCount: activeChild.ready ? activeChild.childrenSummary.length : 0,
+      });
+
       await navigateAfterEmailVerified(router, {
         uid,
         emailVerified: true,
@@ -76,6 +102,21 @@ export default function EmailVerifiedScreen() {
         },
         syncNarrativeNeeds: getSyncNarrativeNeeds(),
         celebration: { ready: true, hasCompleted: false },
+        childProfile: {
+          flagEnabled: childProfileFlags.createChildProfileUi,
+          ready: activeChild.ready,
+          needsCreate:
+            childProfileFlags.createChildProfileUi &&
+            activeChild.ready &&
+            activeChild.childrenSummary.length === 0 &&
+            !needsContinuation,
+        },
+        newOnboarding: {
+          flagEnabled: childProfileFlags.newOnboardingEnabled,
+          ready: true,
+          needsContinuation,
+          legacyComplete,
+        },
       });
     } catch (e) {
       Sentry.captureException(e, { tags: { area: "auth", flow: "email_verified_init" } });

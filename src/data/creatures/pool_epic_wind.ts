@@ -8,6 +8,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "4.6",
     moduleId: 4,
     visualMetaphor:
@@ -24,6 +25,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.3",
     moduleId: 5,
     visualMetaphor: "A deep, dense fish that holds the pond in place when everything else moves",
@@ -40,6 +42,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.6",
     moduleId: 5,
     visualMetaphor: "A vast, ethereal creature whose breathing is the pond's breathing",
@@ -56,6 +59,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "1.2",
     moduleId: 1,
     visualMetaphor:
@@ -72,6 +76,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "3.5",
     moduleId: 3,
     visualMetaphor: "A fish shaped like a tree root, language and growth made aquatic",
@@ -87,6 +92,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.2",
     moduleId: 5,
     visualMetaphor:
@@ -104,6 +110,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "4.1",
     moduleId: 4,
     visualMetaphor:
@@ -120,6 +127,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "4.4",
     moduleId: 4,
     visualMetaphor:
@@ -136,6 +144,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "common-rare",
     lessonId: "3.9",
     moduleId: 3,
     visualMetaphor:
@@ -152,6 +161,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.7",
     moduleId: 5,
     visualMetaphor:
@@ -168,6 +178,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "top-rare",
     lessonId: "5.4",
     moduleId: 5,
     visualMetaphor:
@@ -184,6 +195,7 @@ export const pool_epic_wind: Creature[] = [
     elementType: "wind",
     rodRequired: "epic3",
     peakWonderGate: 90,
+    sub_tier: "mid-rare",
     lessonId: "5.1",
     moduleId: 5,
     visualMetaphor:

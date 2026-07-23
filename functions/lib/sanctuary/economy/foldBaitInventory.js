@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONSUMABLE_BAIT_KEYS = void 0;
 exports.emptyBaitInventory = emptyBaitInventory;
 exports.baitKeyFromCraftMetadata = baitKeyFromCraftMetadata;
+exports.inventoryKeyFromCastBaitUsed = inventoryKeyFromCastBaitUsed;
 exports.foldBaitInventoryFromLedger = foldBaitInventoryFromLedger;
 exports.CONSUMABLE_BAIT_KEYS = ["feather_bait", "scale_bait", "glimmerdust_bait", "random_bait"];
 const TIER_TO_BAIT_KEY = {
@@ -30,7 +31,23 @@ function baitKeyFromCraftMetadata(metadata) {
 function isConsumableBaitKey(value) {
   return exports.CONSUMABLE_BAIT_KEYS.includes(value);
 }
-/** Replay bait stacks from ledger audit rows (bait_craft + cast_create). */
+/** UI / legacy bait ids → inventory keys (mirrors createCast deduction). */
+const UI_BAIT_TO_INVENTORY_KEY = {
+  bait_mid: "scale_bait",
+  bait_premium: "glimmerdust_bait",
+  feather_bait: "feather_bait",
+  scale_bait: "scale_bait",
+  glimmerdust_bait: "glimmerdust_bait",
+};
+function inventoryKeyFromCastBaitUsed(baitUsed) {
+  const normalized = baitUsed.trim();
+  if (!normalized || normalized === "random_bait" || normalized === "bait_basic") {
+    return null;
+  }
+  const key = UI_BAIT_TO_INVENTORY_KEY[normalized];
+  return key && isConsumableBaitKey(key) ? key : null;
+}
+/** Replay bait stacks from ledger audit rows (bait_craft + cast_create + cast_cancel). */
 function foldBaitInventoryFromLedger(entries) {
   const baits = emptyBaitInventory();
   for (const entry of entries) {
@@ -42,9 +59,17 @@ function foldBaitInventoryFromLedger(entries) {
     }
     if (entry.actionType === "cast_create" && metadata.baitDeducted === true) {
       const baitUsed = typeof metadata.baitUsed === "string" ? metadata.baitUsed.trim() : "";
-      if (baitUsed && baitUsed !== "random_bait" && isConsumableBaitKey(baitUsed)) {
-        baits[baitUsed] -= 1;
-      }
+      const key = inventoryKeyFromCastBaitUsed(baitUsed);
+      if (key) baits[key] -= 1;
+      continue;
+    }
+    if (entry.actionType === "cast_cancel" && metadata.baitRefunded === true) {
+      const baitUsed = typeof metadata.baitUsed === "string" ? metadata.baitUsed.trim() : "";
+      const key =
+        (typeof metadata.baitKey === "string" && isConsumableBaitKey(metadata.baitKey)
+          ? metadata.baitKey
+          : null) ?? inventoryKeyFromCastBaitUsed(baitUsed);
+      if (key) baits[key] += 1;
     }
   }
   return baits;

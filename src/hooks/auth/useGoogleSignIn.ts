@@ -1,15 +1,13 @@
-import {
-  GoogleSignin,
-  isErrorWithCode,
-  isSuccessResponse,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
 import { GoogleAuthProvider, signInWithCredential, type UserCredential } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 import { Platform } from "react-native";
 
 import { env } from "@/src/config/env";
 import { firebaseAuth } from "@/src/services/firebase/client";
+import {
+  getGoogleSignInModule,
+  isGoogleSignInNativeAvailable,
+} from "@/src/services/auth/googleSignInNative";
 
 const GOOGLE_AUTH_ERROR_MESSAGE = "We couldn't connect with Google — try again.";
 const GOOGLE_AUTH_CONFIG_ERROR_MESSAGE =
@@ -18,11 +16,14 @@ const GOOGLE_AUTH_CONFIG_ERROR_MESSAGE =
 let googleSignInConfigured = false;
 
 function ensureGoogleSignInConfigured(): boolean {
-  if (googleSignInConfigured || !env.googleWebClientId) {
-    return Boolean(env.googleWebClientId);
+  const googleSignIn = getGoogleSignInModule();
+  if (!googleSignIn || !env.googleWebClientId) {
+    return false;
   }
-  GoogleSignin.configure({ webClientId: env.googleWebClientId });
-  googleSignInConfigured = true;
+  if (!googleSignInConfigured) {
+    googleSignIn.GoogleSignin.configure({ webClientId: env.googleWebClientId });
+    googleSignInConfigured = true;
+  }
   return true;
 }
 
@@ -31,7 +32,7 @@ export function useGoogleSignIn() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (Platform.OS === "android" && env.googleWebClientId) {
+    if (Platform.OS === "android" && isGoogleSignInNativeAvailable() && env.googleWebClientId) {
       ensureGoogleSignInConfigured();
     }
   }, []);
@@ -45,6 +46,14 @@ export function useGoogleSignIn() {
     setLoading(true);
 
     try {
+      const googleSignIn = getGoogleSignInModule();
+      if (!googleSignIn) {
+        setError(GOOGLE_AUTH_CONFIG_ERROR_MESSAGE);
+        return null;
+      }
+
+      const { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } = googleSignIn;
+
       if (!ensureGoogleSignInConfigured()) {
         setError(GOOGLE_AUTH_CONFIG_ERROR_MESSAGE);
         return null;
@@ -66,7 +75,12 @@ export function useGoogleSignIn() {
       const credential = GoogleAuthProvider.credential(idToken);
       return await signInWithCredential(firebaseAuth, credential);
     } catch (e: unknown) {
-      if (isErrorWithCode(e) && e.code === statusCodes.SIGN_IN_CANCELLED) {
+      const googleSignIn = getGoogleSignInModule();
+      if (
+        googleSignIn &&
+        googleSignIn.isErrorWithCode(e) &&
+        e.code === googleSignIn.statusCodes.SIGN_IN_CANCELLED
+      ) {
         return null;
       }
       setError(GOOGLE_AUTH_ERROR_MESSAGE);

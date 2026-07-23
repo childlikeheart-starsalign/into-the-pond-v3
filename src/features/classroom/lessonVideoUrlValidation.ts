@@ -27,7 +27,8 @@ export function isPlayableLessonVideoUrl(url: string | null | undefined): url is
 
   try {
     const parsed = new URL(trimmed);
-    if (!parsed.hostname.includes("firebasestorage.googleapis.com")) {
+    const normalizedHostname = parsed.hostname.toLowerCase().replace(/\.$/, "");
+    if (normalizedHostname !== "firebasestorage.googleapis.com") {
       return true;
     }
     return (

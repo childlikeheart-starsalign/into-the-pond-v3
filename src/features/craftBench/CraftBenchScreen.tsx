@@ -66,7 +66,7 @@ import {
 import { WellTopBar } from "@/src/features/well/WellTopBar";
 
 function formatRodName(rodId: FishingRodId): string {
-  return ROD_CATALOG[rodId].displayName.replace("Rare ", "").replace(" Epic", " Epic");
+  return ROD_CATALOG[rodId].displayName.replace("Rare ", "");
 }
 
 const CRAFT_BENCH_HELP_HEADING = "Craft Bench";

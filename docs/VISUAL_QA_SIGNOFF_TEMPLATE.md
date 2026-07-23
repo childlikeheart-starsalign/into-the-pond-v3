@@ -15,17 +15,17 @@
 
 ## Devices (required — name them)
 
-- [ ] iOS device or simulator name: _______________________________
-- [ ] Android device or emulator name: ____________________________
+- [ ] iOS device or simulator name: ******\*\*******\*\*\*\*******\*\*******
+- [ ] Android device or emulator name: ****\*\*\*\*****\*\*\*\*****\*\*\*\*****
 
-## Quadrant screenshots (required — commit files under `docs/visual-qa/`)
+## Quadrant screenshots — Spark (TR), Storm (BR), Wall (BL), Quiet Tester (TL)
 
 Link each committed image path below. CI requires at least one file under `docs/visual-qa/` in the same PR as map changes.
 
 - [ ] Spark — top-right — path: `docs/visual-qa/________________`
 - [ ] Storm — bottom-right — path: `docs/visual-qa/________________`
 - [ ] Wall — bottom-left — path: `docs/visual-qa/________________`
-- [ ] Quiet Tester — top-left at reduced opacity — path: `docs/visual-qa/________________`
+- [ ] Quiet Tester — top-left — path: `docs/visual-qa/________________`
 
 ## Caption / threshold copy (required — separate from positions)
 
@@ -33,5 +33,5 @@ Link each committed image path below. CI requires at least one file under `docs/
 
 ## Reviewer
 
-- Name: ________________
-- Date: ________________
+- Name: **\*\*\*\***
+- Date: **\*\*\*\***

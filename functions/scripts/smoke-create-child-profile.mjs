@@ -40,7 +40,7 @@ const db = admin.firestore();
 const userRef = db.collection("users").doc(uid);
 const beforeSnap = await userRef.get();
 if (!beforeSnap.exists) {
-  console.error("user missing", uid);
+  console.error("user missing for configured SMOKE_UID");
   process.exit(1);
 }
 const before = beforeSnap.data() || {};
